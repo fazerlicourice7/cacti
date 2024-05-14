@@ -52,6 +52,7 @@
 
 using namespace std;
 
+#define NTHREADS 1
 const uint32_t nthreads = NTHREADS;
 
 
