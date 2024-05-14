@@ -1581,7 +1581,7 @@ IOTechParam::IOTechParam(InputParameter * g_ip, Mem_IO_type io_type1, int num_me
    }
 	else
 	{
-		cout << "Not Yet supported" << endl;
+		printf("Not Yet supported\n");
 		exit(1);
 	}
 

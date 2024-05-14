@@ -2,8 +2,8 @@
 
 SYM_SRCS="area.cc bank.cc mat.cc Ucache.cc io.cc technology.cc basic_circuit.cc parameter.cc \
 		decoder.cc component.cc uca.cc subarray.cc wire.cc htree2.cc extio.cc extio_technology.cc \
-		cacti_interface.cc router.cc nuca.cc crossbar.cc arbiter.cc powergating.cc TSV.cc memorybus.cc \
-		memcad.cc memcad_parameters.cc cacti_interface.cc main.cc"
+	    router.cc nuca.cc crossbar.cc arbiter.cc powergating.cc TSV.cc memorybus.cc \
+		memcad.cc memcad_parameters.cc cacti_interface.cc klee_io.cc klee_main.cc"
 
 LDLIB=$(llvm-config --ldflags --system-libs --libs core)
 CXXFLAGS=$(llvm-config --cxxflags)
