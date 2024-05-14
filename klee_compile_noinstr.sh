@@ -3,7 +3,7 @@
 SYM_SRCS="area.cc bank.cc mat.cc Ucache.cc io.cc technology.cc basic_circuit.cc  \
 		decoder.cc component.cc uca.cc subarray.cc wire.cc htree2.cc extio.cc extio_technology.cc \
 	    router.cc nuca.cc crossbar.cc arbiter.cc powergating.cc TSV.cc memorybus.cc \
-		memcad.cc memcad_parameters.cc cacti_interface.cc klee_utils.cc klee_parameter.cc klee_io.cc klee_main.cc"
+		memcad.cc memcad_parameters.cc cacti_interface.cc parameter.cc main.cc"
 
 LDLIB=$(llvm-config --ldflags --system-libs --libs core)
 CXXFLAGS=$(llvm-config --cxxflags)
@@ -33,6 +33,6 @@ echo ${LLVMLINK} ${LDLIBS} -S -o cacti.ll *.ll
 ${LLVMLINK} ${LDLIBS} -S -o cacti.ll *.ll
 cd ..
 echo "copying .ll file"
-cp ${BUILDDIR}/cacti.ll klee_cacti.ll
+cp ${BUILDDIR}/cacti.ll cacti.ll
 echo "copying .bc file"
-cp ${BUILDDIR}/cacti.bc klee_cacti.bc
+cp ${BUILDDIR}/cacti.bc cacti.bc
