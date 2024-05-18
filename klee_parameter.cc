@@ -49,6 +49,7 @@ using namespace std;
 InputParameter * g_ip;
 TechnologyParameter g_tp;
 
+#define REL_ERR 0.01
 // ali
 bool is_equal(double first, double second)
 {
@@ -146,8 +147,8 @@ double scan_single_input_double(char* line, const char* name, const char* unit_n
 	sscanf(&line[strlen(name)], "%*[ \t]%s%*[ \t]%lf",unit,&temp);
 	if(print)
 		cout << name << ": " << temp << " " << unit << endl;
-	temp = klee_symbolic_double(name);
-	return temp;
+	double result = klee_symbolic_relax_double(name,temp,REL_ERR);
+	return result;
 }
 
 double scan_five_input_double(char* line, const char* name, const char* unit_name, int flavor, bool print)
@@ -161,8 +162,8 @@ double scan_five_input_double(char* line, const char* name, const char* unit_nam
   if (print)
 		cout << name << "[" << flavor <<"]: " << temp[flavor] << " " << unit<< endl;
 	
-  double value = temp[flavor];
-  klee_make_symbolic(&value, sizeof(double),name);
+  //double value = temp[flavor];
+  double value = klee_symbolic_relax_double(name,temp[flavor],REL_ERR);
   return value;
 		
 }
@@ -182,8 +183,8 @@ void scan_five_input_double_temperature(char* line, const char* name, const char
 	   if (print)
 					cout << name << ": " << temp[flavor] << " "<< unit << endl;
 			
-	double value = temp[flavor];
-  	klee_make_symbolic(&value, sizeof(double),name);
+	//double value = temp[flavor];
+  	double value = klee_symbolic_relax_double(name,temp[flavor],REL_ERR);
 	result = value;
 
   }
@@ -384,8 +385,9 @@ double scan_input_double_inter_type(char* line, const char * name, const char * 
 	if (print)
 		cout << name << " " << temp[index] << " " << unit << endl;
 
-	double value = temp[index];
-	klee_make_symbolic(&value, sizeof(double), name);
+	//double value = temp[index];
+	//klee_make_symbolic(&value, sizeof(double), name);
+	double value = klee_symbolic_relax_double(name,temp[index],REL_ERR);
 	return value;
 }
 
@@ -556,8 +558,9 @@ void scan_five_input_double_mem_type(char* line, const char* name, const char* u
 	   if (print)
 		cout << name << ": " << temp[flavor] << " "<< unit << endl;
 
-	double value = temp[flavor];
-	klee_make_symbolic(&value, sizeof(double),name);
+	//double value = temp[flavor];
+	//klee_make_symbolic(&value, sizeof(double),name);
+	double value = klee_symbolic_relax_double(name,temp[flavor],0.0);
 	result = value;
   }
 }
@@ -938,7 +941,7 @@ void TechnologyParameter::init(double technology, bool is_tag)
 	{
 		alpha = (technology - tech_hi)/(tech_lo - tech_hi);
 	}
-	
+
 	fp = fopen(in_file_lo.c_str(), "r");
 	dram_cell_I_on = 0;
 	dram_cell_Vdd = 0;

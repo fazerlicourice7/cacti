@@ -8,18 +8,21 @@ SYM_SRCS="area.cc bank.cc mat.cc Ucache.cc io.cc technology.cc basic_circuit.cc 
 LDLIB=$(llvm-config --ldflags --system-libs --libs core)
 CXXFLAGS=$(llvm-config --cxxflags)
 CLANG=clang
+CXXCLANG=llc
 LLVMLINK=llvm-link
 BUILDDIR="klee-build"
 
 mkdir -p ${BUILDDIR}
 cd ${BUILDDIR}
 rm *.ll *.bc
+echo "CXXFLAGS=${CXXFLAGS}"
+
 for SRC in $SYM_SRCS
 do 
-	OUTNAME=$(basename $SRC .cc).ll
-    echo $SRC $OUTNAME
-    echo ${CLANG} -O0 -emit-llvm -S -g  ${CXXFLAGS} -c ../$SRC -o $OUTNAME
-    if ! ${CLANG} -O0 -emit-llvm -S -g  ${CXXFLAGS} -c ../$SRC -o $OUTNAME; then 
+	OUTNAME_LL=$(basename $SRC .cc).ll
+	OUTNAME_C=$(basename $SRC .cc).c
+    echo ${CLANG} -O0 -emit-llvm -std=c++98 -S -g -c ../$SRC -o $OUTNAME_LL
+    if ! ${CLANG} -O0 -emit-llvm -std=c++98 -S -g -c ../$SRC -o $OUTNAME_LL; then 
         echo "[[Compile Error]]"
         exit 1
     fi
