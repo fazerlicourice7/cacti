@@ -5,26 +5,31 @@ SYM_SRCS="area.cc bank.cc mat.cc Ucache.cc io.cc technology.cc basic_circuit.cc 
 	    router.cc nuca.cc crossbar.cc arbiter.cc powergating.cc TSV.cc memorybus.cc \
 		memcad.cc memcad_parameters.cc cacti_interface.cc parameter.cc main.cc"
 
+SYM_HEADERS="extio_technology.h io.h decoder.h const.h extio.h htree2.h  
+        mat.h memcad_parameters.h memcad.h nuca.h parameter.h powergating.h"
+        
 LDLIB=$(llvm-config --ldflags --system-libs --libs core)
 CXXFLAGS=$(llvm-config --cxxflags)
-CLANG=clang
+CFLAGS=$(llvm-config --cflags)
+CLANG=clang++
 LLVMLINK=llvm-link
 BUILDDIR="klee-build"
 
 mkdir -p ${BUILDDIR}
 cd ${BUILDDIR}
 rm *.ll *.bc
+
 for SRC in $SYM_SRCS
 do 
 	OUTNAME=$(basename $SRC .cc).ll
     echo $SRC $OUTNAME
-    echo ${CLANG} -O0 -emit-llvm -S -g  ${CXXFLAGS} -c ../$SRC -o $OUTNAME
-    if ! ${CLANG} -O0 -emit-llvm -S -g  ${CXXFLAGS} -c ../$SRC -o $OUTNAME; then 
+    echo ${CLANG} -O0 --emit-llvm -static -S -g  ${CXXFLAGS} -I. -c ../$SRC -o $OUTNAME
+    if ! ${CLANG} -O0 -emit-llvm -static -S -g  ${CXXFLAGS} -I. -c ../$SRC -o $OUTNAME; then 
         echo "[[Compile Error]]"
         exit 1
     fi
-
 done
+
 echo "linking .bc file"
 echo ${LLVMLINK} ${LDLIBS} -o cacti.bc *.ll
 ${LLVMLINK} ${LDLIBS} -o cacti.bc *.ll
