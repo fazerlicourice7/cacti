@@ -33,11 +33,21 @@ done
 echo "linking .bc file"
 echo ${LLVMLINK} ${LDLIBS} -o cacti.bc *.ll
 ${LLVMLINK} ${LDLIBS} -o cacti.bc *.ll
+
 echo "linking .ll file"
 echo ${LLVMLINK} ${LDLIBS} -S -o cacti.ll *.ll
 ${LLVMLINK} ${LDLIBS} -S -o cacti.ll *.ll
+
+
+echo "linking binary file"
+llc -filetype=obj cacti.bc -o cacti.o
+${CLANG} cacti.o -o cacti 
+chmod +x cacti
+
 cd ..
 echo "copying .ll file"
 cp ${BUILDDIR}/cacti.ll cacti.ll
 echo "copying .bc file"
 cp ${BUILDDIR}/cacti.bc cacti.bc
+echo "copying .binary file"
+cp ${BUILDDIR}/cacti cacti
