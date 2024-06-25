@@ -5,3 +5,7 @@ klee-build
 obj_dbg/
 cacti
 *.out
+
+# these two are generated from codesign runs
+base_cache.cfg
+mem_cache.cfg
