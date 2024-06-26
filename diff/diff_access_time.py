@@ -436,7 +436,7 @@ if __name__ == "__main__" :
     #print(f"The derivative of the function is: {diff_access_time_C_g_ideal}")
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    filename = current_dir + "/diff_result.txt"
+    filename = current_dir + "/diff_res_access_time.txt"
     try:
         with open(filename, 'w') as file:
             file.write(f"The derivative of the function is: {diff_access_time_C_g_ideal}\n")
