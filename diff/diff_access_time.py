@@ -2,29 +2,17 @@ import sympy as sp
 import math
 import os
 
-
- #check
 '''
-DAT PARAMS:
-C_g_ideal:
-C_fringe:
-C_junc_sw
-l_phy:
-n2p_drv_rt:
-nmos_effective_resistance_multiplier
-Vdd
-I_on_n
-wire_c_per_micron
-
-CFG PARAMS:
-F_sz_um: g_tp.min_w_nmos_ uses g_ip->F_sz_um, which is just -technology of cfg file
+Consts
 '''
-
 NCH = 0
 PCH = 1
 RISE = 1
 is_dram_, is_dram = False, False
 
+'''
+Input parameters to dat file
+'''
 C_g_ideal, C_fringe, C_junc, C_junc_sw, l_phy, F_sz_um, \
 n2p_drv_rt, nmos_effective_resistance_multiplier, Vdd, \
 I_on_n, wire_c_per_micron, wire_length, wire_delay = sp.symbols('''
@@ -59,7 +47,11 @@ g_tp = {
     "wire_delay": wire_delay
 }
 
-#This uses mat.cc to calcuate delays, then uca.cc to accumulate delays
+'''
+Main/overall function
+This uses mat.cc to calcuate delays, then uca.cc to accumulate delays
+Returns acess_time
+'''
 def get_access_time(g_tp, inrisetime):
   # Compute Delays: for order of calculations look at mat.cc
   r_predec_delay = get_predec_delay(g_tp, inrisetime)
@@ -123,7 +115,6 @@ def get_access_time(g_tp, inrisetime):
 The following are the helper functions in order
 to compute delays of the various components
 '''
-
 # htree.[cc/h]
 def get_htree_in_add_delay(g_tp):
     # CHECK delay of wire and whether to blackbox it
@@ -434,7 +425,10 @@ def horowitz(inputramptime, tf, vs1, vs2, rise):
         td = tf * sp.sqrt(sp.log(1.0 - vs1)**2 + 2 * a * b * (vs1)) + tf * (sp.log(1.0 - vs1) - sp.log(1.0 - vs2))
     
     return td
-    
+
+'''
+Sympy differentiation
+'''
 if __name__ == "__main__" :
     inrisetime = sp.symbols('inrisetime')
     access_time_expr = get_access_time(g_tp, inrisetime)
