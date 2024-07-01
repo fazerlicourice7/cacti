@@ -2,20 +2,64 @@ import sympy as sp
 import math
 import os
 
+
+# lop, low oper power
+# parameterize many, convert 
+# hardware_symbols
+
+ #check
 '''
-Consts
+DAT PARAMS:
+C_g_ideal:
+C_fringe:
+C_junc_sw
+l_phy:
+n2p_drv_rt:
+nmos_effective_resistance_multiplier
+Vdd
+I_on_n
+wire_c_per_micron
+
+CFG PARAMS:
+F_sz_um: g_tp.min_w_nmos_ uses g_ip->F_sz_um, which is just -technology of cfg file
 '''
+
 NCH = 0
 PCH = 1
 RISE = 1
 is_dram_, is_dram = False, False
+VTHFA1 = 0.452
+VTHFA2 = 0.304
+VTHFA3 = 0.420
+VTHFA4 = 0.413
+VTHFA5 = 0.405
+VTHFA6 = 0.452
+VSINV = 0.452
+VTHCOMPINV = 0.437
+VTHMUXNAND = 0.548  # TODO: this constant must be revisited
+VTHEVALINV = 0.452
+VTHSENSEEXTDRV = 0.438
+FALL = 0
 
 '''
-Input parameters to dat file
+cell row and subarray row added but can be decomposed further
 '''
 C_g_ideal, C_fringe, C_junc, C_junc_sw, l_phy, F_sz_um, \
 n2p_drv_rt, nmos_effective_resistance_multiplier, Vdd, \
-I_on_n, wire_c_per_micron, wire_length, wire_delay = sp.symbols('''
+I_on_n, wire_c_per_micron, wire_length, wire_delay, vpp, \
+cell_h, cell_w, cam_cell_h, cam_cell_w, \
+subarray_num_rows, subarray_C_bl, \
+RWP, ERP, EWP, SCHP, \
+wire_local_R_per_um, \
+dram_cell_Vdd, dram_cell_C, dram_cell_I_on, V_b_sense, \
+dram_Vbitpre, dram_cell_a_w, \
+sram_Vbitpre, sram_cell_Vth, sram_cell_Vdd, sram_cell_nmos_w, sram_cell_a_w, \
+I_off_p, gm_sense_amp_latch, \
+Ndsam_lev_1, Ndsam_lev_2, \
+subarray_out_wire_repeater_size, subarray_out_wire_wire_length, subarray_out_wire_repeater_spacing, \
+subarray_out_wire_delay, \
+tag_assoc, tagbits, \
+dram_acc_Vth, peri_global_Vth  = sp.symbols('''
     C_g_ideal
     C_fringe
     C_junc
@@ -29,6 +73,41 @@ I_on_n, wire_c_per_micron, wire_length, wire_delay = sp.symbols('''
     wire_c_per_micron
     wire_length
     wire_delay
+    vpp
+    cell_h
+    cell_w
+    cam_cell_h
+    cam_cell_w  
+    subarray_num_rows
+    subarray_C_bl
+    RWP
+    ERP
+    EWP        
+    SCHP        
+    wire_local_R_per_um   
+    dram_cell_Vdd  
+    dram_cell_C          
+    dram_cell_I_on 
+    V_b_sense         
+    dram_Vbitpre 
+    dram_cell_a_w
+    sram_Vbitpre 
+    sram_cell_Vth
+    sram_cell_Vdd
+    sram_cell_nmos_w
+    sram_cell_a_w            
+    I_off_p
+    gm_sense_amp_latch
+    Ndsam_lev_1
+    Ndsam_lev_2
+    subarray_out_wire_repeater_size
+    subarray_out_wire_wire_length
+    subarray_out_wire_repeater_spacing 
+    subarray_out_wire_delay
+    tag_assoc
+    tagbits
+    dram_acc_Vth
+    peri_global_Vth
 ''')
 
 g_tp = {
@@ -47,11 +126,7 @@ g_tp = {
     "wire_delay": wire_delay
 }
 
-'''
-Main/overall function
-This uses mat.cc to calcuate delays, then uca.cc to accumulate delays
-Returns acess_time
-'''
+#This uses mat.cc to calcuate delays, then uca.cc to accumulate delays
 def get_access_time(g_tp, inrisetime):
   # Compute Delays: for order of calculations look at mat.cc
   r_predec_delay = get_predec_delay(g_tp, inrisetime)
@@ -66,13 +141,13 @@ def get_access_time(g_tp, inrisetime):
   sa_mux_lev_2_predec_delay = get_predec_delay(g_tp, inrisetime)
   sa_mux_lev_2_dec_delay = get_dec_delay(g_tp, sa_mux_lev_2_predec_delay)
 
-  bitline_delay = 0
-  sa_delay = 0
-  sub_array_out_drv_delay = 0
-  sub_array_out_wire_delay = 0
-  subarray_out_drv_htree_delay = sub_array_out_drv_delay + sub_array_out_wire_delay
+  bitline_delay = compute_bitline_delay(g_tp, inrisetime) # check if these inrisetime should be 0
+  sa_delay = compute_sa_delay(g_tp, inrisetime)
+  subarray_out_drv_delay = compute_subarray_out_drv(g_tp, inrisetime)
+  # sub_array_out_wire_delay = 0
+  subarray_out_drv_htree_delay = subarray_out_drv_delay + subarray_out_wire_delay
   htree_out_data_delay = 0
-  comparator_delay = 0
+  comparator_delay = compute_comparator_delay(g_tp, inrisetime)
   matchchline_delay = 0
 
   # Accumulate Delays uca.cc
@@ -115,6 +190,7 @@ def get_access_time(g_tp, inrisetime):
 The following are the helper functions in order
 to compute delays of the various components
 '''
+
 # htree.[cc/h]
 def get_htree_in_add_delay(g_tp):
     # CHECK delay of wire and whether to blackbox it
@@ -299,7 +375,338 @@ def get_dec_delay(g_tp, inrisetime):
         return ret_val
     else:
         return 0.0
+    
+'''
+Find out:
+where subarray.num_rows and C_bl are instantiated -> subarray.cc -> dp.num_r_subarray -> parameter.cc 1929, uses drain and gateC
+cam_cell.h and cell.h instantiaed 
+V_b_sense -> parameter.cc
 
+Vbitpre
+
+sram_Vdd -> infile low vs infile high?
+wire_local.R_per_um
+
+dram_cell_a_w
+sram_cell_a_w
+sram_cell_nmos_w -> this is F_sz_um in parameter.cc
+
+g_tp.dram_acc.Vth
+g_tp.sram_acc.Vdd
+g_tp.dram_acc.Vth
+'''
+camFlag = False
+deg_bl_muxing = 0 # CHECK ncdm in paramter.cc
+is_3d_mem = False
+def compute_bitline_delay(g_tp, inrisetime):
+    V_b_pre = 0.0
+    v_th_mem_cell = 0.0
+    V_wl = 0.0
+    tstep = 0.0
+    dynRdEnergy = 0.0
+    dynWriteEnergy = 0.0
+    blfloating_c = 0.0
+    R_cell_pull_down = 0.0
+    R_cell_acc = 0.0
+    r_dev = 0.0
+    # deg_senseamp_muxing = dp.Ndsam_lev_1 * dp.Ndsam_lev_2
+
+    R_b_metal = cam_cell_h if camFlag else cell_h * wire_local_R_per_um
+    R_bl = subarray_num_rows * R_b_metal
+    C_bl = subarray_C_bl
+
+    # leak_power_cc_inverters_sram_cell = 0
+    # gate_leak_power_cc_inverters_sram_cell = 0
+    # leak_power_acc_tr_RW_or_WR_port_sram_cell = 0
+    # leak_power_RD_port_sram_cell = 0
+    # gate_leak_power_RD_port_sram_cell = 0
+
+    if is_dram:
+        V_b_pre = dram_Vbitpre
+        v_th_mem_cell = dram_acc_Vth
+        V_wl = vpp
+        R_cell_acc = tr_R_on(g_tp, dram_cell_a_w, 'NCH', 1, True, True)
+        r_dev = dram_cell_Vdd / dram_cell_I_on + R_bl / 2
+    else:
+        V_b_pre = sram_Vbitpre
+        v_th_mem_cell = sram_cell_Vth
+        V_wl = sram_cell_Vdd
+        R_cell_pull_down = tr_R_on(g_tp, sram_cell_nmos_w, 'NCH', 1, False, True)
+        R_cell_acc = tr_R_on(g_tp, sram_cell_a_w, 'NCH', 1, False, True)
+
+        # Iport = cmos_Isub_leakage(g_tp.sram.cell_a_w, 0, 1, 'nmos', False, True)
+        # Iport_erp = cmos_Isub_leakage(g_tp.sram.cell_a_w, 0, 2, 'nmos', False, True)
+        # Icell = cmos_Isub_leakage(g_tp.sram.cell_nmos_w, g_tp.sram.cell_pmos_w, 1, 'inv', False, True) * 2
+
+        # leak_power_cc_inverters_sram_cell = Icell * (g_tp.sram_cell.Vcc_min if g_ip.array_power_gated else g_tp.sram_cell.Vdd)
+        # leak_power_acc_tr_RW_or_WR_port_sram_cell = Iport * (g_tp.sram.Vbitfloating if g_ip.bitline_floating else g_tp.sram_cell.Vdd)
+        # leak_power_RD_port_sram_cell = Iport_erp * (g_tp.sram.Vbitfloating if g_ip.bitline_floating else g_tp.sram_cell.Vdd)
+
+        # Ig_port_erp = cmos_Ig_leakage(g_tp.sram.cell_a_w, 0, 1, 'nmos', False, True)
+        # Ig_cell = cmos_Ig_leakage(g_tp.sram.cell_nmos_w, g_tp.sram.cell_pmos_w, 1, 'inv', False, True)
+
+        # gate_leak_power_cc_inverters_sram_cell = Ig_cell * g_tp.sram_cell.Vdd
+        # gate_leak_power_RD_port_sram_cell = Ig_port_erp * g_tp.sram_cell.Vdd
+    min_w_nmos_ = 3 * g_tp["F_sz_um"] / 2
+    w_nmos_b_mux = 6 * min_w_nmos_
+    w_iso = 12.5 * g_tp["F_sz_um"]
+    w_sense_n = 3.75 * g_tp["F_sz_um"]
+    w_sense_p = 7.5 * g_tp["F_sz_um"]
+    w_nmos_sa_mux = 6 * min_w_nmos_
+
+    C_drain_bit_mux = drain_C_(g_tp, w_nmos_b_mux, 'NCH', 1, 0, cam_cell_w if camFlag else cell_w / (2 * (RWP + ERP + SCHP)), is_dram)
+    R_bit_mux = tr_R_on(g_tp, w_nmos_b_mux, 'NCH', 1, is_dram)
+    C_drain_sense_amp_iso = drain_C_(g_tp, w_iso, 'PCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram)
+    R_sense_amp_iso = tr_R_on(g_tp, w_iso, 'PCH', 1, is_dram)
+    C_sense_amp_latch = gate_C(g_tp, w_sense_p + w_sense_n, 0, is_dram) + drain_C_(g_tp, w_sense_n, 'NCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram) + drain_C_(g_tp, w_sense_p, 'PCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram)
+    C_drain_sense_amp_mux = drain_C_(g_tp, w_nmos_sa_mux, 'NCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram)
+
+    if is_dram:
+        fraction = V_b_sense / ((dram_cell_Vdd / 2) * dram_cell_C / (dram_cell_C + C_bl))
+        tstep = fraction * r_dev * (1 if is_3d_mem == 1 else 2.3) * (dram_cell_C * (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux)) / (dram_cell_C + (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux))
+        # delay_writeback = tstep
+        # dynRdEnergy += (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) * (g_tp.dram_cell_Vdd / 2) * g_tp.dram_cell_Vdd
+        # dynWriteEnergy += (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch) * (g_tp.dram_cell_Vdd / 2) * g_tp.dram_cell_Vdd * num_act_mats_hor_dir * 100
+        # per_bitline_read_energy = (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) * (g_tp.dram_cell_Vdd / 2) * g_tp.dram_cell_Vdd
+    else:
+        if deg_bl_muxing > 1:
+            tau = (R_cell_pull_down + R_cell_acc) * (C_bl + 2 * C_drain_bit_mux + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) + R_bl * (C_bl / 2 + 2 * C_drain_bit_mux + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) + R_bit_mux * (C_drain_bit_mux + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) + R_sense_amp_iso * (C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux)
+            # dynRdEnergy += (C_bl + 2 * C_drain_bit_mux) * 2 * dp.V_b_sense * g_tp.sram_cell.Vdd
+            # blfloating_c += (C_bl + 2 * C_drain_bit_mux) * 2
+            # dynRdEnergy += (2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) * 2 * dp.V_b_sense * g_tp.sram_cell.Vdd / deg_bl_muxing
+            # blfloating_c += (2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) * 2
+            # dynWriteEnergy += (1.0 / deg_bl_muxing / deg_senseamp_muxing) * num_act_mats_hor_dir * (C_bl + 2 * C_drain_bit_mux) * g_tp.sram_cell.Vdd * g_tp.sram_cell.Vdd * 2
+        else:
+            tau = (R_cell_pull_down + R_cell_acc) * (C_bl + C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) + R_bl * C_bl / 2 + R_sense_amp_iso * (C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux)
+            # dynRdEnergy += (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) * 2 * dp.V_b_sense * g_tp.sram_cell.Vdd
+            # blfloating_c += (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux) * 2
+            # dynWriteEnergy += (1.0 / deg_bl_muxing / deg_senseamp_muxing) * num_act_mats_hor_dir * C_bl * g_tp.sram_cell.Vdd * g_tp.sram_cell.Vdd * 2
+
+        tstep = tau * sp.log(V_b_pre / (V_b_pre - V_b_sense))
+
+        # power_bitline.readOp.leakage = leak_power_cc_inverters_sram_cell + leak_power_acc_tr_RW_or_WR_port_sram_cell + leak_power_acc_tr_RW_or_WR_port_sram_cell * (RWP + EWP - 1) + leak_power_RD_port_sram_cell * ERP
+        # power_bitline.readOp.gate_leakage = gate_leak_power_cc_inverters_sram_cell + gate_leak_power_RD_port_sram_cell * ERP
+
+    m = V_wl / inrisetime
+
+    #CHECK
+    delay_bitline = sp.sqrt(2 * tstep * (V_wl - v_th_mem_cell) / m)
+    # if tstep <= (0.5 * (V_wl - v_th_mem_cell) / m):
+    #     delay_bitline = sp.sqrt(2 * tstep * (V_wl - v_th_mem_cell) / m)
+    # else:
+    #     delay_bitline = tstep + (V_wl - v_th_mem_cell) / (2 * m)
+
+    return delay_bitline
+
+import math
+
+def compute_sa_delay(g_tp, inrisetime):
+    min_w_nmos_ = 3 * g_tp["F_sz_um"] / 2
+    w_nmos_b_mux = 6 * min_w_nmos_
+    w_iso = 12.5 * g_tp["F_sz_um"]
+    w_sense_n = 3.75 * g_tp["F_sz_um"]
+    w_sense_p = 7.5 * g_tp["F_sz_um"]
+    w_nmos_sa_mux = 6 * min_w_nmos_
+
+    # Bitline circuitry leakage.
+    # Iiso = simplified_pmos_leakage(g_tp.w_iso, is_dram)
+    # IsenseEn = simplified_nmos_leakage(g_tp.w_sense_en, is_dram)
+    # IsenseN = simplified_nmos_leakage(g_tp.w_sense_n, is_dram)
+    # IsenseP = simplified_pmos_leakage(g_tp.w_sense_p, is_dram)
+
+    # lkgIdlePh = IsenseEn
+    # lkgReadPh = Iiso + IsenseN + IsenseP
+    # lkgIdle = lkgIdlePh
+    # leak_power_sense_amps_closed_page_state = lkgIdlePh * g_tp.peri_global.Vdd
+    # leak_power_sense_amps_open_page_state = lkgReadPh * g_tp.peri_global.Vdd
+
+    # Sense amplifier load.
+    C_ld = (gate_C(g_tp, w_sense_p + w_sense_n, 0, is_dram) +
+            drain_C_(g_tp, w_sense_n, 'NCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram) +
+            drain_C_(g_tp, w_sense_p, 'PCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram) +
+            drain_C_(g_tp, w_iso, 'PCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram) +
+            drain_C_(g_tp, w_nmos_sa_mux, 'NCH', 1, 0, cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram))
+    
+    tau = C_ld / gm_sense_amp_latch
+    #delay_sa = tau * math.log(g_tp.peri_global.Vdd / dp.V_b_sense)
+    delay_sa = tau * sp.log(Vdd / V_b_sense)
+    # power_sa.readOp.dynamic = C_ld * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd
+    # power_sa.readOp.leakage = lkgIdle * g_tp.peri_global.Vdd
+
+    # outrisetime = 0
+    return delay_sa
+
+'''
+Find Ndsam_lev_1, Ndsam_lev_2
+pmos_to_nmos_sz_ratio(is_dram)
+subarray_out_wire.repeater_size * (subarray_out_wire.wire_length / subarray_out_wire.repeater_spacing
+
+'''
+def compute_subarray_out_drv(g_tp, inrisetime):
+    # Initialization of variables
+   #p_to_n_sz_r = pmos_to_nmos_sz_ratio(is_dram)
+    p_to_n_sz_r = g_tp["n2p_drv_rt"]
+    min_w_nmos = 3 * g_tp["F_sz_um"] / 2
+    w_nmos_sa_mux = 6 * min_w_nmos
+    cell_h_def = 50 * g_tp["F_sz_um"]
+
+    # Delay through pass-transistor of first level of sense-amp mux to input of inverter-buffer
+    rd = tr_R_on(g_tp, w_nmos_sa_mux, NCH, 1, is_dram)
+    C_ld = (Ndsam_lev_1 * drain_C_(g_tp, w_nmos_sa_mux, NCH, 1, 0, camFlag * cam_cell_w if camFlag else cell_w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram) +
+            gate_C(g_tp, min_w_nmos + p_to_n_sz_r * min_w_nmos, 0.0, is_dram))
+    tf = rd * C_ld
+    this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+    # global delay_subarray_out_drv
+    delay_subarray_out_drv = 0
+    delay_subarray_out_drv += this_delay
+    inrisetime = this_delay / (1.0 - 0.5)
+    global power_subarray_out_drv
+    # power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd
+    # power_subarray_out_drv.readOp.leakage += 0  # Assuming leakage of the pass transistor is 0 for now
+    # power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(g_tp.w_nmos_sa_mux, 0, 1, nmos) * g_tp.peri_global.Vdd
+
+    # Delay through inverter-buffer to second level of sense-amp mux
+    rd = tr_R_on(g_tp, min_w_nmos, NCH, 1, is_dram)
+    C_ld = (drain_C_(g_tp, min_w_nmos, NCH, 1, 1, cell_h_def, is_dram) +
+            drain_C_(g_tp, p_to_n_sz_r * min_w_nmos, PCH, 1, 1, cell_h_def, is_dram) +
+            gate_C(g_tp, min_w_nmos + p_to_n_sz_r * min_w_nmos, 0.0, is_dram))
+    tf = rd * C_ld
+    this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+    delay_subarray_out_drv += this_delay
+    inrisetime = this_delay / (1.0 - 0.5)
+    # power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd
+    # power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(g_tp.min_w_nmos, p_to_n_sz_r * g_tp.min_w_nmos, 1, inv, is_dram) * g_tp.peri_global.Vdd
+    # power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(g_tp.min_w_nmos, p_to_n_sz_r * g_tp.min_w_nmos, 1, inv) * g_tp.peri_global.Vdd
+
+    # Delay of signal through pass-transistor to input of subarray output driver
+    rd = tr_R_on(g_tp, w_nmos_sa_mux, NCH, 1, is_dram)
+    C_ld = (Ndsam_lev_2 * drain_C_(g_tp, w_nmos_sa_mux, NCH, 1, 0, camFlag * cam_cell_w if camFlag else cell_w * deg_bl_muxing * Ndsam_lev_1 / (RWP + ERP + SCHP), is_dram) +
+            gate_C(g_tp, subarray_out_wire_repeater_size * (subarray_out_wire_wire_length / subarray_out_wire_repeater_spacing) * min_w_nmos * (1 + p_to_n_sz_r), 0.0, is_dram))
+    tf = rd * C_ld
+    this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+    delay_subarray_out_drv += this_delay
+    inrisetime = this_delay / (1.0 - 0.5)
+    # power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd
+    # power_subarray_out_drv.readOp.leakage += 0  # Assuming leakage of the pass transistor is 0 for now
+    # power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(g_tp.w_nmos_sa_mux, 0, 1, nmos) * g_tp.peri_global.Vdd
+
+    return delay_subarray_out_drv
+
+'''
+Check 
+peri_global_Vdd = g_tp["Vdd"]
+peri_global_Vth = g_tp["Vth"]
+'''
+def compute_comparator_delay(g_tp, inrisetime):
+
+    w_comp_inv_p1 = 12.5 * g_tp["F_sz_um"]
+    w_comp_inv_n1 = 7.5 * g_tp["F_sz_um"]
+    w_comp_inv_p2 = 25 * g_tp["F_sz_um"]
+    w_comp_inv_n2 = 15 * g_tp["F_sz_um"]
+    w_comp_inv_p3 = 50 * g_tp["F_sz_um"]
+    w_comp_inv_n3 = 30 * g_tp["F_sz_um"]
+    cell_h_def = 50 * g_tp["F_sz_um"]
+    w_eval_inv_p = 100 * g_tp["F_sz_um"]
+    w_eval_inv_n = 50 * g_tp["F_sz_um"]
+    w_comp_n = 12.5 * g_tp["F_sz_um"]
+    w_comp_p = 37.5 * g_tp["F_sz_um"]
+
+
+    A = tag_assoc
+
+    tagbits_ = tagbits // 4  # Assuming there are 4 quarter comparators. input tagbits is already a multiple of 4.
+
+    # First Inverter
+    Ceq = gate_C(g_tp, w_comp_inv_n2 + w_comp_inv_p2, 0, is_dram) + \
+          drain_C_(g_tp, w_comp_inv_p1, PCH, 1, 1, cell_h_def, is_dram) + \
+          drain_C_(g_tp, w_comp_inv_n1, NCH, 1, 1, cell_h_def, is_dram)
+    Req = tr_R_on(g_tp, w_comp_inv_p1, PCH, 1, is_dram)
+    tf = Req * Ceq
+    st1del = horowitz(inrisetime, tf, VTHCOMPINV, VTHCOMPINV, FALL)
+    nextinputtime = st1del / VTHCOMPINV
+    # power_comparator.readOp.dynamic += 0.5 * Ceq * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd * 4 * A
+
+    # For each degree of associativity there are 4 such quarter comparators
+    # lkgCurrent = cmos_Isub_leakage(g_tp.w_comp_inv_n1, g_tp.w_comp_inv_p1, 1, inv, is_dram) * 4 * A
+    # gatelkgCurrent = cmos_Ig_leakage(g_tp.w_comp_inv_n1, g_tp.w_comp_inv_p1, 1, inv, is_dram) * 4 * A
+
+    # Second Inverter
+    Ceq = gate_C(g_tp, w_comp_inv_n3 + w_comp_inv_p3, 0, is_dram) + \
+          drain_C_(g_tp, w_comp_inv_p2, PCH, 1, 1, cell_h_def, is_dram) + \
+          drain_C_(g_tp, w_comp_inv_n2, NCH, 1, 1, cell_h_def, is_dram)
+    Req = tr_R_on(g_tp, w_comp_inv_n2, NCH, 1, is_dram)
+    tf = Req * Ceq
+    st2del = horowitz(nextinputtime, tf, VTHCOMPINV, VTHCOMPINV, RISE)
+    nextinputtime = st2del / (1.0 - VTHCOMPINV)
+    # power_comparator.readOp.dynamic += 0.5 * Ceq * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd * 4 * A
+    # lkgCurrent += cmos_Isub_leakage(g_tp.w_comp_inv_n2, g_tp.w_comp_inv_p2, 1, inv, is_dram) * 4 * A
+    # gatelkgCurrent += cmos_Ig_leakage(g_tp.w_comp_inv_n2, g_tp.w_comp_inv_p2, 1, inv, is_dram) * 4 * A
+
+    # Third Inverter
+    Ceq = gate_C(g_tp, w_eval_inv_n + w_eval_inv_p, 0, is_dram) + \
+          drain_C_(g_tp, w_comp_inv_p3, PCH, 1, 1, cell_h_def, is_dram) + \
+          drain_C_(g_tp, w_comp_inv_n3, NCH, 1, 1, cell_h_def, is_dram)
+    Req = tr_R_on(g_tp, w_comp_inv_p3, PCH, 1, is_dram)
+    tf = Req * Ceq
+    st3del = horowitz(nextinputtime, tf, VTHCOMPINV, VTHEVALINV, FALL)
+    nextinputtime = st3del / (VTHEVALINV)
+    # power_comparator.readOp.dynamic += 0.5 * Ceq * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd * 4 * A
+    # lkgCurrent += cmos_Isub_leakage(g_tp.w_comp_inv_n3, g_tp.w_comp_inv_p3, 1, inv, is_dram) * 4 * A
+    # gatelkgCurrent += cmos_Ig_leakage(g_tp.w_comp_inv_n3, g_tp.w_comp_inv_p3, 1, inv, is_dram) * 4 * A
+
+    # Final Inverter (virtual ground driver) discharging compare part
+    r1 = tr_R_on(g_tp, w_comp_n, NCH, 2, is_dram)
+    r2 = tr_R_on(g_tp, w_eval_inv_n, NCH, 1, is_dram)  # was switch
+    c2 = (tagbits_) * (drain_C_(g_tp, w_comp_n, NCH, 1, 1, cell_h_def, is_dram) +
+                       drain_C_(g_tp, w_comp_n, NCH, 2, 1, cell_h_def, is_dram)) + \
+         drain_C_(g_tp, w_eval_inv_p, PCH, 1, 1, cell_h_def, is_dram) + \
+         drain_C_(g_tp, w_eval_inv_n, NCH, 1, 1, cell_h_def, is_dram)
+    c1 = (tagbits_) * (drain_C_(g_tp, w_comp_n, NCH, 1, 1, cell_h_def, is_dram) +
+                       drain_C_(g_tp, w_comp_n, NCH, 2, 1, cell_h_def, is_dram)) + \
+         drain_C_(g_tp, w_comp_p, PCH, 1, 1, cell_h_def, is_dram) + \
+         gate_C(g_tp, 0, 0, is_dram)
+    # power_comparator.readOp.dynamic += 0.5 * c2 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd * 4 * A
+    # power_comparator.readOp.dynamic += c1 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd * (A - 1)
+    # lkgCurrent += cmos_Isub_leakage(g_tp.w_eval_inv_n, g_tp.w_eval_inv_p, 1, inv, is_dram) * 4 * A
+    # lkgCurrent += cmos_Isub_leakage(g_tp.w_comp_n, g_tp.w_comp_n, 1, inv, is_dram) * 4 * A  # stack factor of 0.2
+
+    # gatelkgCurrent += cmos_Ig_leakage(g_tp.w_eval_inv_n, g_tp.w_eval_inv_p, 1, inv, is_dram) * 4 * A
+    # gatelkgCurrent += cmos_Ig_leakage(g_tp.w_comp_n, g_tp.w_comp_n, 1, inv, is_dram) * 4 * A  # for gate leakage this equals to a inverter
+
+    # Time to go to threshold of mux driver
+    tstep = (r2 * c2 + (r1 + r2) * c1) * math.log(1.0 / VTHMUXNAND)
+    # Take into account non-zero input rise time
+    peri_global_Vdd = g_tp["Vdd"]
+    m = peri_global_Vdd / nextinputtime
+    Tcomparatorni = 0.0
+
+    # Check Relational!
+    a = m
+    b = 2 * ((peri_global_Vdd * VTHEVALINV) - peri_global_Vth)
+    c = -2 * (tstep) * (peri_global_Vdd - peri_global_Vth) + \
+        1 / m * ((peri_global_Vdd * VTHEVALINV) - peri_global_Vth) * \
+        ((peri_global_Vdd * VTHEVALINV) - peri_global_Vth)
+    Tcomparatorni = (-b + sp.sqrt(b * b - 4 * a * c)) / (2 * a)
+    # if (tstep) <= (0.5 * (peri_global_Vdd - peri_global_Vth) / m):
+    #     a = m
+    #     b = 2 * ((peri_global_Vdd * VTHEVALINV) - peri_global_Vth)
+    #     c = -2 * (tstep) * (peri_global_Vdd - peri_global_Vth) + \
+    #         1 / m * ((peri_global_Vdd * VTHEVALINV) - peri_global_Vth) * \
+    #         ((peri_global_Vdd * VTHEVALINV) - peri_global_Vth)
+    #     Tcomparatorni = (-b + math.sqrt(b * b - 4 * a * c)) / (2 * a)
+    # else:
+    #     Tcomparatorni = (tstep) + (peri_global_Vdd + peri_global_Vth) / (2 * m) - \
+    #                     (peri_global_Vdd * VTHEVALINV) / m
+
+    delay_comparator = Tcomparatorni + st1del + st2del + st3del
+    # power_comparator.readOp.leakage = lkgCurrent * g_tp.peri_global.Vdd
+    # power_comparator.readOp.gate_leakage = gatelkgCurrent * g_tp.peri_global.Vdd
+
+    return Tcomparatorni / (1.0 - VTHMUXNAND)
+
+
+# wire.[cc/h]
+# TODO -> replace subarray_out_wire.repeater_size etc in compute_subarray_out_drv and compute_htree
 
 # logical_effort in components.[cc/h]
 def logical_effort(g_tp, num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dram_, is_wl_tr_, max_w_nmos):
@@ -353,7 +760,7 @@ def gate_C (g_tp, width, wirelength, _is_dram = False, _is_cell = False,
 
 def tr_R_on(g_tp, width, nchannel, stack, _is_dram = False, _is_cell = False, _is_wl_tr = False, _is_sleep_tx = False):
     # parameter.cc
-    R_nch_on = g_tp["nmos_effective_resistance_multiplier"] * g_tp["Vdd"] /g_tp["I_on_n"] # all dat inputs
+    R_nch_on = g_tp["nmos_effective_resistance_multiplier"] * g_tp["Vdd"] / g_tp["I_on_n"] # all dat inputs
     R_pch_on = g_tp["n2p_drv_rt"] * R_nch_on # dat input
     restrans = R_nch_on if nchannel else R_pch_on
     return stack * restrans / width
@@ -426,9 +833,14 @@ def horowitz(inputramptime, tf, vs1, vs2, rise):
     
     return td
 
-'''
-Sympy differentiation
-'''
+def simplified_pmos_leakage(
+    pwidth,
+    _is_dram,
+    _is_cell,
+    _is_wl_tr,
+    _is_sleep_tx):
+    return pwidth * I_off_p
+    
 if __name__ == "__main__" :
     inrisetime = sp.symbols('inrisetime')
     access_time_expr = get_access_time(g_tp, inrisetime)
@@ -436,9 +848,10 @@ if __name__ == "__main__" :
     #print(f"The derivative of the function is: {diff_access_time_C_g_ideal}")
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    filename = current_dir + "/diff_res_access_time.txt"
+    filename = current_dir + "/diff_result.txt"
     try:
         with open(filename, 'w') as file:
+            file.write("HELLO!\n")
             file.write(f"The derivative of the function is: {diff_access_time_C_g_ideal}\n")
         print(f"Output has been written to {filename}")
     except Exception as e:
