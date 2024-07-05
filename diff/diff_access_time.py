@@ -6,6 +6,9 @@ import os
 # lop, low oper power
 # parameterize many, convert 
 # hardware_symbols
+# verify delay first, then energy
+# param cfg
+# compare the access times with the actual run and symbolic
 
  #check
 '''
