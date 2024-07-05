@@ -855,6 +855,11 @@ def simplified_pmos_leakage(
 if __name__ == "__main__" :
     inrisetime = 0
 
+    # point to text file with sympy expression
+    # validate (expr_file, cfg_file, dat_file)
+    # return sympy.out, cacti.out
+    # save as mem_access_time.txt and buf_access_time.txt -> save in src/cacti for now
+    #codeisng calls sympfiy.cacti 
     substitutions = {
         C_g_ideal: 5.34e-16,
         C_fringe: 4e-17,
