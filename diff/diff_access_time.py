@@ -1,6 +1,13 @@
 import sympy as sp
 import math
 import os
+from const import *
+import re
+from get_dat import scan_dat
+
+
+#Set up wrappers around
+#Read cache.cfg
 
 
 # lop, low oper power
@@ -119,14 +126,15 @@ g_tp = {
     "C_junc": C_junc,
     "C_junc_sw": C_junc_sw,
     "l_phy": l_phy,
-    "F_sz_um": F_sz_um,
     "n2p_drv_rt": n2p_drv_rt,
     "nmos_effective_resistance_multiplier": nmos_effective_resistance_multiplier,
     "Vdd": Vdd,
     "I_on_n": I_on_n,
     "wire_c_per_micron": wire_c_per_micron,
     "wire_length": wire_length,
-    "wire_delay": wire_delay
+    "wire_delay": wire_delay,
+
+    "F_sz_um": 0.090 * 1000
 }
 
 #This uses mat.cc to calcuate delays, then uca.cc to accumulate delays
@@ -845,17 +853,74 @@ def simplified_pmos_leakage(
     return pwidth * I_off_p
     
 if __name__ == "__main__" :
-    inrisetime = sp.symbols('inrisetime')
-    access_time_expr = get_access_time(g_tp, inrisetime)
-    diff_access_time_C_g_ideal = sp.diff(access_time_expr, g_tp["C_g_ideal"])
-    #print(f"The derivative of the function is: {diff_access_time_C_g_ideal}")
+    inrisetime = 0
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    filename = current_dir + "/diff_result.txt"
-    try:
-        with open(filename, 'w') as file:
-            file.write("HELLO!\n")
-            file.write(f"The derivative of the function is: {diff_access_time_C_g_ideal}\n")
-        print(f"Output has been written to {filename}")
-    except Exception as e:
-        print(f"Error writing to file: {e}")
+    substitutions = {
+        C_g_ideal: 5.34e-16,
+        C_fringe: 4e-17,
+        C_junc: 1e-15,
+        C_junc_sw: 2.5e-16,
+        l_phy: 0.013,
+        F_sz_um: 0,
+        n2p_drv_rt: 2.41,
+        nmos_effective_resistance_multiplier: 1.49,
+        Vdd: 0.9,
+        I_on_n: 0.0022117,
+        wire_c_per_micron: 1.89209e-15,
+        wire_length: 1,
+        wire_delay: 0,
+        vpp: 0,
+        cell_h: 1,
+        cell_w: 1,
+        cam_cell_h: 1,
+        cam_cell_w: 1,
+        subarray_num_rows: 5,
+        subarray_C_bl: 5,
+        RWP: 1,
+        ERP: 1,
+        EWP: 1,
+        SCHP: 1,
+        wire_local_R_per_um: 4,
+        dram_cell_Vdd: 4,
+        dram_cell_C: 4,
+        dram_cell_I_on: 4,
+        V_b_sense: 4,
+        dram_Vbitpre: 3,
+        dram_cell_a_w: 3,
+        sram_Vbitpre: 3,
+        sram_cell_Vth: 0.21835,
+        sram_cell_Vdd: 0.9,
+        sram_cell_nmos_w: 1,
+        sram_cell_a_w: 1,
+        I_off_p: 1,
+        gm_sense_amp_latch: 4,
+        Ndsam_lev_1: 1,
+        Ndsam_lev_2: 1,
+        subarray_out_wire_repeater_size: 1,
+        subarray_out_wire_wire_length: 1,
+        subarray_out_wire_repeater_spacing: 1,
+        subarray_out_wire_delay: 1,
+        tag_assoc: 4,
+        tagbits: 4,
+        dram_acc_Vth: 4,
+        peri_global_Vth: 4
+    }
+    file = "../tech_params/180nm.dat"
+    scan_dat(substitutions, file, 0, 0, 360)
+    print(substitutions)
+
+    access_time_expr = get_access_time(g_tp, inrisetime)
+    result = access_time_expr.subs(substitutions)
+    print(result)
+    # diff_access_time_C_g_ideal = sp.diff(access_time_expr, g_tp["C_g_ideal"])
+    # #print(f"The derivative of the function is: {diff_access_time_C_g_ideal}")
+
+    # current_dir = os.path.dirname(os.path.abspath(__file__))
+    # filename = current_dir + "/diff_result.txt"
+    # try:
+    #     with open(filename, 'w') as file:
+    #         file.write("HELLO!\n")
+    #         file.write(f"The derivative of the function is: {diff_access_time_C_g_ideal}\n")
+    #     print(f"Output has been written to {filename}")
+    # except Exception as e:
+    #     print(f"Error writing to file: {e}")
