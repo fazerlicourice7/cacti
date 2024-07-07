@@ -1,7 +1,7 @@
-from component import Component
+from .component import Component
 import sympy as sp
-from const import *
-from parameter import g_tp
+from .const import *
+from .parameter import g_tp
 
 class NucaOrgT:
     def __init__(self):

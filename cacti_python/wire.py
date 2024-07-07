@@ -1,9 +1,9 @@
-from decoder import *
-from parameter import g_tp
-from parameter import *
-from const import *
-from component import Component
-from cacti_interface import *
+from .decoder import *
+from .parameter import g_tp
+from .parameter import *
+from .const import *
+from .component import Component
+from .cacti_interface import *
 
 class Wire(Component):
     global_comp = Component()

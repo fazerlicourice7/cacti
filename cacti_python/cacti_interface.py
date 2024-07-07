@@ -1,6 +1,6 @@
 from typing import List
 import re
-from parameter import g_ip, InputParameter
+from .parameter import g_ip, InputParameter
 import sympy as sp
 
 class PowerComponents:

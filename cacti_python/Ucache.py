@@ -1,13 +1,13 @@
 import math
 from typing import List
 from threading import Thread
-from cacti_interface import *
-from cacti_interface import MemArray
-from nuca import NucaOrgT
-from parameter import g_ip, g_tp
-from parameter import *
-from uca import UCA
-from parameter import _log2
+from .cacti_interface import *
+from .cacti_interface import MemArray
+from .nuca import NucaOrgT
+from .parameter import g_ip, g_tp
+from .parameter import *
+from .uca import UCA
+from .parameter import _log2
 import sympy as sp
 
 BIGNUM = float('inf')

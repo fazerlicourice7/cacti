@@ -1,15 +1,15 @@
 import math
 import sys
-from const import *
-from decoder import *
-from parameter import g_tp
-from parameter import g_ip
-from parameter import *
-from const import *
-from component import compute_gate_area
-from component import *
-from cacti_interface import *
-from area import *
+from .const import *
+from .decoder import *
+from .parameter import g_tp
+from .parameter import g_ip
+from .parameter import *
+from .const import *
+from .component import compute_gate_area
+from .component import *
+from .cacti_interface import *
+from .area import *
 
 
 class SleepTx(Component):

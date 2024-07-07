@@ -3,12 +3,12 @@
 import math
 from math import ceil, log, pow
 import sys
-from const import *
-from decoder import *
-from basic_circuit import *
-from parameter import *
-from const import *
-from component import *
+from .const import *
+from .decoder import *
+#from .basic_circuit import *
+from .parameter import *
+from .const import *
+from .component import *
 import sympy as sp
 
 class Subarray(Component):

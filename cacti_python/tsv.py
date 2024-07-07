@@ -1,8 +1,8 @@
 import math
-from component import *
-from parameter import g_tp
-from parameter import *
-from const import MAX_NUMBER_GATES_STAGE
+from .component import *
+from .parameter import g_tp
+from .parameter import *
+from .const import MAX_NUMBER_GATES_STAGE
 
 
 class TSV(Component):

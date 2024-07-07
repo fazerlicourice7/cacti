@@ -1,10 +1,10 @@
-from decoder import *
-from parameter import *
-from const import *
-from component import *
-from wire import *
-from subarray import *
-from powergating import *
+from .decoder import *
+from .parameter import *
+from .const import *
+from .component import *
+from .wire import *
+from .subarray import *
+from .powergating import *
 
 import sympy as sp
 

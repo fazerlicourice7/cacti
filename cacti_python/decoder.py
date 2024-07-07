@@ -1,23 +1,13 @@
 import math
-from area import Area
-from parameter import *
-# from basic_circuit import _log2
-# from basic_circuit import tsv_resistance
-# from basic_circuit import tsv_capacitance
-# from basic_circuit import gate_C
-# from basic_circuit import drain_C_
-# from basic_circuit import tsv_area
-# from basic_circuit import tr_R_on
-# from basic_circuit import horowitz
-# from basic_circuit import wire_resistance
-# from basic_circuit import wire_capacitance
-from parameter import _log2
-from cacti_interface import *
-from powergating import *
-from component import *
-from powergating import SleepTx
-from parameter import g_tp
-from parameter import g_ip
+from .area import Area
+from .parameter import *
+from .parameter import _log2
+from .cacti_interface import *
+from .powergating import *
+from .component import *
+from .powergating import SleepTx
+from .parameter import g_tp
+from .parameter import g_ip
 
 class Decoder(Component):
     def __init__(self, _num_dec_signals, flag_way_select, _C_ld_dec_out, _R_wire_dec_out, fully_assoc_, is_dram_, is_wl_tr_, cell_):

@@ -1,11 +1,11 @@
 import math
 from math import ceil, log, pow
 import sys
-from const import *
-from parameter import g_tp
-from parameter import g_ip
-from parameter import *
-from cacti_interface import PowerDef
+from .const import *
+from .parameter import g_tp
+from .parameter import g_ip
+from .parameter import *
+from .cacti_interface import PowerDef
 
 
 # Assuming g_ip and g_tp are global configurations provided elsewhere in the code

@@ -1,8 +1,8 @@
 import math
 import enum
-from parameter import g_tp
-from component import *
-from wire import Wire
+from .parameter import g_tp
+from .component import *
+from .wire import Wire
 
 class HtreeType(enum.Enum):
     Add_htree = 1

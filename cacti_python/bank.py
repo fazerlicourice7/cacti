@@ -1,11 +1,11 @@
-from htree import Htree2
-from parameter import g_ip
-from parameter import _log2
-from parameter import *
-from area import Area
-from mat import Mat
+from .htree import Htree2
+from .parameter import g_ip
+from .parameter import _log2
+from .parameter import *
+from .area import Area
+from .mat import Mat
 import enum
-from component import Component
+from .component import Component
 
 class HtreeType(enum.Enum):
     Add_htree = 1

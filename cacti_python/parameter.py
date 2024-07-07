@@ -2,74 +2,74 @@ import math
 import re
 import sys
 import os
-from const import *
-from area import Area
+from .const import *
+from .area import Area
 import sympy as sp
 
 
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src')))
-# from hw_symbols import symbol_table as sympy_var
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from hw_symbols import symbol_table as sympy_var
 
-sympy_var = {
-    'C_g_ideal': sp.symbols('C_g_ideal'),
-    'C_fringe': sp.symbols('C_fringe'),
-    'C_junc': sp.symbols('C_junc'),
-    'C_junc_sw': sp.symbols('C_junc_sw'),
-    'l_phy': sp.symbols('l_phy'),
-    'l_elec': sp.symbols('l_elec'),
-    'nmos_effective_resistance_multiplier': sp.symbols('nmos_effective_resistance_multiplier'),
-    'Vdd': sp.symbols('Vdd'),
-    'Vth': sp.symbols('Vth'),
-    'Vdsat': sp.symbols('Vdsat'),
-    'I_on_n': sp.symbols('I_on_n'),
-    'I_on_p': sp.symbols('I_on_p'),
-    'I_off_n': sp.symbols('I_off_n'),
-    'I_g_on_n': sp.symbols('I_g_on_n'),
-    'C_ox': sp.symbols('C_ox'),
-    't_ox': sp.symbols('t_ox'),
-    'n2p_drv_rt': sp.symbols('n2p_drv_rt'),
-    'lch_lk_rdc': sp.symbols('lch_lk_rdc'),
-    'Mobility_n': sp.symbols('Mobility_n'),
-    'gmp_to_gmn_multiplier': sp.symbols('gmp_to_gmn_multiplier'),
-    'vpp': sp.symbols('vpp'),
-    'Wmemcella': sp.symbols('Wmemcella'),
-    'Wmemcellpmos': sp.symbols('Wmemcellpmos'),
-    'Wmemcellnmos': sp.symbols('Wmemcellnmos'),
-    'area_cell': sp.symbols('area_cell'),
-    'asp_ratio_cell': sp.symbols('asp_ratio_cell'),
-    'vdd_cell': sp.symbols('vdd_cell'),
-    'dram_cell_I_on': sp.symbols('dram_cell_I_on'),
-    'dram_cell_Vdd': sp.symbols('dram_cell_Vdd'),
-    'dram_cell_C': sp.symbols('dram_cell_C'),
-    'dram_cell_I_off_worst_case_len_temp': sp.symbols('dram_cell_I_off_worst_case_len_temp'),
-    'logic_scaling_co_eff': sp.symbols('logic_scaling_co_eff'),
-    'core_tx_density': sp.symbols('core_tx_density'),
-    'sckt_co_eff': sp.symbols('sckt_co_eff'),
-    'chip_layout_overhead': sp.symbols('chip_layout_overhead'),
-    'macro_layout_overhead': sp.symbols('macro_layout_overhead'),
-    'sense_delay': sp.symbols('sense_delay'),
-    'sense_dy_power': sp.symbols('sense_dy_power'),
-    'wire_pitch': sp.symbols('wire_pitch'),
-    'barrier_thickness': sp.symbols('barrier_thickness'),
-    'dishing_thickness': sp.symbols('dishing_thickness'),
-    'alpha_scatter': sp.symbols('alpha_scatter'),
-    'aspect_ratio': sp.symbols('aspect_ratio'),
-    'miller_value': sp.symbols('miller_value'),
-    'horiz_dielectric_constant': sp.symbols('horiz_dielectric_constant'),
-    'vert_dielectric_constant': sp.symbols('vert_dielectric_constant'),
-    'ild_thickness': sp.symbols('ild_thickness'),
-    'fringe_cap': sp.symbols('fringe_cap'),
-    'resistivity': sp.symbols('resistivity'),
-    'wire_r_per_micron': sp.symbols('wire_r_per_micron'),
-    'wire_c_per_micron': sp.symbols('wire_c_per_micron'),
-    'tsv_pitch': sp.symbols('tsv_pitch'),
-    'tsv_diameter': sp.symbols('tsv_diameter'),
-    'tsv_length': sp.symbols('tsv_length'),
-    'tsv_dielec_thickness': sp.symbols('tsv_dielec_thickness'),
-    'tsv_contact_resistance': sp.symbols('tsv_contact_resistance'),
-    'tsv_depletion_width': sp.symbols('tsv_depletion_width'),
-    'tsv_liner_dielectric_cons': sp.symbols('tsv_liner_dielectric_cons')
-}
+# sympy_var = {
+#     'C_g_ideal': sp.symbols('C_g_ideal'),
+#     'C_fringe': sp.symbols('C_fringe'),
+#     'C_junc': sp.symbols('C_junc'),
+#     'C_junc_sw': sp.symbols('C_junc_sw'),
+#     'l_phy': sp.symbols('l_phy'),
+#     'l_elec': sp.symbols('l_elec'),
+#     'nmos_effective_resistance_multiplier': sp.symbols('nmos_effective_resistance_multiplier'),
+#     'Vdd': sp.symbols('Vdd'),
+#     'Vth': sp.symbols('Vth'),
+#     'Vdsat': sp.symbols('Vdsat'),
+#     'I_on_n': sp.symbols('I_on_n'),
+#     'I_on_p': sp.symbols('I_on_p'),
+#     'I_off_n': sp.symbols('I_off_n'),
+#     'I_g_on_n': sp.symbols('I_g_on_n'),
+#     'C_ox': sp.symbols('C_ox'),
+#     't_ox': sp.symbols('t_ox'),
+#     'n2p_drv_rt': sp.symbols('n2p_drv_rt'),
+#     'lch_lk_rdc': sp.symbols('lch_lk_rdc'),
+#     'Mobility_n': sp.symbols('Mobility_n'),
+#     'gmp_to_gmn_multiplier': sp.symbols('gmp_to_gmn_multiplier'),
+#     'vpp': sp.symbols('vpp'),
+#     'Wmemcella': sp.symbols('Wmemcella'),
+#     'Wmemcellpmos': sp.symbols('Wmemcellpmos'),
+#     'Wmemcellnmos': sp.symbols('Wmemcellnmos'),
+#     'area_cell': sp.symbols('area_cell'),
+#     'asp_ratio_cell': sp.symbols('asp_ratio_cell'),
+#     'vdd_cell': sp.symbols('vdd_cell'),
+#     'dram_cell_I_on': sp.symbols('dram_cell_I_on'),
+#     'dram_cell_Vdd': sp.symbols('dram_cell_Vdd'),
+#     'dram_cell_C': sp.symbols('dram_cell_C'),
+#     'dram_cell_I_off_worst_case_len_temp': sp.symbols('dram_cell_I_off_worst_case_len_temp'),
+#     'logic_scaling_co_eff': sp.symbols('logic_scaling_co_eff'),
+#     'core_tx_density': sp.symbols('core_tx_density'),
+#     'sckt_co_eff': sp.symbols('sckt_co_eff'),
+#     'chip_layout_overhead': sp.symbols('chip_layout_overhead'),
+#     'macro_layout_overhead': sp.symbols('macro_layout_overhead'),
+#     'sense_delay': sp.symbols('sense_delay'),
+#     'sense_dy_power': sp.symbols('sense_dy_power'),
+#     'wire_pitch': sp.symbols('wire_pitch'),
+#     'barrier_thickness': sp.symbols('barrier_thickness'),
+#     'dishing_thickness': sp.symbols('dishing_thickness'),
+#     'alpha_scatter': sp.symbols('alpha_scatter'),
+#     'aspect_ratio': sp.symbols('aspect_ratio'),
+#     'miller_value': sp.symbols('miller_value'),
+#     'horiz_dielectric_constant': sp.symbols('horiz_dielectric_constant'),
+#     'vert_dielectric_constant': sp.symbols('vert_dielectric_constant'),
+#     'ild_thickness': sp.symbols('ild_thickness'),
+#     'fringe_cap': sp.symbols('fringe_cap'),
+#     'resistivity': sp.symbols('resistivity'),
+#     'wire_r_per_micron': sp.symbols('wire_r_per_micron'),
+#     'wire_c_per_micron': sp.symbols('wire_c_per_micron'),
+#     'tsv_pitch': sp.symbols('tsv_pitch'),
+#     'tsv_diameter': sp.symbols('tsv_diameter'),
+#     'tsv_length': sp.symbols('tsv_length'),
+#     'tsv_dielec_thickness': sp.symbols('tsv_dielec_thickness'),
+#     'tsv_contact_resistance': sp.symbols('tsv_contact_resistance'),
+#     'tsv_depletion_width': sp.symbols('tsv_depletion_width'),
+#     'tsv_liner_dielectric_cons': sp.symbols('tsv_liner_dielectric_cons')
+# }
 
 def contains_any_symbol(expr):
     # Extract all the symbols from the dictionary
@@ -1056,6 +1056,8 @@ class TechnologyParameter:
             print("Invalid technology nodes")
             exit(0)
 
+        in_file_lo = "cacti/" + in_file_lo
+        in_file_hi = "cacti/" + in_file_hi
         return tech_lo, in_file_lo, tech_hi, in_file_hi
 
     def assign_tsv(self, in_file):
@@ -1116,6 +1118,9 @@ class TechnologyParameter:
 
         alpha = 1 if tech_lo == tech_hi else (technology - tech_hi) / (tech_lo - tech_hi)
         print(in_file_lo)
+        # TODO FILE CHECK
+        # in_file_lo = "cacti/" + in_file_lo
+        # print(in_file_lo)
         with open(in_file_lo, "r") as fp:
             lines = fp.readlines()
 

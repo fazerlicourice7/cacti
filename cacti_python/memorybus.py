@@ -1,9 +1,9 @@
-from parameter import g_tp
-from decoder import *
-from component import *
-from memorybus import *
-from wire import *
-from const import *
+from .parameter import g_tp
+from .decoder import *
+from .component import *
+from .memorybus import *
+from .wire import *
+from .const import *
 import sympy as sp
 
 class Memorybus(Component):

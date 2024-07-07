@@ -1,9 +1,9 @@
 import math
-from bank import Bank
-from htree import Htree2
-from component import *
-from memorybus import Memorybus
-from tsv import TSV
+from .bank import Bank
+from .htree import Htree2
+from .component import *
+from .memorybus import Memorybus
+from .tsv import TSV
 import sympy as sp
 
 # used to have component?
