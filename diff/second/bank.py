@@ -15,10 +15,11 @@ class HtreeType(enum.Enum):
     Search_out_htree = 5
 
 class Bank(Component):
-    def __init__(self, dyn_p):
+    def __init__(self, dyn_p, mat):
         super().__init__()
         self.dp = dyn_p
-        self.mat = Mat(self.dp)
+        self.mat = mat
+        # self.mat = Mat(self.dp)
         self.num_addr_b_mat = dyn_p.number_addr_bits_mat
         self.num_mats_hor_dir = dyn_p.num_mats_h_dir
         self.num_mats_ver_dir = dyn_p.num_mats_v_dir

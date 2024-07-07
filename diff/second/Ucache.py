@@ -911,7 +911,7 @@ def calculate_time_single(
         ptr_array.subarray_height = uca.bank.mat.subarray.area.h
         ptr_array.subarray_length = uca.bank.mat.subarray.area.w
         ptr_array.power = uca.power
-        ptr_array.delay_senseamp_mux_decoder = sp.Max(uca.delay_array_to_sa_mux_lev_1_decoder, uca.delay_array_to_sa_mux_lev_2_decoder)
+        ptr_array.delay_senseamp_mux_decoder = handle_nan(uca.delay_array_to_sa_mux_lev_1_decoder, uca.delay_array_to_sa_mux_lev_2_decoder)
         ptr_array.delay_before_subarray_output_driver = uca.delay_before_subarray_output_driver
         ptr_array.delay_from_subarray_output_driver_to_output = uca.delay_from_subarray_out_drv_to_out
         ptr_array.delay_route_to_bank = uca.htree_in_add.delay

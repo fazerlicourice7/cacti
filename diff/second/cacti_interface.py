@@ -252,7 +252,7 @@ class uca_org_t:
             self.cache_ht = self.data_array2.height
             self.cache_len = self.data_array2.width
         else:
-            self.cache_ht = sp.Max(self.tag_array2.height, self.data_array2.height)
+            self.cache_ht = handle_nan(self.tag_array2.height, self.data_array2.height)
             self.cache_len = self.tag_array2.width + self.data_array2.width
         self.area = self.cache_ht * self.cache_len
 

@@ -66,9 +66,6 @@ sympy_var = {
 }
 
 def contains_any_symbol(expr):
-    if isinstance(expr, int):
-        return False
-    
     # Extract all the symbols from the dictionary
     symbols = sympy_var.values()
     
@@ -1753,11 +1750,16 @@ class DeviceType:
 
         self.C_overlap = 0.2 * self.C_g_ideal
         if tech_flavor >= 3:
-            if(self.I_on_n):
-                self.R_nch_on = nmos_effective_resistance_multiplier * g_tp.vpp / self.I_on_n
+            if(self.I_on_n): # TODO Check values of I_on_n
+                self.R_nch_on = self.nmos_effective_resistance_multiplier * g_tp.vpp / self.I_on_n
         else:
-            if(self.I_on_n):
-                self.R_nch_on = nmos_effective_resistance_multiplier * self.Vdd / self.I_on_n
+            if(self.I_on_n): # TODO Check values of I_on_n
+                self.R_nch_on = self.nmos_effective_resistance_multiplier * self.Vdd / self.I_on_n
+        # CHECKPOINT _pch_on issue
+        # print(f"nmos_effective_resistance_multiplier {nmos_effective_resistance_multiplier}")
+        # print(f"tech_flavor {tech_flavor}")
+        # print(f"self.I_on_n {self.I_on_n}")
+        # print(f"self.R_nch {self.R_nch_on}")
         self.R_pch_on = self.n_to_p_eff_curr_drv_ratio * self.R_nch_on
         self.I_off_p = self.I_off_n
         self.I_g_on_p = self.I_g_on_n
@@ -1949,6 +1951,15 @@ class InterconnectType:
 
 class MemoryType:
     def __init__(self):
+        self.b_w = 0
+        self.b_h = 0
+        self.cell_a_w = 0
+        self.cell_pmos_w = 0
+        self.cell_nmos_w = 0
+        self.Vbitpre = 0
+        self.Vbitfloating = 0
+        self.area_cell = 0
+        self.asp_ratio_cell = 0
         self.reset()
 
     def reset(self):
@@ -1963,6 +1974,7 @@ class MemoryType:
         self.asp_ratio_cell = 0
 
     def assign(self, in_file, tech_flavor, cell_type):
+        print("ASSIGN MEMORY")
         try:
             with open(in_file, "r") as fp:
                 lines = fp.readlines()
@@ -2021,6 +2033,8 @@ class MemoryType:
         self.cell_nmos_w *= g_ip.F_sz_um
         if cell_type != 2:
             self.area_cell *= (g_ip.F_sz_um * g_ip.F_sz_um)
+
+        print(f"DEBUG: {self.cell_a_w}")
 
         #TODO 1028-1030
         self.b_w = sp.sqrt(self.area_cell / self.asp_ratio_cell)
@@ -2202,6 +2216,7 @@ class DynamicParameter:
         self.cell = Area()
         self.cam_cell = Area()
         self.is_valid = False
+        print("SETING UP DYNAMIC PARAM")
         self.init_parameters()
 
     def init_parameters(self):
@@ -2215,28 +2230,56 @@ class DynamicParameter:
         capacity_per_die = g_ip.cache_sz / NUMBER_STACKED_DIE_LAYERS
         wire_local = g_tp.wire_local
         
+        print("HELLO!")
         if self.pure_cam:
             self.init_CAM()
+            print("init_CAM")
             return
 
         if self.fully_assoc:
             self.init_FA()
+            print("init_FA")
             return
 
         if not self.calc_subarr_rc(capacity_per_die):
+            print("init rc")
             return
+        
+        print("HELLO4!")
 
         if self.is_tag:
             self.cell.h = g_tp.sram.b_h + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + g_ip.num_rd_ports + g_ip.num_wr_ports)
             self.cell.w = g_tp.sram.b_w + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + g_ip.num_wr_ports + (g_ip.num_rd_ports - g_ip.num_se_rd_ports)) + wire_local.pitch * g_ip.num_se_rd_ports
+            print("cell_tag!")
         else:
             if self.is_dram:
                 self.cell.h = g_tp.dram.b_h
                 self.cell.w = g_tp.dram.b_w
+                print(f"is_dram {self.cell.h}")
+                print(f"is_dram {self.cell.w}")
             else:
                 self.cell.h = g_tp.sram.b_h + 2 * wire_local.pitch * (g_ip.num_wr_ports + g_ip.num_rw_ports - 1 + g_ip.num_rd_ports)
                 self.cell.w = g_tp.sram.b_w + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + (g_ip.num_rd_ports - g_ip.num_se_rd_ports) + g_ip.num_wr_ports) + g_tp.wire_local.pitch * g_ip.num_se_rd_ports
+                
+                print(f"g_tp.sram.b_h: {g_tp.sram.b_h}")
+                print(f"wire_local.pitch: {wire_local.pitch}")
+                print(f"g_ip.num_wr_ports: {g_ip.num_wr_ports}")
+                print(f"g_ip.num_rw_ports: {g_ip.num_rw_ports}")
+                print(f"g_ip.num_rd_ports: {g_ip.num_rd_ports}")
+                print()
 
+                print(f"g_tp.sram.b_w: {g_tp.sram.b_w}")
+                print(f"wire_local.pitch: {wire_local.pitch}")
+                print(f"g_ip.num_rw_ports: {g_ip.num_rw_ports}")
+                print(f"g_ip.num_rd_ports: {g_ip.num_rd_ports}")
+                print(f"g_ip.num_se_rd_ports: {g_ip.num_se_rd_ports}")
+                print(f"g_ip.num_wr_ports: {g_ip.num_wr_ports}")
+                print()
+
+                print(f"not is_dram {self.cell.h}")
+                print(f"not is_dram {self.cell.h}")
+
+        
         c_b_metal = self.cell.h * wire_local.C_per_um
 
         if self.is_dram:
@@ -2266,6 +2309,7 @@ class DynamicParameter:
         self.num_mats_h_dir = sp.Max(self.Ndwl // 2, 1)
         self.num_mats_v_dir = sp.Max(self.Ndbl // 2, 1)
         self.num_mats = self.num_mats_h_dir * self.num_mats_v_dir
+        print(f'NUM_MATS {self.num_mats}')
         self.num_do_b_mat = sp.Max((self.num_subarrays / self.num_mats) * self.num_c_subarray / (self.deg_bl_muxing * self.Ndsam_lev_1 * self.Ndsam_lev_2), 1)
 
         # TODO relational
@@ -2285,13 +2329,16 @@ class DynamicParameter:
                 else:
                     self.num_do_b_subbank = g_ip.out_w
                     deg_sa_mux_l1_non_assoc = self.Ndsam_lev_1 / g_ip.data_assoc
-                    if deg_sa_mux_l1_non_assoc < 1:
+                    # TODO relational
+                    simplify_deg_sa_mux_l1_non_assoc = sp.simplify(deg_sa_mux_l1_non_assoc)
+                    if simplify_deg_sa_mux_l1_non_assoc.is_zero or simplify_deg_sa_mux_l1_non_assoc.is_negative:
                         return
+                    # if deg_sa_mux_l1_non_assoc < 1:
+                    #     return
         else:
             self.num_do_b_subbank = self.tagbits * g_ip.tag_assoc
-            # TODO relational
-            # if self.num_do_b_mat < self.tagbits:
-            #     return
+            if self.num_do_b_mat < self.tagbits:
+                return
             deg_sa_mux_l1_non_assoc = self.Ndsam_lev_1
 
         self.deg_senseamp_muxing_non_associativity = deg_sa_mux_l1_non_assoc
@@ -2328,12 +2375,10 @@ class DynamicParameter:
         self.num_di_b_subbank = self.num_di_b_mat * self.num_act_mats_hor_dir
         self.num_si_b_subbank = self.num_si_b_mat
 
-        # TODO check log_2
         num_addr_b_row_dec = sp.log(self.num_r_subarray, 2)
         if self.fully_assoc or self.pure_cam:
             num_addr_b_row_dec += _log2(self.num_subarrays // self.num_mats)
         number_subbanks = self.num_mats // self.num_act_mats_hor_dir
-        # TODO check log_2
         self.number_subbanks_decode = sp.log(number_subbanks, 2)
 
         self.num_rw_ports = g_ip.num_rw_ports
@@ -2341,7 +2386,11 @@ class DynamicParameter:
         self.num_wr_ports = g_ip.num_wr_ports
         self.num_se_rd_ports = g_ip.num_se_rd_ports
         self.num_search_ports = g_ip.num_search_ports
-    
+
+        print("BruHHSKJnhd")
+        print(deg_sa_mux_l1_non_assoc)
+        
+        # TODO had to make int
         deg_sa_mux_l1_non_assoc = deg_sa_mux_l1_non_assoc
 
         if self.is_dram and self.is_main_mem:
@@ -2351,7 +2400,7 @@ class DynamicParameter:
                 print(f"parameter.cc: num_addr_b_row_dec = {num_addr_b_row_dec}")
                 print(f"parameter.cc: num_addr_b_mux_sel = {_log2(self.deg_bl_muxing) + _log2(deg_sa_mux_l1_non_assoc) + _log2(self.Ndsam_lev_2)}")
         else:
-            self.number_addr_bits_mat = num_addr_b_row_dec + sp.log(self.deg_bl_muxing, 2) + sp.log(deg_sa_mux_l1_non_assoc, 2) + sp.log(self.Ndsam_lev_2, 2)
+            self.number_addr_bits_mat = num_addr_b_row_dec + _log2(self.deg_bl_muxing) + sp.log(deg_sa_mux_l1_non_assoc, 2) + _log2(self.Ndsam_lev_2)
 
         if self.is_tag:
             self.num_di_b_bank_per_port = self.tagbits
@@ -2602,8 +2651,8 @@ class DynamicParameter:
         self.num_so_b_bank_per_port += sp.ceiling(self.num_so_b_bank_per_port / num_bits_per_ecc_b_)
 
     def calc_subarr_rc(self, capacity_per_die):
-        # TODO relational
         if self.Ndwl < 2 or self.Ndbl < 2:
+            print("Ndwl and Ndbl set less than 2 paramter.py")
             return False
 
         if self.is_dram and not self.is_tag and self.Ndcm > 1:
@@ -2613,11 +2662,8 @@ class DynamicParameter:
             if g_ip.specific_tag:
                 self.tagbits = g_ip.tag_w
             else:
-                # TODO check int
-                self.tagbits = ADDRESS_BITS + EXTRA_TAG_BITS - _log2(int(capacity_per_die)) + _log2(g_ip.tag_assoc * 2 - 1)
-            
-            if(self.Nspd == 0):
-                return False
+                self.tagbits = ADDRESS_BITS + EXTRA_TAG_BITS - _log2(capacity_per_die) + _log2(g_ip.tag_assoc * 2 - 1)
+
             self.num_r_subarray = sp.ceiling(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * g_ip.tag_assoc * self.Ndbl * self.Nspd))
             self.num_c_subarray = sp.ceiling((self.tagbits * g_ip.tag_assoc * self.Nspd / self.Ndwl))
         else:
@@ -2633,7 +2679,9 @@ class DynamicParameter:
                     print(f"parameter.cc: num_r_subarray = {self.num_r_subarray}")
                     print(f"parameter.cc: num_c_subarray = {self.num_c_subarray}")
 
-        # TODO relational
+        print(self.num_r_subarray)
+        print(self.num_c_subarray)
+        # TODO RELATIONAL
         # if self.num_r_subarray < MINSUBARRAYROWS or self.num_r_subarray == 0 or self.num_r_subarray > MAXSUBARRAYROWS:
         #     return False
         # if self.num_c_subarray < MINSUBARRAYCOLS or self.num_c_subarray > MAXSUBARRAYCOLS:
@@ -2776,7 +2824,7 @@ def is_pow2(val):
     else:
         return (_log2(val) != _log2(val - 1))
 
-def _log2(num):    
+def _log2(num):
     if num == 0:
         raise ValueError("log0?")
     log2 = 0
@@ -2893,7 +2941,9 @@ def drain_C_(width, nchannel, stack, next_arg_thresh_folding_width_or_height_cel
 
     if next_arg_thresh_folding_width_or_height_cell == 0:
         w_folded_tr = fold_dimension
+        # print(f"fold_dimension {w_folded_tr}")
     else:
+        # print("else fold_dimension")
         h_tr_region = fold_dimension - 2 * g_tp.HPOWERRAIL
         ratio_p_to_n = 2.0 / (2.0 + 1.0)
         if nchannel:
@@ -2901,15 +2951,16 @@ def drain_C_(width, nchannel, stack, next_arg_thresh_folding_width_or_height_cel
         else:
             w_folded_tr = ratio_p_to_n * (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)
 
-    # TODO RELATIONAL and zero
-    if(w_folded_tr == 0):
-        num_folded_tr = sp.ceiling(width)
-    else:
-        num_folded_tr = sp.ceiling(width / w_folded_tr)
+    # TODO RELATIONAL
+    num_folded_tr = sp.ceiling(width / w_folded_tr)
     # print(num_folded_tr)
     # print(width/w_folded_tr)
-    if (not contains_any_symbol(num_folded_tr)) and num_folded_tr < 2:
-        w_folded_tr = width
+    w_folded_tr = sp.Piecewise(
+        (width, num_folded_tr < 2),  # Set w_folded_tr to width if num_folded_tr < 2
+        (w_folded_tr, True)  # Keep w_folded_tr unchanged otherwise
+    )
+    # if (not contains_any_symbol(num_folded_tr)) and num_folded_tr < 2:
+    #     w_folded_tr = width
 
     total_drain_w = (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (stack - 1) * g_tp.spacing_poly_to_poly
     drain_h_for_sidewall = w_folded_tr
@@ -2940,6 +2991,9 @@ def tr_R_on(width, nchannel, stack, _is_dram=False, _is_sram=False, _is_wl_tr=Fa
         dt = g_tp.peri_global
 
     restrans = dt.R_nch_on if nchannel else dt.R_pch_on
+    # print("tr_R_on")
+    # print(stack, restrans, width)
+    # print("end tr_R_on")
     return stack * restrans / width
 
 def R_to_w(res, nchannel, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
@@ -2966,10 +3020,18 @@ def pmos_to_nmos_sz_ratio(_is_dram=False, _is_wl_tr=False, _is_sleep_tx=False):
         return g_tp.peri_global.n_to_p_eff_curr_drv_ratio
 
 def horowitz(inputramptime, tf, vs1, vs2, rise):
+    #print(tf)
     if inputramptime == 0 and vs1 == vs2:
-        #TODO important relational cannot handle
-        #return tf * (-sp.log(vs1) if vs1 < 1 else sp.log(vs1))
-        return tf * -sp.log(vs1)
+        # #TODO important relational cannot handle
+        # print("HERE????")
+        # print(vs1)
+        # print(-sp.log(vs1))
+        # print(f"tf: {tf}")
+        # print(f"tf result: {tf * (-sp.log(vs1) if vs1 < 1 else sp.log(vs1))}")
+        # print("ENDHEREE")
+        return tf * (-sp.log(vs1) if vs1 < 1 else sp.log(vs1))
+        # print("here???")
+        # return tf * -sp.log(vs1)
 
     a = inputramptime / tf
     if rise == RISE:

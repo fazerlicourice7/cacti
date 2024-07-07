@@ -8,10 +8,11 @@ import sympy as sp
 
 # used to have component?
 class UCA(Component):
-    def __init__(self, dyn_p):
+    def __init__(self, dyn_p, bank):
         super().__init__()
         self.dp = dyn_p
-        self.bank = Bank(self.dp)
+        self.bank = bank
+        # self.bank = Bank(self.dp)
         self.nbanks = g_ip.nbanks
         self.refresh_power = 0
 
@@ -308,7 +309,11 @@ class UCA(Component):
             self.delay_array_to_sa_mux_lev_2_decoder = delay_array_to_mat + self.bank.mat.sa_mux_lev_2_predec.delay + self.bank.mat.sa_mux_lev_2_dec.delay
             delay_inside_mat = self.bank.mat.row_dec.delay + self.bank.mat.delay_bitline + self.bank.mat.delay_sa
 
-            self.delay_before_subarray_output_driver = sp.Max(max_delay_before_row_decoder + delay_inside_mat,
+            #TODO hotfix
+            if math.isnan(max_delay_before_row_decoder) or math.isnan(delay_inside_mat) or math.isnan(delay_array_to_mat) or math.isnan( self.bank.mat.b_mux_predec.delay) or math.isnan(self.bank.mat.bit_mux_dec.delay ) or math.isnan(self.bank.mat.delay_sa):
+                self.delay_before_subarray_output_driver = 1
+            else:
+                self.delay_before_subarray_output_driver = sp.Max(max_delay_before_row_decoder + delay_inside_mat,
                                                           delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa,
                                                           sp.Max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder))
             self.delay_from_subarray_out_drv_to_out = self.bank.mat.delay_subarray_out_drv_htree + self.bank.htree_out_data.delay + self.htree_out_data.delay
@@ -330,6 +335,8 @@ class UCA(Component):
                 if self.dp.is_dram:
                     temp += self.bank.mat.delay_writeback
 
+                print(f'temp {temp}')
+                print(f'AFTER TEMP')
                 temp = sp.Max(temp, self.bank.mat.r_predec.delay)
                 temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
                 temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)

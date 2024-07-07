@@ -44,8 +44,7 @@ class Htree2(Component):
         self.wt = wire_model
         self.deviceType = dt
 
-        # TODO Relational
-        # assert self.ndbl >= 2 and self.ndwl >= 2
+        assert self.ndbl >= 2 and self.ndwl >= 2
 
         self.max_unpipelined_link_delay = 0  # TODO
         self.min_w_nmos = g_tp.min_w_nmos_
@@ -198,8 +197,8 @@ class Htree2(Component):
         option = 0
 
         #TODO deleted ints
-        h = sp.log((self.ndwl / 2), 2)  # horizontal nodes
-        v = sp.log((self.ndbl / 2), 2)  # vertical nodes
+        h = math.log2(self.ndwl / 2)  # horizontal nodes
+        v = math.log2(self.ndbl / 2)  # vertical nodes
 
         if self.uca_tree:
             # this computation does not consider the wires that route from edge to middle
@@ -210,31 +209,30 @@ class Htree2(Component):
                         ((self.add_bits + self.data_in_bits + self.data_out_bits + (self.search_data_in_bits + self.search_data_out_bits)) * g_tp.wire_outside_mat.pitch *
                          2 * (1 - pow(0.5, v)))) / 2
         else:
-            # TODO EASY FIX PARAMETERIZE!
-            # if self.ndwl == self.ndbl:
-            ht_temp = ((self.mat_height * self.ndbl / 2) +
-                        ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndbl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                        ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)) / 2
-            len_temp = (self.mat_width * self.ndwl / 2 +
-                        ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                        ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
-            # elif self.ndwl > self.ndbl:
-            #     excess_part = (math.log2(self.ndwl / 2) - math.log2(self.ndbl / 2))
-            #     ht_temp = ((self.mat_height * self.ndbl / 2) +
-            #                ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndbl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-            #                (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch *
-            #                (2 * (1 - pow(0.5, h - v)) + pow(0.5, v - h) * v)) / 2
-            #     len_temp = (self.mat_width * self.ndwl / 2 +
-            #                 ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-            #                 ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
-            # else:
-            #     excess_part = (math.log2(self.ndbl / 2) - math.log2(self.ndwl / 2))
-            #     ht_temp = ((self.mat_height * self.ndbl / 2) +
-            #                ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-            #                ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)) / 2
-            #     len_temp = (self.mat_width * self.ndwl / 2 +
-            #                 ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-            #                 (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * (h + 2 * (1 - pow(0.5, v - h)))) / 2
+            if self.ndwl == self.ndbl:
+                ht_temp = ((self.mat_height * self.ndbl / 2) +
+                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndbl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
+                           ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)) / 2
+                len_temp = (self.mat_width * self.ndwl / 2 +
+                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
+                            ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
+            elif self.ndwl > self.ndbl:
+                excess_part = (math.log2(self.ndwl / 2) - math.log2(self.ndbl / 2))
+                ht_temp = ((self.mat_height * self.ndbl / 2) +
+                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndbl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
+                           (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch *
+                           (2 * (1 - pow(0.5, h - v)) + pow(0.5, v - h) * v)) / 2
+                len_temp = (self.mat_width * self.ndwl / 2 +
+                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
+                            ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
+            else:
+                excess_part = (math.log2(self.ndbl / 2) - math.log2(self.ndwl / 2))
+                ht_temp = ((self.mat_height * self.ndbl / 2) +
+                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
+                           ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)) / 2
+                len_temp = (self.mat_width * self.ndwl / 2 +
+                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
+                            (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * (h + 2 * (1 - pow(0.5, v - h)))) / 2
 
         self.area.h = ht_temp * 2
         self.area.w = len_temp * 2
@@ -245,10 +243,6 @@ class Htree2(Component):
         len = len_temp
         ht = ht_temp / 2
 
-
-        # TODO Relational
-        h = 10
-        v = 5
         while v > 0 or h > 0:
             if wtemp1:
                 del wtemp1
@@ -332,13 +326,12 @@ class Htree2(Component):
                 self.power.readOp.gate_leakage += wtemp2.power.readOp.gate_leakage * self.wire_bw
                 self.wire_bw *= 2
 
-                # TODO relational
-                # if ht_temp > wtemp3.repeater_spacing:
-                s3 = wtemp3.repeater_size
-                l_eff = wtemp3.repeater_spacing
-                # else:
-                #     s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
-                #     l_eff = ht_temp
+                if ht_temp > wtemp3.repeater_spacing:
+                    s3 = wtemp3.repeater_size
+                    l_eff = wtemp3.repeater_spacing
+                else:
+                    s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
+                    l_eff = ht_temp
 
                 self.input_nand(s2, s3, l_eff)
 
@@ -358,8 +351,6 @@ class Htree2(Component):
         option = 0
 
         #TODO deleted int
-        if (self.ndwl == 0 or self.ndbl == 0):
-            return
         h = math.log2(self.ndwl / 2)
         v = math.log2(self.ndbl / 2)
 

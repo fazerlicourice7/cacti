@@ -32,8 +32,11 @@ class Wire(Component):
         self.repeater_spacing = 1
         # TODO set arbitrary for now
         self.repeater_size = 0
+
+        print("WRIE CHECKPINT 0")
         
         self.calculate_wire_stats()
+        print("WRIE CHECKPINT 0")
         self.repeater_spacing *= 1e6
         self.wire_length *= 1e6
         self.wire_width *= 1e6
