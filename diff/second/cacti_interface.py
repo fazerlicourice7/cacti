@@ -231,15 +231,22 @@ class uca_org_t:
         data_arr = self.data_array2
         tag_arr = self.tag_array2
 
+        print("uca_org_t find_delay 0")
+
         if g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc:
+            print("pure ram")
             self.access_time = data_arr.access_time
         elif g_ip.fast_access:
+            print("fast_access")
             self.access_time = sp.Max(tag_arr.access_time, data_arr.access_time)
         elif g_ip.is_seq_acc:
+            print("seq_acc")
             self.access_time = tag_arr.access_time + data_arr.access_time
         else:
+            print("else")
             self.access_time = sp.Max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
                                    data_arr.delay_before_subarray_output_driver) + data_arr.delay_from_subarray_output_driver_to_output
+        print("uca_org_t find_delay 1")
 
     def find_energy(self):
         if not (g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc):
@@ -252,7 +259,7 @@ class uca_org_t:
             self.cache_ht = self.data_array2.height
             self.cache_len = self.data_array2.width
         else:
-            self.cache_ht = handle_nan(self.tag_array2.height, self.data_array2.height)
+            self.cache_ht = sp.Max(self.tag_array2.height, self.data_array2.height)
             self.cache_len = self.tag_array2.width + self.data_array2.width
         self.area = self.cache_ht * self.cache_len
 

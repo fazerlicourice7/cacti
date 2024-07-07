@@ -46,10 +46,12 @@ if __name__ == "__main__":
 
     wt = sp.symbols("wt")
 
-    g_tp.init(.022, is_tag)
+    print("hello-1?")
 
-    print ("SETUP DYNAMIC PARAM")
-    dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
+    # g_tp.init(.022, is_tag)
+
+    # print ("SETUP DYNAMIC PARAM")
+    # dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
 
     # print("SETUP MAT")
     # mat = Mat(dyn_p)
@@ -64,8 +66,8 @@ if __name__ == "__main__":
     # print(mat.delay_subarray_out_drv)
     # print(mat.delay_comparator)
 
-    with open('mat_instance_cache-1.pkl', 'rb') as f:
-        mat = pickle.load(f)
+    # with open('mat_instance_cache-1.pkl', 'rb') as f:
+    #     mat = pickle.load(f)
 
     # print(f"SANITY CHECK {mat.row_dec.nodes_DSTN}")
     # print(f"mat {mat.area.w}")
@@ -75,8 +77,8 @@ if __name__ == "__main__":
     # print("HUHHH???????")
 
     # print("COMPUTE DELAYS")
-    mat.compute_delays(0)
-    print(f'num_rows {mat.subarray.num_rows}')
+    # mat.compute_delays(0)
+    # print(f'num_rows {mat.subarray.num_rows}')
 
     # print(mat.delay_fa_tag)
     # print(mat.delay_cam)
@@ -133,7 +135,7 @@ if __name__ == "__main__":
 
     ### END MAT
 
-    bank = Bank(dyn_p, mat)
+    # bank = Bank(dyn_p, mat)
     # print("Comptue bank")
     # print(bank.mat.r_predec.delay)
     # print(f"self.bank.mat.r_predec.delay: {bank.mat.r_predec.delay}")
@@ -141,18 +143,32 @@ if __name__ == "__main__":
     # print(f"self.bank.mat.sa_mux_lev_1_predec.delay: {bank.mat.sa_mux_lev_1_predec.delay}")
     # print(f"self.bank.mat.sa_mux_lev_2_predec.delay: {bank.mat.sa_mux_lev_2_predec.delay}")
 
-    uca = UCA(dyn_p, bank)
-    print(uca.access_time)
+    # uca = UCA(dyn_p, bank)
+
+    # with open('uca_cache.pkl', 'wb') as f:
+    #     pickle.dump(uca, f)
+
+    print("hello0?")
+    with open('uca_cache.pkl', 'rb') as f:
+        uca = pickle.load(f)    
+
+    # print(uca.access_time)
+    # print(f"power read: {uca.power.readOp.dynamic}")
+    # print(f"energy read: {uca.read_energy}")
     # # bank.compute_delays(0)
 
     # print("DONE")
 
-    # fin_res = uca_org_t()
+    fin_res = uca_org_t()
+    print("hello1?")
+    fin_res = solve_single(fin_res, uca)
 
     # diff_a = sp.diff(solve_single(fin_res), sympy_var["C_g_ideal"])
     # print(diff_a)
+    with open('sympy_access_time.txt', 'w') as file:
+        file.write(f"{fin_res.access_time}")
 
-    # print(fin_res.access_time)
+    print(fin_res.access_time)
 
     # g_tp.init(.022, False)
 

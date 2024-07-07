@@ -11,7 +11,7 @@ class UCA(Component):
     def __init__(self, dyn_p, bank):
         super().__init__()
         self.dp = dyn_p
-        self.bank = bank
+        self.bank = bank # TODO remove
         # self.bank = Bank(self.dp)
         self.nbanks = g_ip.nbanks
         self.refresh_power = 0
