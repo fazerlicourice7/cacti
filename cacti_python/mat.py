@@ -418,8 +418,12 @@ class Mat(Component):
         if self.dp.is_tag and not self.dp.fully_assoc:
             self.compute_comparator_delay(0)
 
+        print("CHECKPOINT 13")
+
         if not self.row_dec.exist:
             self.delay_wl_reset = sp.Max(self.r_predec.blk1.delay, self.r_predec.blk2.delay)
+
+        print("CHECKPOINT 14")
 
         return outrisetime
     
@@ -945,13 +949,15 @@ class Mat(Component):
 
         tstep = (r2 * c2 + (r1 + r2) * c1) * log(1.0 / VTHMUXNAND)
         m = g_tp.peri_global.Vdd / nextinputtime
-        if tstep <= (0.5 * (g_tp.peri_global.Vdd - g_tp.peri_global.Vth) / m):
-            a = m
-            b = 2 * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth)
-            c = -2 * tstep * (g_tp.peri_global.Vdd - g_tp.peri_global.Vth) + 1 / m * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth) * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth)
-            Tcomparatorni = (-b + sp.sqrt(b * b - 4 * a * c)) / (2 * a)
-        else:
-            Tcomparatorni = tstep + (g_tp.peri_global.Vdd + g_tp.peri_global.Vth) / (2 * m) - (g_tp.peri_global.Vdd * VTHEVALINV) / m
+
+        # TODO RELATIONAL
+        # if tstep <= (0.5 * (g_tp.peri_global.Vdd - g_tp.peri_global.Vth) / m):
+        #     a = m
+        #     b = 2 * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth)
+        #     c = -2 * tstep * (g_tp.peri_global.Vdd - g_tp.peri_global.Vth) + 1 / m * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth) * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth)
+        #     Tcomparatorni = (-b + sp.sqrt(b * b - 4 * a * c)) / (2 * a)
+        # else:
+        Tcomparatorni = tstep + (g_tp.peri_global.Vdd + g_tp.peri_global.Vth) / (2 * m) - (g_tp.peri_global.Vdd * VTHEVALINV) / m
 
         self.delay_comparator = Tcomparatorni + st1del + st2del + st3del
         self.power_comparator.readOp.leakage = lkgCurrent * g_tp.peri_global.Vdd

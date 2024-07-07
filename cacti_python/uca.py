@@ -334,8 +334,8 @@ class UCA(Component):
                 if self.dp.is_dram:
                     temp += self.bank.mat.delay_writeback
 
-                print(f'temp {temp}')
-                print(f'AFTER TEMP')
+                #print(f'temp {temp}')
+                print(f'UCA AFTER TEMP')
                 # temp = sp.Max(temp, self.bank.mat.r_predec.delay)
                 # temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
                 # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
@@ -361,7 +361,7 @@ class UCA(Component):
                     self.bank.mat.sa_mux_lev_2_predec.delay
                 )
 
-            print ("MAX NEXT")
+            print ("UCA MAX NEXT")
             print(g_ip.rpters_in_htree)
             g_ip.rpters_in_htree = True
             if g_ip.rpters_in_htree == False:

@@ -68,24 +68,29 @@ def compute_gate_area(gate_type, num_inputs, w_pmos, w_nmos, h_gate):
     #     return 0.0
     
     print("compute_gate_area CHECKPINT 0")
-    simplify_w_pmos = sp.simplify(w_pmos)
-    simplify_w_nmos = sp.simplify(w_nmos)
-    if simplify_w_pmos.is_zero or simplify_w_pmos.is_negative or simplify_w_nmos.is_zero or simplify_w_nmos.is_negative:
-        return 0.0
+    # TODO RELATIONAL
+    # simplify_w_pmos = sp.simplify(w_pmos)
+    # simplify_w_nmos = sp.simplify(w_nmos)
+    # if simplify_w_pmos.is_zero or simplify_w_pmos.is_negative or simplify_w_nmos.is_zero or simplify_w_nmos.is_negative:
+    #     return 0.0
+    
+    print("compute_gate_area CHECKPINT 1")
 
     # print(f"w_pmos {w_pmos} and w_nmos {w_nmos}")
 
     h_tr_region = h_gate - 2 * g_tp.HPOWERRAIL  
     ratio_p_to_n = w_pmos / (w_pmos + w_nmos)
 
-    simplify_ratio_p_to_n = sp.simplify(ratio_p_to_n)
     # TODO IMPORTANT this can't be done synbolically
+    # simplify_ratio_p_to_n = sp.simplify(ratio_p_to_n)
     # if ratio_p_to_n >= 1 or ratio_p_to_n <= 0:
     #     return 0.0
     # if sp.Or(ratio_p_to_n >= 1 or ratio_p_to_n <= 0):
     #     return 0.0
-    if simplify_ratio_p_to_n.is_integer and (simplify_ratio_p_to_n >= 1 or simplify_ratio_p_to_n <= 0):
-        return 0.0
+    # if simplify_ratio_p_to_n.is_integer and (simplify_ratio_p_to_n >= 1 or simplify_ratio_p_to_n <= 0):
+    #     return 0.0
+    
+    print("compute_gate_area CHECKPINT 2")
     
 
     w_folded_pmos = (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS) * ratio_p_to_n
