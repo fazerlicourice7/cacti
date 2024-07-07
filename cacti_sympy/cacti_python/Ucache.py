@@ -866,18 +866,13 @@ def calculate_time_single(
     ptr_results,
     ptr_fin_res,
     wt,
-    is_main_mem,
-    uca # TODO REOMVE
+    is_main_mem
 ):
     dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
 
     # if not dyn_p.is_valid:
     #     return False
-    print("in here")
-    # uca = UCA(dyn_p)
-
-    print("Hello?")
-    print(f"uca access time: {uca.access_time}")
+    uca = UCA(dyn_p)
 
     if flag_results_populate:
         # For the final solution, populate the ptr_results data structure -- TODO: copy only necessary variables
@@ -1110,7 +1105,7 @@ def calculate_time_single(
 
 
 
-def solve_single(fin_res, uca):
+def solve_single():
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 
@@ -1121,115 +1116,40 @@ def solve_single(fin_res, uca):
     data_arr = MemArray()
     sol = uca_org_t()
 
-    fin_res.tag_array.access_time = 0
-    fin_res.tag_array.Ndwl = 0
-    fin_res.tag_array.Ndbl = 0
-    fin_res.tag_array.Nspd = 0
-    fin_res.tag_array.deg_bl_muxing = 0
-    fin_res.tag_array.Ndsam_lev_1 = 0
-    fin_res.tag_array.Ndsam_lev_2 = 0
-
-    print("UCA CHECKPOINT 0")
-
-    # calc_array = CalcTimeMtWrapperStruct()
-
-    # calc_array.tid = 1
-    # calc_array.pure_ram = pure_ram
-    # calc_array.pure_cam = pure_cam
-    # calc_array.data_res = MinValuesT()
-    # calc_array.tag_res = MinValuesT()
-
     if not (pure_ram or pure_cam or g_ip.fully_assoc):
         is_tag = True
         g_tp.init(g_ip.F_sz_um, is_tag)
-
-        # calc_array.is_tag = is_tag
-        # calc_array.is_main_mem = False
-        # calc_array.Nspd_min = 0.125
-        # calc_time_mt_wrapper(calc_array)
         
         calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
                                         g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
-                                            tag_arr, 0, None, None, wr, g_ip.is_main_mem, uca)
-        # threads[t] = threading.Thread(target=calc_time_mt_wrapper, args=(calc_array[t],))
-        # threads[t].start()
-
-        # print("HELLo?")
-        # for t in range(NTHREADS):
-        #     calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
-
-        #     # CHECKPOINT
-        #     print(f'WAT {calc_array[t].data_arr[0].access_time}')
-
-        #     data_arr.extend(calc_array[t].data_arr)
-        #     calc_array[t].tag_arr.sort(key=cmp_to_key(MemArray.lt))
-        #     tag_arr.extend(calc_array[t].tag_arr)
-
-    # tag_arr = calc_array.tag_arr
-
-    print("UCA CHECKPOINT 1")
+                                            tag_arr, 0, None, None, wr, g_ip.is_main_mem)
 
     is_tag = False
     g_tp.init(g_ip.F_sz_um, is_tag)
 
-    
-    # calc_array.is_tag = is_tag
-    # calc_array.is_main_mem = g_ip.is_main_mem
-    # if not (pure_cam or g_ip.fully_assoc):
-    #     calc_array.Nspd_min = g_ip.out_w / (g_ip.block_sz * 8)
-    # else:
-    #     calc_array.Nspd_min = 1
-
     calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
                                 g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
-                                data_arr, 0, None, None, wr, g_ip.is_main_mem, uca)
+                                data_arr, 0, None, None, wr, g_ip.is_main_mem)
     
-    print(f"data_arr access time: {data_arr.access_time}")
-    
-    # print(data_arr.access_time)
-    print("UCA CHECKPOINT 2")
-
-
     if pure_ram or pure_cam or g_ip.fully_assoc:
-        print("UCA CHECKPOINT 3")
         curr_org = sol
         curr_org.tag_array2 = None
         curr_org.data_array2 = data_arr
 
         curr_org.find_delay()
-        print("UCA CHECKPOINT 3.1")
-        # print(f'ACCESS TIME: {curr_org.access_time}')
-        curr_org.find_energy()
-        print("UCA CHECKPOINT 3.2")
-        curr_org.find_area()
-        print("UCA CHECKPOINT 3.3")
-        curr_org.find_cyc()
-        print("UCA CHECKPOINT 4")
+        # curr_org.find_energy()
+        # curr_org.find_area()
+        # curr_org.find_cyc()
 
-            # cache_min.update_min_values_from_uca(curr_org)
-
-            # sol_list.append(uca_org_t())
     else:
-        print("UCA CHECKPOINT 4")
         curr_org = sol
         curr_org.tag_array2 = tag_arr
         curr_org.data_array2 = data_arr
 
         curr_org.find_delay()
-        print("UCA CHECKPOINT 4.1")
-        print(f'ACCESS TIME: {curr_org.access_time}')
         # curr_org.find_energy()
-        # print("UCA CHECKPOINT 4.2")
         # curr_org.find_area()
-        # print("UCA CHECKPOINT 4.3")
         # curr_org.find_cyc()
-        # print("UCA CHECKPOINT 5")
 
-    print("UCA CHECKPOINT 6")
-    # sol_list.pop()
-
-    # find_optimal_uca(fin_res, cache_min, sol_list)
-
-    # sol_list.clear()
     return curr_org
 
