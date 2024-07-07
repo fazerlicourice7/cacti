@@ -310,12 +310,12 @@ class UCA(Component):
             delay_inside_mat = self.bank.mat.row_dec.delay + self.bank.mat.delay_bitline + self.bank.mat.delay_sa
 
             #TODO hotfix
-            if math.isnan(max_delay_before_row_decoder) or math.isnan(delay_inside_mat) or math.isnan(delay_array_to_mat) or math.isnan( self.bank.mat.b_mux_predec.delay) or math.isnan(self.bank.mat.bit_mux_dec.delay ) or math.isnan(self.bank.mat.delay_sa):
-                self.delay_before_subarray_output_driver = 1
-            else:
-                self.delay_before_subarray_output_driver = sp.Max(max_delay_before_row_decoder + delay_inside_mat,
-                                                          delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa,
-                                                          sp.Max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder))
+            # if math.isnan(max_delay_before_row_decoder) or math.isnan(delay_inside_mat) or math.isnan(delay_array_to_mat) or math.isnan( self.bank.mat.b_mux_predec.delay) or math.isnan(self.bank.mat.bit_mux_dec.delay ) or math.isnan(self.bank.mat.delay_sa):
+            #     self.delay_before_subarray_output_driver = 1
+            # else:
+            self.delay_before_subarray_output_driver = sp.Max(max_delay_before_row_decoder + delay_inside_mat,
+                                                        delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa,
+                                                        sp.Max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder))
             self.delay_from_subarray_out_drv_to_out = self.bank.mat.delay_subarray_out_drv_htree + self.bank.htree_out_data.delay + self.htree_out_data.delay
             self.access_time = self.bank.mat.delay_comparator
 
@@ -337,17 +337,34 @@ class UCA(Component):
 
                 print(f'temp {temp}')
                 print(f'AFTER TEMP')
-                temp = sp.Max(temp, self.bank.mat.r_predec.delay)
-                temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
-                temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
-                temp = sp.Max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+                # temp = sp.Max(temp, self.bank.mat.r_predec.delay)
+                # temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
+                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
+                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+                temp = sp.Max(
+                    temp,
+                    self.bank.mat.r_predec.delay,
+                    self.bank.mat.b_mux_predec.delay,
+                    self.bank.mat.sa_mux_lev_1_predec.delay,
+                    self.bank.mat.sa_mux_lev_2_predec.delay
+                )               
+                
             else:
                 ram_delay_inside_mat = self.bank.mat.delay_bitline + self.bank.mat.delay_matchchline
                 temp = ram_delay_inside_mat + self.bank.mat.delay_cam_sl_restore + self.bank.mat.delay_cam_ml_reset + self.bank.mat.delay_bl_restore + self.bank.mat.delay_hit_miss_reset + self.bank.mat.delay_wl_reset
-                temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
-                temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
-                temp = sp.Max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+                # temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
+                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
+                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+                temp = sp.Max(
+                    temp,
+                    self.bank.mat.b_mux_predec.delay,
+                    self.bank.mat.sa_mux_lev_1_predec.delay,
+                    self.bank.mat.sa_mux_lev_2_predec.delay
+                )
 
+            print ("MAX NEXT")
+            print(g_ip.rpters_in_htree)
+            g_ip.rpters_in_htree = True
             if g_ip.rpters_in_htree == False:
                 temp = sp.Max(temp, self.bank.htree_in_add.max_unpipelined_link_delay)
             self.cycle_time = temp
@@ -356,12 +373,12 @@ class UCA(Component):
             delay_rep_network = self.delay_from_subarray_out_drv_to_out
             
             #TODO delay_rep_network nan
-            if math.isnan(delay_req_network):
-                delay_req_network = 0
-            if math.isnan(delay_rep_network):
-                delay_rep_network = 0
-            print(delay_req_network)
-            print(delay_rep_network)
+            # if math.isnan(delay_req_network):
+            #     delay_req_network = 0
+            # if math.isnan(delay_rep_network):
+            #     delay_rep_network = 0
+            # print(delay_req_network)
+            # print(delay_rep_network)
             self.multisubbank_interleave_cycle_time = sp.Max(delay_req_network, delay_rep_network)
 
             if self.dp.is_main_mem:

@@ -56,17 +56,20 @@ class Decoder(Component):
         #     else:
         #         self.num_in_signals = 2
 
-        self.exist = sp.Piecewise(
-            (True, num_addr_bits_dec < 4),  # self.exist is True if num_addr_bits_dec < 4
-            (self.exist, True)  # self.exist is True otherwise
-        )
+        # self.exist = sp.Piecewise(
+        #     (True, num_addr_bits_dec < 4),  # self.exist is True if num_addr_bits_dec < 4
+        #     (self.exist, True)  # self.exist is True otherwise
+        # )
 
-        self.num_in_signals = sp.Piecewise(
-            (2, sp.And(num_addr_bits_dec < 4, flag_way_select)),  # self.num_in_signals = 2 if num_addr_bits_dec < 4 and flag_way_select
-            (0, num_addr_bits_dec < 4),  # self.num_in_signals = 0 if num_addr_bits_dec < 4 and not flag_way_select
-            (3, sp.And(num_addr_bits_dec >= 4, flag_way_select)),  # self.num_in_signals = 3 if num_addr_bits_dec >= 4 and flag_way_select
-            (2, num_addr_bits_dec >= 4)  # self.num_in_signals = 2 if num_addr_bits_dec >= 4 and not flag_way_select
-        )
+        # self.num_in_signals = sp.Piecewise(
+        #     (2, sp.And(num_addr_bits_dec < 4, flag_way_select)),  # self.num_in_signals = 2 if num_addr_bits_dec < 4 and flag_way_select
+        #     (0, num_addr_bits_dec < 4, not flag_way_select),  # self.num_in_signals = 0 if num_addr_bits_dec < 4 and not flag_way_select
+        #     (3, sp.And(num_addr_bits_dec >= 4, flag_way_select)),  # self.num_in_signals = 3 if num_addr_bits_dec >= 4 and flag_way_select
+        #     (2, num_addr_bits_dec >= 4, True)  # self.num_in_signals = 2 if num_addr_bits_dec >= 4 and not flag_way_select
+        # )
+
+        self.exist = True
+        self.num_in_signals = 3
 
         # assert self.cell.h > 0
         # assert self.cell.w > 0
@@ -239,10 +242,21 @@ class PredecBlk(Component):
         self.power_L2 = PowerDef()
         self.is_dram_ = is_dram
 
-        num_dec_signals = num_dec_signals
-        num_addr_bits_dec = sp.log(num_dec_signals,2)
+        # check converted from int to math.ceil and added check
+        num_dec_signals = math.ceil(num_dec_signals)
+
+        if(num_dec_signals < 1):
+            num_dec_signals = 4
+
+        num_addr_bits_dec = sp.log(num_dec_signals, 2)
         blk1_num_input_addr_bits = (num_addr_bits_dec + 1) // 2
         blk2_num_input_addr_bits = num_addr_bits_dec - blk1_num_input_addr_bits
+
+        #debug
+        self.debug_num_addr_bits_dec = num_addr_bits_dec
+        self.debug_blk1_num_input_addr_bits = blk1_num_input_addr_bits
+        self.debug_blk2_num_input_addr_bits = blk2_num_input_addr_bits
+        #
 
         self.w_L1_nand2_n = [0] * MAX_NUMBER_GATES_STAGE
         self.w_L1_nand2_p = [0] * MAX_NUMBER_GATES_STAGE
@@ -270,44 +284,44 @@ class PredecBlk(Component):
         #         self.C_ld_predec_blk_out = branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out
         # else:
         #     if num_addr_bits_dec >= 4:
-        #         self.exist = True
-        #         self.number_input_addr_bits = blk2_num_input_addr_bits
-        #         branch_effort_predec_out = sp.Pow(2, blk1_num_input_addr_bits) #(1 << blk1_num_input_addr_bits)
-        #         C_ld_dec_gate = num_dec_per_predec * gate_C(self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False)
-        #         self.R_wire_predec_blk_out = R_wire_predec_blk_out_
-        #         self.C_ld_predec_blk_out = branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out
+        self.exist = True
+        self.number_input_addr_bits = blk2_num_input_addr_bits
+        branch_effort_predec_out = sp.Pow(2, blk1_num_input_addr_bits) #(1 << blk1_num_input_addr_bits)
+        C_ld_dec_gate = num_dec_per_predec * gate_C(self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False)
+        self.R_wire_predec_blk_out = R_wire_predec_blk_out_
+        self.C_ld_predec_blk_out = branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out
 
-        self.exist = sp.Piecewise(
-            (self.exist, sp.And(is_blk1, num_addr_bits_dec <= 0)),
-            (True, True)
-        )
+        # self.exist = sp.Piecewise(
+        #     (self.exist, sp.And(is_blk1, num_addr_bits_dec <= 0)),
+        #     (True, True)
+        # )
         
-        self.number_input_addr_bits = sp.Piecewise(
-            (num_addr_bits_dec, sp.And(is_blk1, num_addr_bits_dec < 4)),  # self.number_input_addr_bits = num_addr_bits_dec if is_blk1 and 0 < num_addr_bits_dec < 4
-            (blk1_num_input_addr_bits, sp.And(is_blk1, num_addr_bits_dec >= 4)),  # self.number_input_addr_bits = blk1_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
-            (blk2_num_input_addr_bits, True)  # self.number_input_addr_bits = blk2_num_input_addr_bits if not is_blk1
-        )
+        # self.number_input_addr_bits = sp.Piecewise(
+        #     (num_addr_bits_dec, sp.And(is_blk1, num_addr_bits_dec < 4)),  # self.number_input_addr_bits = num_addr_bits_dec if is_blk1 and 0 < num_addr_bits_dec < 4
+        #     (blk1_num_input_addr_bits, sp.And(is_blk1, num_addr_bits_dec >= 4)),  # self.number_input_addr_bits = blk1_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
+        #     (blk2_num_input_addr_bits, True)  # self.number_input_addr_bits = blk2_num_input_addr_bits if not is_blk1
+        # )
         
-        branch_effort_predec_out = sp.Piecewise(
-            (sp.Pow(2, blk2_num_input_addr_bits), sp.And(is_blk1, num_addr_bits_dec >= 4)),  # branch_effort_predec_out = 2^blk2_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
-            (sp.Pow(2, blk1_num_input_addr_bits), True)
-        )
+        # branch_effort_predec_out = sp.Piecewise(
+        #     (sp.Pow(2, blk2_num_input_addr_bits), sp.And(is_blk1, num_addr_bits_dec >= 4)),  # branch_effort_predec_out = 2^blk2_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
+        #     (sp.Pow(2, blk1_num_input_addr_bits), True)
+        # )
 
-        C_ld_dec_gate = sp.Piecewise(
-            (num_dec_per_predec * gate_C(self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False),
-            num_addr_bits_dec >= 4), # C_ld_dec_gate calculation based on conditions
-            (1, True)  # C_ld_dec_gate = 13/10 if num_addr_bits_dec <= 0
-        )
+        # C_ld_dec_gate = sp.Piecewise(
+        #     (num_dec_per_predec * gate_C(self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False),
+        #     num_addr_bits_dec >= 4), # C_ld_dec_gate calculation based on conditions
+        #     (1, True)  # C_ld_dec_gate = 13/10 if num_addr_bits_dec <= 0
+        # )
        
-        self.R_wire_predec_blk_out = sp.Piecewise(
-            (self.dec.R_wire_dec_out, num_addr_bits_dec < 4),  # self.R_wire_predec_blk_out based on conditions
-            (R_wire_predec_blk_out_, True),  # self.R_wire_predec_blk_out = 3/2 if num_addr_bits_dec <= 0
-        )
+        # self.R_wire_predec_blk_out = sp.Piecewise(
+        #     (self.dec.R_wire_dec_out, num_addr_bits_dec < 4),  # self.R_wire_predec_blk_out based on conditions
+        #     (R_wire_predec_blk_out_, True),  # self.R_wire_predec_blk_out = 3/2 if num_addr_bits_dec <= 0
+        # )
        
-        self.C_ld_predec_blk_out = sp.Piecewise(
-            (self.dec.C_ld_dec_out, num_addr_bits_dec < 4),  # self.C_ld_predec_blk_out based on conditions
-            (branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out, True)  # self.C_ld_predec_blk_out = 13/10 if num_addr_bits_dec <= 0
-        )  
+        # self.C_ld_predec_blk_out = sp.Piecewise(
+        #     (self.dec.C_ld_dec_out, num_addr_bits_dec < 4),  # self.C_ld_predec_blk_out based on conditions
+        #     (branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out, True)  # self.C_ld_predec_blk_out = 13/10 if num_addr_bits_dec <= 0
+        # )  
 
         print("PRE CHECKPOINT 1")
         self.compute_widths()
@@ -316,28 +330,68 @@ class PredecBlk(Component):
         print("PRE CHECKPOINT 3")
 
     def compute_widths(self):
+        print("huh?")
         if not self.exist:
             return
-
+        print("huh1?")
         p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(self.is_dram_)
         gnand2 = (2 + p_to_n_sz_ratio) / (1 + p_to_n_sz_ratio)
         gnand3 = (3 + p_to_n_sz_ratio) / (1 + p_to_n_sz_ratio)
 
         flag_L2_gate = 0
         number_inputs_L1_gate = 0
+        
+        print(f'number input addr_bits {self.number_input_addr_bits}')
+        if self.number_input_addr_bits == 1:
+            flag_two_unique_paths = False
+            number_inputs_L1_gate = 2
+            flag_L2_gate = 0
+        elif self.number_input_addr_bits == 2:
+            flag_two_unique_paths = False
+            number_inputs_L1_gate = 2
+            flag_L2_gate = 0
+        elif self.number_input_addr_bits == 3:
+            flag_two_unique_paths = False
+            number_inputs_L1_gate = 3
+            flag_L2_gate = 0
+        elif self.number_input_addr_bits == 4:
+            flag_two_unique_paths = False
+            number_inputs_L1_gate = 2
+            flag_L2_gate = 2
+            branch_effort_nand2_gate_output = 4
+        elif self.number_input_addr_bits == 5:
+            flag_two_unique_paths = True
+            flag_L2_gate = 2
+            branch_effort_nand2_gate_output = 8
+            branch_effort_nand3_gate_output = 4
+        elif self.number_input_addr_bits == 6:
+            flag_two_unique_paths = False
+            number_inputs_L1_gate = 3
+            flag_L2_gate = 2
+            branch_effort_nand3_gate_output = 8
+        elif self.number_input_addr_bits == 7:
+            flag_two_unique_paths = True
+            flag_L2_gate = 3
+            branch_effort_nand2_gate_output = 32
+            branch_effort_nand3_gate_output = 16
+        elif self.number_input_addr_bits == 8:
+            flag_two_unique_paths = True
+            flag_L2_gate = 3
+            branch_effort_nand2_gate_output = 64
+            branch_effort_nand3_gate_output = 32
+        elif self.number_input_addr_bits == 9:
+            flag_two_unique_paths = False
+            number_inputs_L1_gate = 3
+            flag_L2_gate = 3
+            branch_effort_nand3_gate_output = 64
+        else:
+            # TODO this is being reached but why?
+            flag_two_unique_paths = False
+            number_inputs_L1_gate = 2
+            flag_L2_gate = 2
+            branch_effort_nand2_gate_output = 4
 
-        if self.number_input_addr_bits in [1, 2, 3]:
-            self.flag_two_unique_paths = False
-            number_inputs_L1_gate = 2 if self.number_input_addr_bits in [1, 2] else 3
-        elif self.number_input_addr_bits in [4, 5, 6, 7, 8, 9]:
-            if self.number_input_addr_bits in [4, 5, 6]:
-                flag_L2_gate = 2
-            else:
-                flag_L2_gate = 3
-            branch_effort_nand2_gate_output = 4 if self.number_input_addr_bits == 4 else 8 if self.number_input_addr_bits in [5, 6] else 32
-            branch_effort_nand3_gate_output = 4 if self.number_input_addr_bits == 5 else 8 if self.number_input_addr_bits == 6 else 16
-            self.flag_two_unique_paths = True
-
+        self.flag_two_unique_paths = flag_two_unique_paths
         self.number_inputs_L1_gate = number_inputs_L1_gate
         self.flag_L2_gate = flag_L2_gate
 
@@ -572,14 +626,26 @@ class PredecBlk(Component):
             self.power_L2.readOp.gate_leakage = gate_leakage_L2 * g_tp.peri_global.Vdd
 
     def compute_delays(self, inrisetime):
+        print(f'PredecBLK {inrisetime}')
         ret_val = (0, 0)
 
         if self.exist:
+            print("self.exist")
             Vdd = g_tp.peri_global.Vdd
             inrisetime_nand2_path = inrisetime[0]
             inrisetime_nand3_path = inrisetime[1]
 
+            print("flag 0")
+
+            print(f'debug_num_addr_bits_dec {self.debug_num_addr_bits_dec}')
+            print(f'blk1_num_input_addr_bits {self.debug_blk1_num_input_addr_bits}')
+            print(f'blk2_num_input_addr_bits {self.debug_blk2_num_input_addr_bits}')
+
+            print(f'number input addr_bits {self.number_input_addr_bits}')
+            print(f'numberinputs L1 gate: {self.number_inputs_L1_gate}')
+            
             if self.flag_two_unique_paths or self.number_inputs_L1_gate == 2:
+                print("flag 1")
                 rd = tr_R_on(self.w_L1_nand2_n[0], NCH, 2, self.is_dram_)
                 c_load = gate_C(self.w_L1_nand2_n[1] + self.w_L1_nand2_p[1], 0.0, self.is_dram_)
                 c_intrinsic = 2 * drain_C_(self.w_L1_nand2_p[0], PCH, 1, 1, g_tp.cell_h_def, self.is_dram_) + \
@@ -613,6 +679,7 @@ class PredecBlk(Component):
                 self.power_nand2_path.readOp.dynamic += (c_intrinsic + c_load) * Vdd * Vdd
 
             if self.flag_two_unique_paths or self.number_inputs_L1_gate == 3:
+                print("flag 2")
                 rd = tr_R_on(self.w_L1_nand3_n[0], NCH, 3, self.is_dram_)
                 c_load = gate_C(self.w_L1_nand3_n[1] + self.w_L1_nand3_p[1], 0.0, self.is_dram_)
                 c_intrinsic = 3 * drain_C_(self.w_L1_nand3_p[0], PCH, 1, 1, g_tp.cell_h_def, self.is_dram_) + \
@@ -644,7 +711,7 @@ class PredecBlk(Component):
                 self.delay_nand3_path += this_delay
                 ret_val = (ret_val[0], this_delay / (1.0 - 0.5))
                 self.power_nand3_path.readOp.dynamic += (c_intrinsic + c_load) * Vdd * Vdd
-
+        print("return Predeclk")
         return ret_val
 
     def leakage_feedback(self, temperature):
@@ -913,7 +980,7 @@ class PredecBlkDrv(Component):
         Vdd = g_tp.peri_global.Vdd
 
         if self.flag_driver_exists:
-            # print(f"PRedecBLKDrv IN HERE")
+            print(f"PRedecBLKDrv IN HERE")
             # print(f"PREDECBLK DRV {self.number_gates_nand2_path}")
             for i in range(self.number_gates_nand2_path - 1):
                 rd = tr_R_on(self.width_nand2_path_n[i], NCH, 1, self.is_dram)
@@ -962,7 +1029,9 @@ class PredecBlkDrv(Component):
                 self.delay_nand3_path += this_delay
                 ret_val = (ret_val[0], this_delay / (1.0 - 0.5))
                 self.power_nand3_path.readOp.dynamic += (c_intrinsic + c_load) * 0.5 * Vdd * Vdd
-        # print(f"PREDECBLKDRV (ret_val[0], this_delay / (1.0 - 0.5) {ret_val}")
+        print("compute Predecblkdrv delay")
+        print(f"PREDECBLKDRV (ret_val[0], this_delay / (1.0 - 0.5) {ret_val}")
+        print("HELLO the ret val should be set to the above")
         return ret_val
 
     def get_rdOp_dynamic_E(self, num_act_mats_hor_dir):
@@ -1046,10 +1115,19 @@ class Predec(Component):
         self.power.readOp.gate_leakage = self.driver_power.readOp.gate_leakage + self.block_power.readOp.gate_leakage
 
     def compute_delays(self, inrisetime):
+        # print("PREDECBLK COMPUTE DELAYS")
         tmp_pair1 = self.drv1.compute_delays(inrisetime, inrisetime)
+        # print(f'tmp_pair1 before PredecBLK compute_delay {tmp_pair1}')
         tmp_pair1 = self.blk1.compute_delays(tmp_pair1)
         tmp_pair2 = self.drv2.compute_delays(inrisetime, inrisetime)
         tmp_pair2 = self.blk2.compute_delays(tmp_pair2)
+        # print(" JUST COMPTUED DELAYS!")
+        # print(f"tmp_pair before max delay {tmp_pair1[0]}")
+        # print(f"tmp_pair before max delay {tmp_pair1[1]}")
+        # print(f"tmp_pair before max delay {tmp_pair2[0]}")
+        # print(f"tmp_pair before max delay {tmp_pair2[1]}")
+        # print("END")
+        
         tmp_pair1 = self.get_max_delay_before_decoder(tmp_pair1, tmp_pair2)
 
         self.driver_power.readOp.dynamic = self.drv1.num_addr_bits_nand2_path() * self.drv1.power_nand2_path.readOp.dynamic + \
@@ -1066,7 +1144,7 @@ class Predec(Component):
 
         self.power.readOp.dynamic = self.driver_power.readOp.dynamic + self.block_power.readOp.dynamic
 
-        # print(f"tmp_pair {tmp_pair1[0]}")
+        print(f"tmp_pair {tmp_pair1[0]}")
         self.delay = tmp_pair1[0]
         return tmp_pair1[1]
 
@@ -1119,17 +1197,31 @@ class Predec(Component):
         #     ret_val[1] = input_pair2[1]
 
         # TODO CHECK
+        print("INSIDE MAX FUNCTION")
         delay1 = self.drv1.delay_nand2_path + self.blk1.delay_nand2_path
         delay2 = self.drv1.delay_nand3_path + self.blk1.delay_nand3_path
         delay3 = self.drv2.delay_nand2_path + self.blk2.delay_nand2_path
         delay4 = self.drv2.delay_nand3_path + self.blk2.delay_nand3_path
+
+        # print(f"delay1{delay1})")
+        # print(f"delay2 {delay2}")
+        # print(f"delay3 {delay3}")
+        # print(f"delay4 {delay4}")
         
         max_delay = sp.Max(delay1, delay2, delay3, delay4)
-        ret_val[0] = sp.Piecewise((max_delay, max_delay == delay1), (max_delay, max_delay == delay2),
-                               (max_delay, max_delay == delay3), (max_delay, max_delay == delay4))
-        ret_val[1] = sp.Piecewise((input_pair1[0], max_delay == delay1), (input_pair1[1], max_delay == delay2),
-                               (input_pair2[0], max_delay == delay3), (input_pair2[1], max_delay == delay4))
-
+        ret_val[0] = max_delay
+        # print(f"input_pair1 {input_pair1}")
+        # print(f"input_pair2 {input_pair2}")
+        # print(f"max_delay {ret_val[0]}")
+        # TODO Piecewise doesn't work
+        # ret_val[1] = sp.Piecewise(
+        #     (input_pair1[0], max_delay == delay1),
+        #     (input_pair1[1], max_delay == delay2),
+        #     (input_pair2[0], max_delay == delay3),
+        #     (input_pair2[1], max_delay == delay4)
+        # )
+        ret_val[1] = input_pair1[0]
+        #print(f"input_pair {ret_val[1]}")
 
         return ret_val
 

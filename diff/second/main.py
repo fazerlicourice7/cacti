@@ -38,7 +38,7 @@ if __name__ == "__main__":
     print(f"Ndwl = {Ndwl}, Ndbl = {Ndbl}, Ndcm = {Ndcm}, Nspd = {Nspd}, Ndsam_lev_1 = {Ndsam_lev_1}, Ndsam_lev_2 = {Ndsam_lev_2}")
     
     is_tag = False
-    pure_ram = True # g_ip.pure_ram
+    pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
     is_main_mem = g_ip.is_main_mem
 
@@ -54,16 +54,17 @@ if __name__ == "__main__":
     # print("SETUP MAT")
     # mat = Mat(dyn_p)
 
-    # with open('mat_instance_cam.pkl', 'wb') as f:
+    # with open('mat_instance_cache-1.pkl', 'wb') as f:
     #     pickle.dump(mat, f)
 
-    # print(f"SANITY CHECK {mat.delay_bitline}")
+    # print(f'**delay_bitline: {mat.delay_bitline}')
+    # print("SANITY CEHCK")
     # print(mat.delay_writeback)
     # print(mat.delay_sa)
     # print(mat.delay_subarray_out_drv)
     # print(mat.delay_comparator)
 
-    with open('mat_instance_cache.pkl', 'rb') as f:
+    with open('mat_instance_cache-1.pkl', 'rb') as f:
         mat = pickle.load(f)
 
     # print(f"SANITY CHECK {mat.row_dec.nodes_DSTN}")
@@ -74,7 +75,8 @@ if __name__ == "__main__":
     # print("HUHHH???????")
 
     # print("COMPUTE DELAYS")
-    # mat.compute_delays(0)
+    mat.compute_delays(0)
+    print(f'num_rows {mat.subarray.num_rows}')
 
     # print(mat.delay_fa_tag)
     # print(mat.delay_cam)
@@ -99,7 +101,7 @@ if __name__ == "__main__":
     # print(f'**delay_cam: {mat.delay_cam}')
     # print(f'**delay_before_decoder: {mat.delay_before_decoder}')
 
-    # #This printed
+    # # #This printed
     # print(f'**delay_bitline: {mat.delay_bitline}')
     # print(f'**delay_wl_reset: {mat.delay_wl_reset}')
     # print(f'**delay_bl_restore: {mat.delay_bl_restore}')
@@ -122,16 +124,28 @@ if __name__ == "__main__":
 
     # print(f'**delay_comparator: {mat.delay_comparator}') #for tag and not FA
 
+    # print(f"self.bank.mat.r_predec.delay: {mat.r_predec.delay}")
+    # print(f"self.bank.mat.b_mux_predec.delay: {mat.b_mux_predec.delay}")
+    # print(f"self.bank.mat.sa_mux_lev_1_predec.delay: {mat.sa_mux_lev_1_predec.delay}")
+    # print(f"self.bank.mat.sa_mux_lev_2_predec.delay: {mat.sa_mux_lev_2_predec.delay}")
+
+    # print(f"self.bank.mat.row_dec.delay: {mat.row_dec.delay}")
+
     ### END MAT
 
     bank = Bank(dyn_p, mat)
-    print("Comptue bank")
-    print(bank.mat.r_predec.delay)
+    # print("Comptue bank")
+    # print(bank.mat.r_predec.delay)
+    # print(f"self.bank.mat.r_predec.delay: {bank.mat.r_predec.delay}")
+    # print(f"self.bank.mat.b_mux_predec.delay: {bank.mat.b_mux_predec.delay}")
+    # print(f"self.bank.mat.sa_mux_lev_1_predec.delay: {bank.mat.sa_mux_lev_1_predec.delay}")
+    # print(f"self.bank.mat.sa_mux_lev_2_predec.delay: {bank.mat.sa_mux_lev_2_predec.delay}")
+
     uca = UCA(dyn_p, bank)
     print(uca.access_time)
-    # bank.compute_delays(0)
+    # # bank.compute_delays(0)
 
-    print("DONE")
+    # print("DONE")
 
     # fin_res = uca_org_t()
 

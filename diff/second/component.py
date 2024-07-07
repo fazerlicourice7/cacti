@@ -217,18 +217,18 @@ def compute_tr_width_after_folding(input_width, threshold_folding_width):
         # if input_width <= 0:
         #     return 0
 
-        # num_folded_tr = sp.ceiling(input_width / threshold_folding_width)
-        # spacing_poly_to_poly = g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact
-        # width_poly = g_ip.F_sz_um
-        # total_diff_width = (num_folded_tr * width_poly +
-        #                     (num_folded_tr + 1) * spacing_poly_to_poly)
-        # return total_diff_width
+        num_folded_tr = sp.ceiling(input_width / threshold_folding_width)
+        spacing_poly_to_poly = g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact
+        width_poly = g_ip.F_sz_um
+        total_diff_width = (num_folded_tr * width_poly +
+                            (num_folded_tr + 1) * spacing_poly_to_poly)
+        return total_diff_width
         
-        result = sp.Piecewise(
-            (0, input_width <= 0),  # Return 0 if input_width <= 0
-            (sp.ceiling(input_width / threshold_folding_width) * g_ip.F_sz_um +
-            (sp.ceiling(input_width / threshold_folding_width) + 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact),
-            True)  # TODO CHECKCalculate total_diff_width otherwise
-        )
+        # result = sp.Piecewise(
+        #     (0, input_width <= 0),  # Return 0 if input_width <= 0
+        #     (sp.ceiling(input_width / threshold_folding_width) * g_ip.F_sz_um +
+        #     (sp.ceiling(input_width / threshold_folding_width) + 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact),
+        #     True)  # TODO CHECKCalculate total_diff_width otherwise
+        # )
 
-        return result
+        # return result

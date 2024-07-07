@@ -168,6 +168,8 @@ class Mat(Component):
             num_dec_signals += int(math.log2(self.num_subarrays_per_mat))
 
         print("CHECKPOINT 3")
+        print(f'num_dec_signals {num_dec_signals}')
+        print(f'deg_bl_muxing {self.deg_bl_muxing}')
         self.r_predec_blk1 = PredecBlk(num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, True)
         print("CHECKPOINT 3.1")
         self.r_predec_blk2 = PredecBlk(num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, False)
@@ -769,18 +771,21 @@ class Mat(Component):
 
         m = V_wl / inrisetime
 
+        print(f'tstep: {tstep}')
         # TODO Relational
         # if tstep <= (0.5 * (V_wl - v_th_mem_cell) / m):
-        #     self.delay_bitline = sp.sqrt(2 * tstep * (V_wl - v_th_mem_cell) / m)
+        self.delay_bitline = sp.sqrt(2 * tstep * (V_wl - v_th_mem_cell) / m)
         # else:
         #     self.delay_bitline = tstep + (V_wl - v_th_mem_cell) / (2 * m)
-        condition = tstep <= (0.5 * (V_wl - v_th_mem_cell) / m)
-        delay_bitline_if_true = sp.sqrt(2 * tstep * (V_wl - v_th_mem_cell) / m)
-        delay_bitline_if_false = tstep + (V_wl - v_th_mem_cell) / (2 * m)
+        # condition = tstep <= (0.5 * (V_wl - v_th_mem_cell) / m)
+        # delay_bitline_if_true = sp.sqrt(2 * tstep * (V_wl - v_th_mem_cell) / m)
+        # delay_bitline_if_false = tstep + (V_wl - v_th_mem_cell) / (2 * m)
 
-        # Use Piecewise to define the delay_bitline symbolically
-        self.delay_bitline = sp.Piecewise((delay_bitline_if_true, condition),
-                                    (delay_bitline_if_false, ~condition))
+        # # Use Piecewise to define the delay_bitline symbolically
+        # self.delay_bitline = sp.Piecewise((delay_bitline_if_true, condition),
+        #                             (delay_bitline_if_false, not condition))
+
+        # TODO VISIT
 
         is_fa = bool(self.dp.fully_assoc)
 

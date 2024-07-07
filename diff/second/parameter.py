@@ -2953,14 +2953,15 @@ def drain_C_(width, nchannel, stack, next_arg_thresh_folding_width_or_height_cel
 
     # TODO RELATIONAL
     num_folded_tr = sp.ceiling(width / w_folded_tr)
-    # print(num_folded_tr)
-    # print(width/w_folded_tr)
-    w_folded_tr = sp.Piecewise(
-        (width, num_folded_tr < 2),  # Set w_folded_tr to width if num_folded_tr < 2
-        (w_folded_tr, True)  # Keep w_folded_tr unchanged otherwise
-    )
-    # if (not contains_any_symbol(num_folded_tr)) and num_folded_tr < 2:
-    #     w_folded_tr = width
+    # # print(num_folded_tr)
+    # # print(width/w_folded_tr)
+    # w_folded_tr = sp.Piecewise(
+    #     (width, num_folded_tr < 2),  # Set w_folded_tr to width if num_folded_tr < 2
+    #     (w_folded_tr, True)  # Keep w_folded_tr unchanged otherwise
+    # )
+    if (not contains_any_symbol(num_folded_tr)) and num_folded_tr < 2:
+        w_folded_tr = width
+        # TODO VISIT
 
     total_drain_w = (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (stack - 1) * g_tp.spacing_poly_to_poly
     drain_h_for_sidewall = w_folded_tr
