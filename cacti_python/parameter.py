@@ -248,6 +248,7 @@ class InputParameter:
                     self.line_sz = int(line.split()[-1])
                 elif line.startswith("-associativity"):
                     self.assoc = int(line.split()[-1])
+                    print(f"associativity {self.assoc}")
                 elif line.startswith("-read-write port"):
                     self.num_rw_ports = int(line.split()[-1])
                 elif line.startswith("-exclusive read port"):
@@ -264,7 +265,8 @@ class InputParameter:
                     self.F_sz_um = float(line.split()[-1])
                     self.F_sz_nm = self.F_sz_um * 1000
                 elif line.startswith("-output/input bus"):
-                    self.out_w = int(line.split()[-1])
+                    print(f'ouput/input bus {line.split()[-1]}')
+                    self.out_w = int(float(line.split()[-1]))
                 elif line.startswith("-operating temperature"):
                     self.temp = int(line.split()[-1])
                 elif line.startswith("-cache type"):
@@ -485,7 +487,10 @@ class InputParameter:
                     interconnect_power = line.split("\"")[1]
                     self.interconect_power_gated = True if "true" in interconnect_power else False
                 elif line.startswith("-Power Gating Performance Loss"):
-                    self.perfloss = float(line.split()[-1])
+                    val = line.split()[-1]
+                    cleaned_value = val.strip('"').strip()
+                    print(cleaned_value)
+                    self.perfloss = float(cleaned_value)
                 elif line.startswith("-Print input parameters"):
                     print_input = line.split("\"")[1]
                     self.print_input_args = True if "true" in print_input else False
