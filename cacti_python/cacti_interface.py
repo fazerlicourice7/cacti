@@ -246,6 +246,7 @@ class uca_org_t:
             print("else")
             self.access_time = sp.Max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
                                    data_arr.delay_before_subarray_output_driver) + data_arr.delay_from_subarray_output_driver_to_output
+        self.access_time = self.access_time / 10
         print("uca_org_t find_delay 1")
 
     def find_energy(self):
