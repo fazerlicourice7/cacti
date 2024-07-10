@@ -1134,7 +1134,7 @@ class Predec(Component):
 
         self.power.readOp.dynamic = self.driver_power.readOp.dynamic + self.block_power.readOp.dynamic
 
-        print(f"tmp_pair {tmp_pair1[0]}")
+        # print(f"tmp_pair {tmp_pair1[0]}")
         self.delay = tmp_pair1[0]
         return tmp_pair1[1]
 
