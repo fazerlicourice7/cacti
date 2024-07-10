@@ -256,8 +256,8 @@ class Mat(Component):
             self.sram_sleep_tx = SleepTx(g_ip.perfloss, Isat_subarray, is_footer, c_wakeup_array, detalV_array, 1, self.cell)
             self.subarray.area.set_h(self.subarray.area.h + self.sram_sleep_tx.area.h)
 
-        branch_effort_predec_blk1_out = 1 << self.r_predec_blk2.number_input_addr_bits
-        branch_effort_predec_blk2_out = 1 << self.r_predec_blk1.number_input_addr_bits
+        branch_effort_predec_blk1_out = sp.Pow(2, self.r_predec_blk2.number_input_addr_bits)
+        branch_effort_predec_blk2_out = sp.Pow(2, self.r_predec_blk1.number_input_addr_bits)
         w_row_predecode_output_wires = (branch_effort_predec_blk1_out + branch_effort_predec_blk2_out) * g_tp.wire_inside_mat.pitch * (self.RWP + self.ERP + self.EWP)
 
         h_non_cell_area = (self.num_subarrays_per_mat / self.num_subarrays_per_row) * (h_bit_mux_sense_amp_precharge_sa_mux_write_driver_write_mux + h_subarray_out_drv + h_comparators)
@@ -321,7 +321,7 @@ class Mat(Component):
                 R_bl = self.subarray.num_rows * r_b_metal
                 C_bl = self.subarray.C_bl
                 self.delay_bl_restore = self.bl_precharge_eq_drv.delay + \
-                                        math.log((g_tp.sram.Vbitpre - 0.1 * self.dp.V_b_sense) / (g_tp.sram.Vbitpre - self.dp.V_b_sense)) * \
+                                        sp.log((g_tp.sram.Vbitpre - 0.1 * self.dp.V_b_sense) / (g_tp.sram.Vbitpre - self.dp.V_b_sense)) * \
                                         (R_bl_precharge * C_bl + R_bl * C_bl / 2)
 
                 outrisetime_search = self.compute_bitline_delay(outrisetime_search)
@@ -428,8 +428,8 @@ class Mat(Component):
         return outrisetime
     
     def compute_bit_mux_sa_precharge_sa_mux_wr_drv_wr_mux_h(self):
-        height = compute_tr_width_after_folding(g_tp.w_pmos_bl_precharge, self.camFlag if self.cam_cell.w else self.cell.w / (2 * (self.RWP + self.ERP + self.SCHP))) + \
-                 compute_tr_width_after_folding(g_tp.w_pmos_bl_eq, self.camFlag if self.cam_cell.w else self.cell.w / (self.RWP + self.ERP + self.SCHP))
+        height = compute_tr_width_after_folding(g_tp.w_pmos_bl_precharge, self.cam_cell.w if self.camFlag else self.cell.w / (2 * (self.RWP + self.ERP + self.SCHP))) + \
+                 compute_tr_width_after_folding(g_tp.w_pmos_bl_eq, self.cam_cell.w if self.camFlag else self.cell.w / (self.RWP + self.ERP + self.SCHP))
 
         if self.deg_bl_muxing > 1:
             height += compute_tr_width_after_folding(g_tp.w_nmos_b_mux, self.cell.w / (2 * (self.RWP + self.ERP)))
@@ -528,7 +528,7 @@ class Mat(Component):
         r_b_metal = self.cam_cell.h * g_tp.wire_local.R_per_um
         R_bl = (self.subarray.num_rows + 1) * r_b_metal
         C_bl = self.subarray.C_bl_cam
-        self.delay_cam_sl_restore = self.sl_precharge_eq_drv.delay + log(g_tp.cam.Vbitpre) * (R_bl_precharge * C_bl + R_bl * C_bl / 2)
+        self.delay_cam_sl_restore = self.sl_precharge_eq_drv.delay + sp.log(g_tp.cam.Vbitpre) * (R_bl_precharge * C_bl + R_bl * C_bl / 2)
 
         out_time_ramp = self.sl_data_drv.compute_delay(inrisetime)
         self.delay_matchchline += self.sl_data_drv.delay
@@ -549,7 +549,7 @@ class Mat(Component):
         R_ml_precharge = tr_R_on(Wfaprechp, PCH, 1, self.is_dram)
         R_ml = Rwire
         C_ml = Cwire + c_intrinsic
-        self.delay_cam_ml_reset = self.ml_precharge_drv.delay + log(g_tp.cam.Vbitpre) * (R_ml_precharge * C_ml + R_ml * C_ml / 2)
+        self.delay_cam_ml_reset = self.ml_precharge_drv.delay + sp.log(g_tp.cam.Vbitpre) * (R_ml_precharge * C_ml + R_ml * C_ml / 2)
 
         tf = rd * (c_intrinsic + Cwire / 2 + c_gate_load) + Rwire * (Cwire / 2 + c_gate_load)
         this_delay = horowitz(out_time_ramp, tf, VTHFA2, VTHFA3, FALL)
@@ -605,7 +605,7 @@ class Mat(Component):
         rd = tr_R_on(W_hit_miss_p, PCH, 1, self.is_dram, False, False)
         R_hit_miss = Rwire
         C_hit_miss = Cwire + c_intrinsic
-        self.delay_hit_miss_reset = log(g_tp.cam.Vbitpre) * (rd * C_hit_miss + R_hit_miss * C_hit_miss / 2)
+        self.delay_hit_miss_reset = sp.log(g_tp.cam.Vbitpre) * (rd * C_hit_miss + R_hit_miss * C_hit_miss / 2)
         dynSearchEng += (c_intrinsic + Cwire + c_gate_load) * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd
 
         c_intrinsic = 2 * drain_C_(W_hit_miss_n, NCH, 2, 1, g_tp.cell_h_def, self.is_dram)
@@ -947,7 +947,7 @@ class Mat(Component):
         gatelkgCurrent += cmos_Ig_leakage(g_tp.w_eval_inv_n, g_tp.w_eval_inv_p, 1, inv, self.is_dram) * 4 * A
         gatelkgCurrent += cmos_Ig_leakage(g_tp.w_comp_n, g_tp.w_comp_n, 1, inv, self.is_dram) * 4 * A
 
-        tstep = (r2 * c2 + (r1 + r2) * c1) * log(1.0 / VTHMUXNAND)
+        tstep = (r2 * c2 + (r1 + r2) * c1) * sp.log(1.0 / VTHMUXNAND)
         m = g_tp.peri_global.Vdd / nextinputtime
 
         # TODO RELATIONAL

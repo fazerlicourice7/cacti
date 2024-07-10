@@ -134,16 +134,16 @@ class Subarray(Component):
                 C_b_row_drain_C = drain_C_(g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
                 self.C_bl = (self.num_rows + 1) * (C_b_row_drain_C + C_b_metal)
 
-class DynamicParameter:
-    def __init__(self, num_r_subarray, num_c_subarray, tag_num_c_subarray, data_num_c_subarray, cell, cam_cell, pure_cam, ram_cell_tech_type, is_dram):
-        self.num_r_subarray = num_r_subarray
-        self.num_c_subarray = num_c_subarray
-        self.tag_num_c_subarray = tag_num_c_subarray
-        self.data_num_c_subarray = data_num_c_subarray
-        self.cell = cell
-        self.cam_cell = cam_cell
-        self.pure_cam = pure_cam
-        self.ram_cell_tech_type = ram_cell_tech_type
-        self.is_dram = is_dram
+# class DynamicParameter:
+#     def __init__(self, num_r_subarray, num_c_subarray, tag_num_c_subarray, data_num_c_subarray, cell, cam_cell, pure_cam, ram_cell_tech_type, is_dram):
+#         self.num_r_subarray = num_r_subarray
+#         self.num_c_subarray = num_c_subarray
+#         self.tag_num_c_subarray = tag_num_c_subarray
+#         self.data_num_c_subarray = data_num_c_subarray
+#         self.cell = cell
+#         self.cam_cell = cam_cell
+#         self.pure_cam = pure_cam
+#         self.ram_cell_tech_type = ram_cell_tech_type
+#         self.is_dram = is_dram
 
 

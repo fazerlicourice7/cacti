@@ -155,8 +155,8 @@ def height_sense_amplifier(pitch_sense_amp):
 
 def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dram_, is_wl_tr_, max_w_nmos):
     #TODO deleted int
-    print(f'F is this {F}')
-    print(f'F is this {fopt}')
+    # print(f'F is this {F}')
+    # print(f'F is this {fopt}')
     num_gates = sp.log(F) / sp.log(fopt)
     if(F == 0):
         num_gates = 2
@@ -222,6 +222,8 @@ def compute_tr_width_after_folding(input_width, threshold_folding_width):
         # if input_width <= 0:
         #     return 0
 
+        print(f"input_widht {input_width}")
+        print(f"thresh {threshold_folding_width}")
         num_folded_tr = sp.ceiling(input_width / threshold_folding_width)
         spacing_poly_to_poly = g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact
         width_poly = g_ip.F_sz_um

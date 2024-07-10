@@ -237,7 +237,6 @@ class InputParameter:
                 line = line.strip()
                 if line.startswith("-size"):
                     self.cache_sz = int(line.split()[-1])
-                    print(f"cache size: {self.cache_sz}GB")
                 elif line.startswith("-page size"):
                     self.page_sz_bits = int(line.split()[-1])
                 elif line.startswith("-burst length"):
@@ -248,7 +247,6 @@ class InputParameter:
                     self.line_sz = int(line.split()[-1])
                 elif line.startswith("-associativity"):
                     self.assoc = int(line.split()[-1])
-                    print(f"associativity {self.assoc}")
                 elif line.startswith("-read-write port"):
                     self.num_rw_ports = int(line.split()[-1])
                 elif line.startswith("-exclusive read port"):
@@ -265,7 +263,6 @@ class InputParameter:
                     self.F_sz_um = float(line.split()[-1])
                     self.F_sz_nm = self.F_sz_um * 1000
                 elif line.startswith("-output/input bus"):
-                    print(f'ouput/input bus {line.split()[-1]}')
                     self.out_w = int(float(line.split()[-1]))
                 elif line.startswith("-operating temperature"):
                     self.temp = int(line.split()[-1])
@@ -716,6 +713,7 @@ class InputParameter:
         NSER = self.num_se_rd_ports
         SCHP = self.num_search_ports
 
+        print("HAD SET B-1")
         if (RWP + ERP + EWP) < 1:
             print("Must have at least one port")
             return False
@@ -764,6 +762,7 @@ class InputParameter:
         if RWP == 0 and ERP == 0 and SCHP > 0 and (self.fully_assoc or self.pure_cam):
             ERP = SCHP
 
+        print("HAD SET B0")
         if self.assoc == 0:
             A = C / B
         else:
@@ -782,6 +781,8 @@ class InputParameter:
             return False
 
         self.block_sz = B
+        # TODO REMOVE
+        print("HAD SET B")
 
         if seq_access:
             self.tag_assoc = A
@@ -2542,17 +2543,21 @@ class DynamicParameter:
         assert NUMBER_STACKED_DIE_LAYERS == 1
         capacity_per_die = g_ip.cache_sz
 
-        if self.Ndwl != 1 or self.Ndcm != 1 or self.Nspd < 1 or self.Nspd > 1 or self.Ndsam_lev_1 != 1 or self.Ndsam_lev_2 != 1 or self.Ndbl < 2:
-            return
+        # TODO CHECK
+        # if self.Ndwl != 1 or self.Ndcm != 1 or self.Nspd < 1 or self.Nspd > 1 or self.Ndsam_lev_1 != 1 or self.Ndsam_lev_2 != 1 or self.Ndbl < 2:
+        #     return
 
         if g_ip.specific_tag:
             self.tagbits = g_ip.tag_w
         else:
+            print(f'blksz {g_ip.block_sz}')
             self.tagbits = ADDRESS_BITS + EXTRA_TAG_BITS - _log2(g_ip.block_sz)
         self.tagbits = (((self.tagbits + 3) >> 2) << 2)
 
-        self.tag_num_r_subarray = int(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * self.Ndbl))
+        # TODO check ceiling
+        self.tag_num_r_subarray = math.ceil(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * self.Ndbl))
         self.tag_num_c_subarray = sp.ceiling((self.tagbits * self.Nspd / self.Ndwl))
+
         if self.tag_num_r_subarray == 0:
             return
         if self.tag_num_r_subarray > MAXSUBARRAYROWS:
@@ -2584,7 +2589,7 @@ class DynamicParameter:
 
         c_b_metal = self.cell.h * wire_local.C_per_um
         c_b_metal = self.cam_cell.h * wire_local.C_per_um
-        self.V_b_sense = max(0.05 * g_tp.sram_cell.Vdd, VBITSENSEMIN)
+        self.V_b_sense = sp.Max(0.05 * g_tp.sram_cell.Vdd, VBITSENSEMIN)
         self.deg_bl_muxing = 1
 
         Cbitrow_drain_cap = drain_C_(g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
@@ -2625,8 +2630,8 @@ class DynamicParameter:
         self.num_di_b_subbank = self.num_di_b_mat * self.num_act_mats_hor_dir
         self.num_si_b_subbank = self.num_si_b_mat
 
-        num_addr_b_row_dec = _log2(self.num_r_subarray)
-        num_addr_b_row_dec += _log2(self.num_subarrays / self.num_mats)
+        num_addr_b_row_dec = sp.log(self.num_r_subarray, 2)
+        num_addr_b_row_dec += sp.log(self.num_subarrays / self.num_mats, 2)
         number_subbanks = self.num_mats / self.num_act_mats_hor_dir
         self.number_subbanks_decode = _log2(number_subbanks)
 
@@ -2688,7 +2693,8 @@ class DynamicParameter:
             if g_ip.is_3d_mem:
                 capacity_per_die_double = float(g_ip.cache_sz) / g_ip.num_die_3d
                 self.num_c_subarray = g_ip.page_sz_bits / self.Ndwl
-                self.num_r_subarray = 1 << sp.floor(_log2(float(g_ip.cache_sz) / g_ip.num_die_3d / self.num_c_subarray / g_ip.nbanks / self.Ndbl / self.Ndwl * 1024 * 1024 * 1024) + 0.5)
+                # TODO check used to be 1 <<
+                self.num_r_subarray = sp.Pow(2, sp.floor(_log2(float(g_ip.cache_sz) / g_ip.num_die_3d / self.num_c_subarray / g_ip.nbanks / self.Ndbl / self.Ndwl * 1024 * 1024 * 1024) + 0.5))
                 if g_ip.print_detail_debug:
                     print(f"parameter.cc: capacity_per_die_double = {capacity_per_die_double} Gbit")
                     print(f"parameter.cc: g_ip.nbanks * Ndbl * Ndwl = {g_ip.nbanks * self.Ndbl * self.Ndwl}")
@@ -2969,7 +2975,7 @@ def drain_C_(width, nchannel, stack, next_arg_thresh_folding_width_or_height_cel
 
     # TODO RELATIONAL
     num_folded_tr = sp.ceiling(width / w_folded_tr)
-    # # print(num_folded_tr)
+    # print(f'num_folded_tr {num_folded_tr}')
     # # print(width/w_folded_tr)
     # w_folded_tr = sp.Piecewise(
     #     (width, num_folded_tr < 2),  # Set w_folded_tr to width if num_folded_tr < 2

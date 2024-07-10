@@ -627,12 +627,12 @@ class PredecBlk(Component):
 
             print("flag 0")
 
-            print(f'debug_num_addr_bits_dec {self.debug_num_addr_bits_dec}')
-            print(f'blk1_num_input_addr_bits {self.debug_blk1_num_input_addr_bits}')
-            print(f'blk2_num_input_addr_bits {self.debug_blk2_num_input_addr_bits}')
+            # print(f'debug_num_addr_bits_dec {self.debug_num_addr_bits_dec}')
+            # print(f'blk1_num_input_addr_bits {self.debug_blk1_num_input_addr_bits}')
+            # print(f'blk2_num_input_addr_bits {self.debug_blk2_num_input_addr_bits}')
 
-            print(f'number input addr_bits {self.number_input_addr_bits}')
-            print(f'numberinputs L1 gate: {self.number_inputs_L1_gate}')
+            # print(f'number input addr_bits {self.number_input_addr_bits}')
+            # print(f'numberinputs L1 gate: {self.number_inputs_L1_gate}')
             
             if self.flag_two_unique_paths or self.number_inputs_L1_gate == 2:
                 print("flag 1")
