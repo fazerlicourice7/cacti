@@ -230,7 +230,7 @@ class Wire(Component):
         nsize = R_to_w(driver_res, NCH)
 
         nsize = min(nsize, g_tp.max_w_nmos_)
-        nsize = sp.Max(nsize, g_tp.min_w_nmos_)
+        nsize = symbolic_convex_max(nsize, g_tp.min_w_nmos_)
 
         if rwire * cwire > 8 * g_tp.FO4:
             nsize = g_tp.max_w_nmos_
@@ -239,7 +239,7 @@ class Wire(Component):
                     gate_C(2 * g_tp.min_w_nmos_, 0) + gate_C(2 * self.min_w_pmos, 0)))
         req_cin = ((2 + beta / 1 + beta) * gate_C(nsize, 0)) / st_eff
         inv_size = req_cin / (gate_C(self.min_w_pmos, 0) + gate_C(g_tp.min_w_nmos_, 0))
-        inv_size = sp.Max(inv_size, 1)
+        inv_size = symbolic_convex_max(inv_size, 1)
 
         res_eq = 2 * tr_R_on(g_tp.min_w_nmos_, NCH, 1)
         cap_eq = (2 * drain_C_(self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +

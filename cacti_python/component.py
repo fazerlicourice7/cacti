@@ -23,7 +23,7 @@ def compute_diffusion_width(num_stacked_in, num_folded_tr):
     w_poly = g_ip.F_sz_um
     spacing_poly_to_poly = g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact
 
-
+    # TODO RECENTLY COMMENTED
     total_diff_w = sp.Piecewise(
         (2 * spacing_poly_to_poly + num_stacked_in * w_poly + (num_stacked_in - 1) * g_tp.spacing_poly_to_poly, num_folded_tr <= 1),
         (2 * spacing_poly_to_poly + num_stacked_in * w_poly + (num_stacked_in - 1) * g_tp.spacing_poly_to_poly +
@@ -31,6 +31,7 @@ def compute_diffusion_width(num_stacked_in, num_folded_tr):
         (num_folded_tr - 1) * num_stacked_in * w_poly +
         (num_folded_tr - 1) * (num_stacked_in - 1) * g_tp.spacing_poly_to_poly, num_folded_tr > 1)
     )
+    # total_diff_w = 2 * spacing_poly_to_poly + num_stacked_in * w_poly + (num_stacked_in - 1) * g_tp.spacing_poly_to_poly
     # TODO Important can't do this symbolically
     # total_diff_w = (2 * spacing_poly_to_poly +  # for both source and drain
     #                 num_stacked_in * w_poly +
@@ -116,17 +117,20 @@ def compute_gate_area(gate_type, num_inputs, w_pmos, w_nmos, h_gate):
         print(f"Unknown gate type: {gate_type}")
         sys.exit(1)
 
-    gate_w = sp.Max(total_ndiff_w, total_pdiff_w)
+    gate_w = symbolic_convex_max(total_ndiff_w, total_pdiff_w)
 
     # TODO Important can't do this symbolically
     # if w_folded_nmos > w_nmos:
     #     gate_h = (w_nmos + w_pmos + g_tp.MIN_GAP_BET_P_AND_N_DIFFS + 2 * g_tp.HPOWERRAIL)
     # else:
     #     gate_h = h_gate
+
+    # TODO RECENTLY COMMENTED
     gate_h = sp.Piecewise(
         ((w_nmos + w_pmos + g_tp.MIN_GAP_BET_P_AND_N_DIFFS + 2 * g_tp.HPOWERRAIL), w_folded_nmos > w_nmos),
         (h_gate, True)  # TODO CHECK Else case
     )
+    # gate_h = (w_nmos + w_pmos + g_tp.MIN_GAP_BET_P_AND_N_DIFFS + 2 * g_tp.HPOWERRAIL)
 
     return gate_w * gate_h  # Assuming area is width * height
 
@@ -164,11 +168,13 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
     # print("End")
     # print("")
 
-    num_gates += (num_gates % 2)
-    num_gates = sp.Max(num_gates, num_gates_min)
+    # TODO MOD Important
+    # num_gates += (num_gates % 2)
+    num_gates += (num_gates + 2)
+    num_gates = symbolic_convex_max(num_gates, num_gates_min)
 
     f = sp.Pow(F, 1.0 / num_gates)
-    num_gates = 3 # TODO IMPORTANT this can't be done synbolically
+    num_gates = 4 # TODO IMPORTANT this can't be done synbolically
     i = num_gates - 1
     #TODO IMPORTANT this can't be done synbolically
     # i = 2
@@ -183,7 +189,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
     #TODO important nan shortcut
     if not contains_any_symbol(w_n[i]) and math.isnan(w_n[i]):
         w_n[i] = 0
-    w_n[i] = sp.Max(w_n[i], g_tp.min_w_nmos_)
+    w_n[i] = symbolic_convex_max(w_n[i], g_tp.min_w_nmos_)
     w_p[i] = p_to_n_sz_ratio * w_n[i]
 
     #TODO IMPORTANT SINCE RELATIONAL
@@ -198,7 +204,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
     #     num_gates = sp.log(F) / sp.log(fopt) + 1
     #     num_gates += (num_gates % 2)
     #     print(f'OH NOES num_gates! {num_gates}')
-    #     num_gates = sp.Max(num_gates, num_gates_min)
+    #     num_gates = symbolic_convex_max(num_gates, num_gates_min)
     #     f = sp.Pow(F, 1.0 / (num_gates - 1))
     #     i = num_gates - 1
     #     w_n[i] = max_w_nmos
@@ -210,7 +216,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
         if w_item == sp.zoo:
             w_item = 0
         
-        w_n[i] = sp.Max(w_item, g_tp.min_w_nmos_)
+        w_n[i] = symbolic_convex_max(w_item, g_tp.min_w_nmos_)
         w_p[i] = p_to_n_sz_ratio * w_n[i]
 
     assert num_gates <= MAX_NUMBER_GATES_STAGE

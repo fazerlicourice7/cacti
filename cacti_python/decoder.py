@@ -1134,6 +1134,7 @@ class Predec(Component):
 
         self.power.readOp.dynamic = self.driver_power.readOp.dynamic + self.block_power.readOp.dynamic
 
+        print("past predec compute_delays")
         # print(f"tmp_pair {tmp_pair1[0]}")
         self.delay = tmp_pair1[0]
         return tmp_pair1[1]
@@ -1186,7 +1187,7 @@ class Predec(Component):
         #     ret_val[0] = delay
         #     ret_val[1] = input_pair2[1]
 
-        # TODO CHECK
+        # TODO MAX CHECK
         print("INSIDE MAX FUNCTION")
         delay1 = self.drv1.delay_nand2_path + self.blk1.delay_nand2_path
         delay2 = self.drv1.delay_nand3_path + self.blk1.delay_nand3_path
@@ -1198,7 +1199,14 @@ class Predec(Component):
         # print(f"delay3 {delay3}")
         # print(f"delay4 {delay4}")
         
-        max_delay = sp.Max(delay1, delay2, delay3, delay4)
+        # TODO MAX CHECK
+        # max_delay = sp.Max(delay1, delay2, delay3, delay4)
+        # max_delay = symbolic_convex_max(delay1, delay2)
+        # max_delay = symbolic_convex_max(max_delay, delay3)
+        # max_delay = symbolic_convex_max(max_delay, delay4)
+        max_delay = delay1
+        print("past max_delay set")
+
         ret_val[0] = max_delay
         # print(f"input_pair1 {input_pair1}")
         # print(f"input_pair2 {input_pair2}")

@@ -83,7 +83,7 @@ class Htree2(Component):
         w1 = Wire(self.wt, l_eff)
         pton_size = self.deviceType.n_to_p_eff_curr_drv_ratio
         nsize = s1 * (1 + pton_size) / (2 + pton_size)
-        nsize = sp.Max(1, nsize)
+        nsize = symbolic_convex_max(1, nsize)
 
         tc = 2 * tr_R_on(nsize * self.min_w_nmos, NCH, 1) * (
             drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) * 2 +
@@ -111,7 +111,7 @@ class Htree2(Component):
         size = s1 * (1 + pton_size) / (2 + pton_size + 1 + 2 * pton_size)
         s_eff = (gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0) + w1.wire_cap(l_eff * 1e-6, True)) / gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         tr_size = gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0) * 1 / 2 / (s_eff * gate_C(self.min_w_pmos, 0))
-        size = sp.Max(1, size)
+        size = symbolic_convex_max(1, size)
 
         res_nor = 2 * tr_R_on(size * self.min_w_pmos, PCH, 1)
         res_ptrans = tr_R_on(tr_size * self.min_w_nmos, NCH, 1)

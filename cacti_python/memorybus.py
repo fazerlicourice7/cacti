@@ -181,7 +181,7 @@ class Memorybus(Component):
                 C_ld_dec_out = gate_C(g_tp.min_w_nmos + self.min_w_pmos, 0)
                 R_wire_dec_out = 0
 
-            bank_bus_length = num_banks_ver_dir * 0.5 * sp.Max(self.length_bank, self.height_bank)
+            bank_bus_length = num_banks_ver_dir * 0.5 * symbolic_convex_max(self.length_bank, self.height_bank)
             self.bank_bus = Wire(self.wt, bank_bus_length)
 
         elif self.membus_type == MemorybusType.Col_add_path:
@@ -201,7 +201,7 @@ class Memorybus(Component):
                 C_ld_dec_out = gate_C(g_tp.min_w_nmos + self.min_w_pmos, 0)
                 R_wire_dec_out = 0
 
-            bank_bus_length = num_banks_ver_dir * 0.5 * sp.Max(self.length_bank, self.height_bank)
+            bank_bus_length = num_banks_ver_dir * 0.5 * symbolic_convex_max(self.length_bank, self.height_bank)
             self.bank_bus = Wire(self.wt, bank_bus_length)
 
         elif self.membus_type == MemorybusType.Data_path:
@@ -235,7 +235,7 @@ class Memorybus(Component):
             self.local_data_drv.compute_delay(0)
             self.local_data_drv.compute_area()
 
-            bank_bus_length = num_banks_ver_dir * 0.5 * sp.Max(self.length_bank, self.height_bank)
+            bank_bus_length = num_banks_ver_dir * 0.5 * symbolic_convex_max(self.length_bank, self.height_bank)
             self.bank_bus = Wire(self.wt, bank_bus_length)
             if g_ip.print_detail_debug:
                 print(f"memorybus.cc: bank_bus_length = {bank_bus_length}")

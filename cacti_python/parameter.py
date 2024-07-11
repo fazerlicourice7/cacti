@@ -2317,17 +2317,17 @@ class DynamicParameter:
                 self.V_b_sense = VBITSENSEMIN
                 self.dram_refresh_period = 0.9 * g_tp.dram_cell_C * VDD_STORAGE_LOSS_FRACTION_WORST * g_tp.dram_cell_Vdd / g_tp.dram_cell_I_off_worst_case_len_temp
         else:
-            self.V_b_sense = sp.Max(0.05 * g_tp.sram_cell.Vdd, VBITSENSEMIN)
+            self.V_b_sense = symbolic_convex_max(0.05 * g_tp.sram_cell.Vdd, VBITSENSEMIN)
             self.deg_bl_muxing = self.Ndcm
             Cbitrow_drain_cap = drain_C_(g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
             C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
             self.dram_refresh_period = 0
 
-        self.num_mats_h_dir = sp.Max(self.Ndwl // 2, 1)
-        self.num_mats_v_dir = sp.Max(self.Ndbl // 2, 1)
+        self.num_mats_h_dir = symbolic_convex_max(self.Ndwl // 2, 1)
+        self.num_mats_v_dir = symbolic_convex_max(self.Ndbl // 2, 1)
         self.num_mats = self.num_mats_h_dir * self.num_mats_v_dir
         print(f'NUM_MATS {self.num_mats}')
-        self.num_do_b_mat = sp.Max((self.num_subarrays / self.num_mats) * self.num_c_subarray / (self.deg_bl_muxing * self.Ndsam_lev_1 * self.Ndsam_lev_2), 1)
+        self.num_do_b_mat = symbolic_convex_max((self.num_subarrays / self.num_mats) * self.num_c_subarray / (self.deg_bl_muxing * self.Ndsam_lev_1 * self.Ndsam_lev_2), 1)
 
         # TODO relational
         # if not (self.fully_assoc or self.pure_cam) and self.num_do_b_mat < (self.num_subarrays / self.num_mats):
@@ -2589,7 +2589,7 @@ class DynamicParameter:
 
         c_b_metal = self.cell.h * wire_local.C_per_um
         c_b_metal = self.cam_cell.h * wire_local.C_per_um
-        self.V_b_sense = sp.Max(0.05 * g_tp.sram_cell.Vdd, VBITSENSEMIN)
+        self.V_b_sense = symbolic_convex_max(0.05 * g_tp.sram_cell.Vdd, VBITSENSEMIN)
         self.deg_bl_muxing = 1
 
         Cbitrow_drain_cap = drain_C_(g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
@@ -3338,6 +3338,11 @@ def tsv_capacitance(tsv_len, tsv_diam, tsv_pitch, dielec_thickness, liner_dielec
 def tsv_area(tsv_pitch):
     return tsv_pitch ** 2
 
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with these numeric solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
 
 g_ip = InputParameter()
 g_tp = TechnologyParameter()

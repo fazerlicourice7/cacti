@@ -261,7 +261,7 @@ class Mat(Component):
         w_row_predecode_output_wires = (branch_effort_predec_blk1_out + branch_effort_predec_blk2_out) * g_tp.wire_inside_mat.pitch * (self.RWP + self.ERP + self.EWP)
 
         h_non_cell_area = (self.num_subarrays_per_mat / self.num_subarrays_per_row) * (h_bit_mux_sense_amp_precharge_sa_mux_write_driver_write_mux + h_subarray_out_drv + h_comparators)
-        w_non_cell_area = sp.Max(w_row_predecode_output_wires, self.num_subarrays_per_row * w_row_decoder)
+        w_non_cell_area = symbolic_convex_max(w_row_predecode_output_wires, self.num_subarrays_per_row * w_row_decoder)
 
         if self.deg_bl_muxing > 1:
             h_bit_mux_dec_out_wires = self.deg_bl_muxing * g_tp.wire_inside_mat.pitch * (self.RWP + self.ERP)
@@ -349,6 +349,8 @@ class Mat(Component):
             outrisetime = self.sa_mux_lev_2_predec.compute_delays(inrisetime)
             self.sa_mux_lev_2_dec.compute_delays(outrisetime)
 
+            print("Computed all predec delays")
+
             if self.pure_cam:
                 outrisetime = self.compute_bitline_delay(row_dec_outrisetime)
                 outrisetime = self.compute_sa_delay(outrisetime)
@@ -421,7 +423,7 @@ class Mat(Component):
         print("CHECKPOINT 13")
 
         if not self.row_dec.exist:
-            self.delay_wl_reset = sp.Max(self.r_predec.blk1.delay, self.r_predec.blk2.delay)
+            self.delay_wl_reset = symbolic_convex_max(self.r_predec.blk1.delay, self.r_predec.blk2.delay)
 
         print("CHECKPOINT 14")
 
@@ -619,7 +621,7 @@ class Mat(Component):
         self.delay_hit_miss = horowitz(0, tf, 0.5, 0.5, FALL)
 
         if self.is_fa:
-            self.delay_matchchline += sp.Max(self.ml_to_ram_wl_drv.delay, self.delay_hit_miss)
+            self.delay_matchchline += symbolic_convex_max(self.ml_to_ram_wl_drv.delay, self.delay_hit_miss)
 
         dynSearchEng += (c_intrinsic + Cwire + c_gate_load) * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd
 

@@ -312,11 +312,24 @@ class UCA(Component):
             # if math.isnan(max_delay_before_row_decoder) or math.isnan(delay_inside_mat) or math.isnan(delay_array_to_mat) or math.isnan( self.bank.mat.b_mux_predec.delay) or math.isnan(self.bank.mat.bit_mux_dec.delay ) or math.isnan(self.bank.mat.delay_sa):
             #     self.delay_before_subarray_output_driver = 1
             # else:
-            self.delay_before_subarray_output_driver = sp.Max(max_delay_before_row_decoder + delay_inside_mat,
-                                                        delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa,
-                                                        sp.Max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder))
+            # TODO MAX CHECK
+            # self.delay_before_subarray_output_driver = sp.Max(max_delay_before_row_decoder + delay_inside_mat,
+            #                                             delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa,
+            #                                             sp.Max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder))
+            
+            # print("before uca compute delay max")
+            # self.delay_before_subarray_output_driver = symbolic_convex_max(max_delay_before_row_decoder + delay_inside_mat, 
+            #                                                                (delay_array_to_mat + self.bank.mat.b_mux_predec.delay + 
+            #                                                                self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa))
+            # tmp_max = symbolic_convex_max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder)
+            # self.delay_before_subarray_output_driver = symbolic_convex_max(self.delay_before_subarray_output_driver, tmp_max)
+
+            # selected random
+            self.delay_before_subarray_output_driver = delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa
+
             self.delay_from_subarray_out_drv_to_out = self.bank.mat.delay_subarray_out_drv_htree + self.bank.htree_out_data.delay + self.htree_out_data.delay
             self.access_time = self.bank.mat.delay_comparator
+            print("after uca compute delay max")
 
             if self.dp.fully_assoc:
                 ram_delay_inside_mat = self.bank.mat.delay_bitline + self.bank.mat.delay_matchchline
@@ -326,7 +339,7 @@ class UCA(Component):
 
             if self.dp.is_main_mem:
                 t_rcd = max_delay_before_row_decoder + delay_inside_mat
-                cas_latency = sp.Max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder) + self.delay_from_subarray_out_drv_to_out
+                cas_latency = symbolic_convex_max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder) + self.delay_from_subarray_out_drv_to_out
                 self.access_time = t_rcd + cas_latency
 
             if not self.dp.fully_assoc:
@@ -336,36 +349,55 @@ class UCA(Component):
 
                 #print(f'temp {temp}')
                 print(f'UCA AFTER TEMP')
-                # temp = sp.Max(temp, self.bank.mat.r_predec.delay)
-                # temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
-                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
-                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
-                temp = sp.Max(
-                    temp,
-                    self.bank.mat.r_predec.delay,
-                    self.bank.mat.b_mux_predec.delay,
-                    self.bank.mat.sa_mux_lev_1_predec.delay,
-                    self.bank.mat.sa_mux_lev_2_predec.delay
-                )               
-                
+                # temp = symbolic_convex_max(temp, self.bank.mat.r_predec.delay)
+                # temp = symbolic_convex_max(temp, self.bank.mat.b_mux_predec.delay)
+                # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
+                # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+                # TODO MAX CHECK
+                # temp = sp.Max(
+                #     temp,
+                #     self.bank.mat.r_predec.delay,
+                #     self.bank.mat.b_mux_predec.delay,
+                #     self.bank.mat.sa_mux_lev_1_predec.delay,
+                #     self.bank.mat.sa_mux_lev_2_predec.delay
+                # )               
+
+                # TODO need to speed this up somehow
+                print ("before max temp")
+                # max1 = symbolic_convex_max(self.bank.mat.r_predec.delay, self.bank.mat.b_mux_predec.delay)
+                # max2 = symbolic_convex_max(self.bank.mat.sa_mux_lev_1_predec.delay, self.bank.mat.sa_mux_lev_2_predec.delay)
+                # max3 = symbolic_convex_max(max1, max2)
+                # temp = symbolic_convex_max(temp, max3)
+                temp = self.bank.mat.r_predec.delay
+                print ("after max temp")
+
             else:
                 ram_delay_inside_mat = self.bank.mat.delay_bitline + self.bank.mat.delay_matchchline
                 temp = ram_delay_inside_mat + self.bank.mat.delay_cam_sl_restore + self.bank.mat.delay_cam_ml_reset + self.bank.mat.delay_bl_restore + self.bank.mat.delay_hit_miss_reset + self.bank.mat.delay_wl_reset
-                # temp = sp.Max(temp, self.bank.mat.b_mux_predec.delay)
-                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
-                # temp = sp.Max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
-                temp = sp.Max(
-                    temp,
-                    self.bank.mat.b_mux_predec.delay,
-                    self.bank.mat.sa_mux_lev_1_predec.delay,
-                    self.bank.mat.sa_mux_lev_2_predec.delay
-                )
+                # temp = symbolic_convex_max(temp, self.bank.mat.b_mux_predec.delay)
+                # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
+                # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+                
+                # TODO MAX CHECK
+                # temp = sp.Max(
+                #     temp,
+                #     self.bank.mat.b_mux_predec.delay,
+                #     self.bank.mat.sa_mux_lev_1_predec.delay,
+                #     self.bank.mat.sa_mux_lev_2_predec.delay
+                # )
+                print ("before max temp")
+                # TODO NEED to speed this up somehow
+                # max1 = symbolic_convex_max(temp, self.bank.mat.b_mux_predec.delay)
+                # max2 = symbolic_convex_max(self.bank.mat.sa_mux_lev_2_predec.delay, self.bank.mat.sa_mux_lev_1_predec.delay)
+                # temp = symbolic_convex_max(max1, max2)
+                temp = self.bank.mat.b_mux_predec.delay
+                print ("after max temp")
 
             print ("UCA MAX NEXT")
             print(g_ip.rpters_in_htree)
             g_ip.rpters_in_htree = True
             if g_ip.rpters_in_htree == False:
-                temp = sp.Max(temp, self.bank.htree_in_add.max_unpipelined_link_delay)
+                temp = symbolic_convex_max(temp, self.bank.htree_in_add.max_unpipelined_link_delay)
             self.cycle_time = temp
 
             delay_req_network = max_delay_before_row_decoder
@@ -378,7 +410,7 @@ class UCA(Component):
             #     delay_rep_network = 0
             # print(delay_req_network)
             # print(delay_rep_network)
-            self.multisubbank_interleave_cycle_time = sp.Max(delay_req_network, delay_rep_network)
+            self.multisubbank_interleave_cycle_time = symbolic_convex_max(delay_req_network, delay_rep_network)
 
             if self.dp.is_main_mem:
                 self.multisubbank_interleave_cycle_time = self.htree_in_add.delay
@@ -503,7 +535,7 @@ class UCA(Component):
                 ) * self.dp.num_act_mats_hor_dir
             )
             self.dyn_read_energy_remaining_words_in_burst = (
-                sp.Max(g_ip.burst_len / g_ip.int_prefetch_w, 1) - 1
+                symbolic_convex_max(g_ip.burst_len / g_ip.int_prefetch_w, 1) - 1
             ) * (
                 (
                     self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic +
@@ -647,7 +679,7 @@ class UCA(Component):
                     self.power_routing_to_bank.readOp.dynamic -
                     self.bank.htree_out_data.power.readOp.dynamic +
                     self.bank.htree_in_data.power.readOp.dynamic
-                ) * (sp.Max(g_ip.burst_len / g_ip.int_prefetch_w, 1) - 1)
+                ) * (symbolic_convex_max(g_ip.burst_len / g_ip.int_prefetch_w, 1) - 1)
             )
             
             if not self.dp.is_dram:
