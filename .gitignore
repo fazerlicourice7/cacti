@@ -1,3 +1,6 @@
+**/__pycache__/**
+.DS_Store
+
 cacti.bc
 cacti.ll
 klee-build
