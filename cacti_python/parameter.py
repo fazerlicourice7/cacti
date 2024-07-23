@@ -672,6 +672,7 @@ class InputParameter:
             exit(-1)
 
     def error_checking(self):
+        print("IN ERROR CHECKING")
         A = 0
         seq_access = False
         fast_access = True
@@ -2684,7 +2685,8 @@ class DynamicParameter:
                 self.tagbits = g_ip.tag_w
             else:
                 self.tagbits = ADDRESS_BITS + EXTRA_TAG_BITS - sp.log(capacity_per_die, 2) + _log2(g_ip.tag_assoc * 2 - 1)
-
+            
+            print(f'{g_ip.nbanks} {g_ip.block_sz} {g_ip.tag_assoc} {self.Ndbl} {self.Nspd}')
             self.num_r_subarray = sp.ceiling(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * g_ip.tag_assoc * self.Ndbl * self.Nspd))
             self.num_c_subarray = sp.ceiling((self.tagbits * g_ip.tag_assoc * self.Nspd / self.Ndwl))
         else:
@@ -3052,7 +3054,8 @@ def horowitz(inputramptime, tf, vs1, vs2, rise):
         # print(f"tf: {tf}")
         # print(f"tf result: {tf * (-sp.log(vs1) if vs1 < 1 else sp.log(vs1))}")
         # print("ENDHEREE")
-        return tf * (-sp.log(vs1) if vs1 < 1 else sp.log(vs1))
+        # TODO RELATIONAL
+        return sp.Piecewise((-sp.log(vs1), vs1 < 1), (sp.log(vs1), vs1 >= 1))
         # print("here???")
         # return tf * -sp.log(vs1)
 

@@ -67,6 +67,10 @@ def compute_gate_area(gate_type, num_inputs, w_pmos, w_nmos, h_gate):
 
     # if w_pmos <= 0.0 or w_nmos <= 0.0:
     #     return 0.0
+
+    if isinstance(w_pmos, (int, float)) and isinstance(w_nmos, (int, float)):
+        if w_pmos <= 0.0 or w_nmos <= 0.0:
+            return 0.0
     
     print("compute_gate_area CHECKPINT 0")
     # TODO RELATIONAL
@@ -90,6 +94,11 @@ def compute_gate_area(gate_type, num_inputs, w_pmos, w_nmos, h_gate):
     #     return 0.0
     # if simplify_ratio_p_to_n.is_integer and (simplify_ratio_p_to_n >= 1 or simplify_ratio_p_to_n <= 0):
     #     return 0.0
+    if isinstance(ratio_p_to_n, (int, float)):
+        if ratio_p_to_n <= 0 or ratio_p_to_n >= 1:
+            return 0.0
+
+    
     
     print("compute_gate_area CHECKPINT 2")
     
@@ -101,6 +110,10 @@ def compute_gate_area(gate_type, num_inputs, w_pmos, w_nmos, h_gate):
     # assert w_folded_pmos > 0
     if(w_folded_pmos == 0):
         return 0
+    if isinstance(w_folded_pmos, (int, float)):
+        if w_folded_pmos <= 0:
+            return 0
+            
     num_folded_pmos = sp.ceiling(w_pmos / w_folded_pmos)
     num_folded_nmos = sp.ceiling(w_nmos / w_folded_nmos)
 
@@ -228,20 +241,24 @@ def compute_tr_width_after_folding(input_width, threshold_folding_width):
         # if input_width <= 0:
         #     return 0
 
-        print(f"input_widht {input_width}")
-        print(f"thresh {threshold_folding_width}")
-        num_folded_tr = sp.ceiling(input_width / threshold_folding_width)
-        spacing_poly_to_poly = g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact
-        width_poly = g_ip.F_sz_um
-        total_diff_width = (num_folded_tr * width_poly +
-                            (num_folded_tr + 1) * spacing_poly_to_poly)
-        return total_diff_width
-        
-        # result = sp.Piecewise(
-        #     (0, input_width <= 0),  # Return 0 if input_width <= 0
-        #     (sp.ceiling(input_width / threshold_folding_width) * g_ip.F_sz_um +
-        #     (sp.ceiling(input_width / threshold_folding_width) + 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact),
-        #     True)  # TODO CHECKCalculate total_diff_width otherwise
-        # )
+        if isinstance(input_width, (int, float)):
+            if input_width <= 0:
+                return 0
 
-        # return result
+        # print(f"input_widht {input_width}")
+        # print(f"thresh {threshold_folding_width}")
+        # num_folded_tr = sp.ceiling(input_width / threshold_folding_width)
+        # spacing_poly_to_poly = g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact
+        # width_poly = g_ip.F_sz_um
+        # total_diff_width = (num_folded_tr * width_poly +
+        #                     (num_folded_tr + 1) * spacing_poly_to_poly)
+        # return total_diff_width
+        
+        result = sp.Piecewise(
+            (0, input_width <= 0),  # Return 0 if input_width <= 0
+            (sp.ceiling(input_width / threshold_folding_width) * g_ip.F_sz_um +
+            (sp.ceiling(input_width / threshold_folding_width) + 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact),
+            True)  # TODO CHECKCalculate total_diff_width otherwise
+        )
+
+        return result

@@ -385,7 +385,11 @@ class PredecBlk(Component):
         self.number_inputs_L1_gate = number_inputs_L1_gate
         self.flag_L2_gate = flag_L2_gate
 
+        print(f'PREDEC Compute widths: end')
+
         if flag_L2_gate:
+            print(f'PREDEC Compute widths: flagL2_gate')
+            print(f'PREDEC Compute widths: {g_tp.min_w_nmos_}, {p_to_n_sz_ratio}')
             if flag_L2_gate == 2:
                 self.w_L2_n[0] = 2 * g_tp.min_w_nmos_
                 F = gnand2
@@ -445,6 +449,8 @@ class PredecBlk(Component):
                     g_tp.max_w_nmos_
                 )
         else:
+            print(f'PREDEC Compute widths: else flagL2_gate')
+            print(f'PREDEC Compute widths: {g_tp.min_w_nmos_}, {p_to_n_sz_ratio}')
             if self.number_inputs_L1_gate == 2:
                 self.w_L1_nand2_n[0] = 2 * g_tp.min_w_nmos_
                 self.w_L1_nand2_p[0] = p_to_n_sz_ratio * g_tp.min_w_nmos_
@@ -460,6 +466,7 @@ class PredecBlk(Component):
                     self.is_dram_, False,
                     g_tp.max_w_nmos_
                 )
+                print(f'PREDEC In Input L1 gate 2: {self.w_L1_nand2_n[0]}, {self.w_L1_nand2_p[0]}')
             elif self.number_inputs_L1_gate == 3:
                 self.w_L1_nand3_n[0] = 3 * g_tp.min_w_nmos_
                 self.w_L1_nand3_p[0] = p_to_n_sz_ratio * g_tp.min_w_nmos_
@@ -475,6 +482,7 @@ class PredecBlk(Component):
                     self.is_dram_, False,
                     g_tp.max_w_nmos_
                 )
+                print(f'PREDEC In Input L1 gate 3: {self.w_L1_nand2_n[0]}, {self.w_L1_nand2_p[0]}')
 
     def compute_area(self):
         if self.exist:
@@ -1204,7 +1212,7 @@ class Predec(Component):
         # max_delay = symbolic_convex_max(delay1, delay2)
         # max_delay = symbolic_convex_max(max_delay, delay3)
         # max_delay = symbolic_convex_max(max_delay, delay4)
-        max_delay = delay1
+        max_delay = delay2
         print("past max_delay set")
 
         ret_val[0] = max_delay

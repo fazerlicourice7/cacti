@@ -326,12 +326,13 @@ class Htree2(Component):
                 self.power.readOp.gate_leakage += wtemp2.power.readOp.gate_leakage * self.wire_bw
                 self.wire_bw *= 2
 
-                if ht_temp > wtemp3.repeater_spacing:
-                    s3 = wtemp3.repeater_size
-                    l_eff = wtemp3.repeater_spacing
-                else:
-                    s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
-                    l_eff = ht_temp
+                # TODO RELATIONAL
+                # if ht_temp > wtemp3.repeater_spacing:
+                s3 = wtemp3.repeater_size
+                l_eff = wtemp3.repeater_spacing
+                # else:
+                #     s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
+                #     l_eff = ht_temp
 
                 self.input_nand(s2, s3, l_eff)
 
@@ -481,12 +482,13 @@ class Htree2(Component):
                 self.power.readOp.gate_leakage += wtemp2.power.readOp.gate_leakage * self.wire_bw
                 self.wire_bw *= 2
 
-                if ht_temp > wtemp3.repeater_spacing:
-                    s3 = wtemp3.repeater_size
-                    l_eff = wtemp3.repeater_spacing
-                else:
-                    s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
-                    l_eff = ht_temp
+                # TODO RELATONAL
+                # if ht_temp > wtemp3.repeater_spacing:
+                s3 = wtemp3.repeater_size
+                l_eff = wtemp3.repeater_spacing
+                # else:
+                #     s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
+                #     l_eff = ht_temp
 
                 self.output_buffer(s2, s3, l_eff)
 

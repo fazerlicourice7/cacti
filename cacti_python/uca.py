@@ -325,7 +325,14 @@ class UCA(Component):
             # self.delay_before_subarray_output_driver = symbolic_convex_max(self.delay_before_subarray_output_driver, tmp_max)
 
             # selected random
-            self.delay_before_subarray_output_driver = delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa
+            # # Option 1
+            self.delay_before_subarray_output_driver = max_delay_before_row_decoder + delay_inside_mat
+            # # Option 2
+            # self.delay_before_subarray_output_driver = delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa
+            # # Option 3
+            # self.delay_before_subarray_output_driver = self.delay_array_to_sa_mux_lev_1_decoder
+            # Option 4
+            # self.delay_before_subarray_output_driver = self.delay_array_to_sa_mux_lev_2_decoder
 
             self.delay_from_subarray_out_drv_to_out = self.bank.mat.delay_subarray_out_drv_htree + self.bank.htree_out_data.delay + self.htree_out_data.delay
             self.access_time = self.bank.mat.delay_comparator
