@@ -294,17 +294,33 @@ class Htree2(Component):
             if not self.uca_tree:
                 # TODO important relational cannot handle
                 # if len_temp > wtemp1.repeater_spacing:
-                s1 = wtemp1.repeater_size
-                l_eff = wtemp1.repeater_spacing
+                #     s1 = wtemp1.repeater_size
+                #     l_eff = wtemp1.repeater_spacing
                 # else:
                 #     s1 = (len_temp / wtemp1.repeater_spacing) * wtemp1.repeater_size
                 #     l_eff = len_temp
 
+                s1 = sp.Piecewise(
+                    (wtemp1.repeater_size, len_temp > wtemp1.repeater_spacing),
+                    ((len_temp / wtemp1.repeater_spacing) * wtemp1.repeater_size, True)
+                )
+
+                l_eff = sp.Piecewise(
+                    (wtemp1.repeater_spacing, len_temp > wtemp1.repeater_spacing),
+                    (len_temp, True)
+                )
+
                 # TODO important relational cannot handle
                 # if ht_temp > wtemp2.repeater_spacing:
-                s2 = wtemp2.repeater_size
+                #     s2 = wtemp2.repeater_size
                 # else:
                 #     s2 = (len_temp / wtemp2.repeater_spacing) * wtemp2.repeater_size
+
+                s2 = sp.Piecewise(
+                    (wtemp2.repeater_size, ht_temp > wtemp2.repeater_spacing),
+                    ((len_temp / wtemp2.repeater_spacing) * wtemp2.repeater_size, True)
+                )
+
                 # first level
                 self.input_nand(s1, s2, l_eff)
 
@@ -328,11 +344,21 @@ class Htree2(Component):
 
                 # TODO RELATIONAL
                 # if ht_temp > wtemp3.repeater_spacing:
-                s3 = wtemp3.repeater_size
-                l_eff = wtemp3.repeater_spacing
+                # s3 = wtemp3.repeater_size
+                # l_eff = wtemp3.repeater_spacing
                 # else:
                 #     s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
                 #     l_eff = ht_temp
+
+                s3 = sp.Piecewise(
+                    (wtemp3.repeater_size, ht_temp > wtemp3.repeater_spacing),
+                    ((len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size, True)
+                )
+
+                l_eff = sp.Piecewise(
+                    (wtemp3.repeater_spacing, ht_temp > wtemp3.repeater_spacing),
+                    (ht_temp, True)
+                )
 
                 self.input_nand(s2, s3, l_eff)
 
@@ -449,17 +475,32 @@ class Htree2(Component):
             if not self.uca_tree:
                 # TODO relational
                 # if len_temp > wtemp1.repeater_spacing:
-                s1 = wtemp1.repeater_size
-                l_eff = wtemp1.repeater_spacing
+                #     s1 = wtemp1.repeater_size
+                #     l_eff = wtemp1.repeater_spacing
                 # else:
                 #     s1 = (len_temp / wtemp1.repeater_spacing) * wtemp1.repeater_size
                 #     l_eff = len_temp
 
-                # TODO relational
+                # # TODO relational
                 # if ht_temp > wtemp2.repeater_spacing:
-                s2 = wtemp2.repeater_size
+                #     s2 = wtemp2.repeater_size
                 # else:
                 #     s2 = (len_temp / wtemp2.repeater_spacing) * wtemp2.repeater_size
+
+                s1 = sp.Piecewise(
+                    (wtemp1.repeater_size, len_temp > wtemp1.repeater_spacing),
+                    ((len_temp / wtemp1.repeater_spacing) * wtemp1.repeater_size, True)
+                )
+
+                l_eff = sp.Piecewise(
+                    (wtemp1.repeater_spacing, len_temp > wtemp1.repeater_spacing),
+                    (len_temp, True)
+                )
+
+                s2 = sp.Piecewise(
+                    (wtemp2.repeater_size, ht_temp > wtemp2.repeater_spacing),
+                    ((len_temp / wtemp2.repeater_spacing) * wtemp2.repeater_size, True)
+                )
 
                 # first level
                 self.output_buffer(s1, s2, l_eff)
@@ -484,11 +525,21 @@ class Htree2(Component):
 
                 # TODO RELATONAL
                 # if ht_temp > wtemp3.repeater_spacing:
-                s3 = wtemp3.repeater_size
-                l_eff = wtemp3.repeater_spacing
+                #     s3 = wtemp3.repeater_size
+                #     l_eff = wtemp3.repeater_spacing
                 # else:
                 #     s3 = (len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size
                 #     l_eff = ht_temp
+
+                s3 = sp.Piecewise(
+                    (wtemp3.repeater_size, ht_temp > wtemp3.repeater_spacing),
+                    ((len_temp / wtemp3.repeater_spacing) * wtemp3.repeater_size, True)
+                )
+
+                l_eff = sp.Piecewise(
+                    (wtemp3.repeater_spacing, ht_temp > wtemp3.repeater_spacing),
+                    (ht_temp, True)
+                )
 
                 self.output_buffer(s2, s3, l_eff)
 

@@ -2330,9 +2330,9 @@ class DynamicParameter:
         print(f'NUM_MATS {self.num_mats}')
         self.num_do_b_mat = symbolic_convex_max((self.num_subarrays / self.num_mats) * self.num_c_subarray / (self.deg_bl_muxing * self.Ndsam_lev_1 * self.Ndsam_lev_2), 1)
 
-        # TODO relational
-        # if not (self.fully_assoc or self.pure_cam) and self.num_do_b_mat < (self.num_subarrays / self.num_mats):
-        #     return
+        # TODO BREAK relational
+        if not (self.fully_assoc or self.pure_cam) and self.num_do_b_mat < (self.num_subarrays / self.num_mats):
+            return
 
         if not self.is_tag:
             if self.is_main_mem:
@@ -2351,8 +2351,8 @@ class DynamicParameter:
                     simplify_deg_sa_mux_l1_non_assoc = sp.simplify(deg_sa_mux_l1_non_assoc)
                     if simplify_deg_sa_mux_l1_non_assoc.is_zero or simplify_deg_sa_mux_l1_non_assoc.is_negative:
                         return
-                    # if deg_sa_mux_l1_non_assoc < 1:
-                    #     return
+                    if deg_sa_mux_l1_non_assoc < 1:
+                        return
         else:
             self.num_do_b_subbank = self.tagbits * g_ip.tag_assoc
             if self.num_do_b_mat < self.tagbits:
@@ -2378,9 +2378,9 @@ class DynamicParameter:
         if (not self.is_tag) and (g_ip.is_main_mem) and (self.num_act_mats_hor_dir * self.num_do_b_mat * self.Ndsam_lev_1 * self.Ndsam_lev_2 < int(g_ip.out_w * g_ip.burst_len * g_ip.data_assoc)):
             return
 
-        # TODO relational
-        # if self.num_act_mats_hor_dir > self.num_mats_h_dir:
-        #     return
+        #TODO BREAK relational
+        if self.num_act_mats_hor_dir > self.num_mats_h_dir:
+            return
 
         if not self.is_tag:
             if g_ip.fast_access:
@@ -2545,8 +2545,10 @@ class DynamicParameter:
         capacity_per_die = g_ip.cache_sz
 
         # TODO CHECK
-        # if self.Ndwl != 1 or self.Ndcm != 1 or self.Nspd < 1 or self.Nspd > 1 or self.Ndsam_lev_1 != 1 or self.Ndsam_lev_2 != 1 or self.Ndbl < 2:
-        #     return
+        if self.Ndwl != 1 or self.Ndcm != 1 or self.Nspd < 1 or self.Nspd > 1 or self.Ndsam_lev_1 != 1 or self.Ndsam_lev_2 != 1 or self.Ndbl < 2:
+            return
+        
+        print("Got past init_FA check")
 
         if g_ip.specific_tag:
             self.tagbits = g_ip.tag_w

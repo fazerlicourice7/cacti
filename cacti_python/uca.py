@@ -308,6 +308,7 @@ class UCA(Component):
             self.delay_array_to_sa_mux_lev_2_decoder = delay_array_to_mat + self.bank.mat.sa_mux_lev_2_predec.delay + self.bank.mat.sa_mux_lev_2_dec.delay
             delay_inside_mat = self.bank.mat.row_dec.delay + self.bank.mat.delay_bitline + self.bank.mat.delay_sa
 
+            # TODO parallel test theses
             #TODO hotfix
             # if math.isnan(max_delay_before_row_decoder) or math.isnan(delay_inside_mat) or math.isnan(delay_array_to_mat) or math.isnan( self.bank.mat.b_mux_predec.delay) or math.isnan(self.bank.mat.bit_mux_dec.delay ) or math.isnan(self.bank.mat.delay_sa):
             #     self.delay_before_subarray_output_driver = 1
@@ -360,7 +361,8 @@ class UCA(Component):
                 # temp = symbolic_convex_max(temp, self.bank.mat.b_mux_predec.delay)
                 # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
                 # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
-                # TODO MAX CHECK
+
+                # MAX, but uneeded for access_time
                 # temp = sp.Max(
                 #     temp,
                 #     self.bank.mat.r_predec.delay,
@@ -369,7 +371,6 @@ class UCA(Component):
                 #     self.bank.mat.sa_mux_lev_2_predec.delay
                 # )               
 
-                # TODO need to speed this up somehow
                 print ("before max temp")
                 # max1 = symbolic_convex_max(self.bank.mat.r_predec.delay, self.bank.mat.b_mux_predec.delay)
                 # max2 = symbolic_convex_max(self.bank.mat.sa_mux_lev_1_predec.delay, self.bank.mat.sa_mux_lev_2_predec.delay)
@@ -385,7 +386,7 @@ class UCA(Component):
                 # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
                 # temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
                 
-                # TODO MAX CHECK
+                # MAX, but uneeded for access_time
                 # temp = sp.Max(
                 #     temp,
                 #     self.bank.mat.b_mux_predec.delay,
@@ -393,7 +394,6 @@ class UCA(Component):
                 #     self.bank.mat.sa_mux_lev_2_predec.delay
                 # )
                 print ("before max temp")
-                # TODO NEED to speed this up somehow
                 # max1 = symbolic_convex_max(temp, self.bank.mat.b_mux_predec.delay)
                 # max2 = symbolic_convex_max(self.bank.mat.sa_mux_lev_2_predec.delay, self.bank.mat.sa_mux_lev_1_predec.delay)
                 # temp = symbolic_convex_max(max1, max2)

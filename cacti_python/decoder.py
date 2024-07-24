@@ -46,20 +46,21 @@ class Decoder(Component):
         #     else:
         #         self.num_in_signals = 2
 
-        # self.exist = sp.Piecewise(
-        #     (True, num_addr_bits_dec < 4),  # self.exist is True if num_addr_bits_dec < 4
-        #     (self.exist, True)  # self.exist is True otherwise
-        # )
+        # TODO increases length
+        self.exist = sp.Piecewise(
+            (True, num_addr_bits_dec < 4),  # self.exist is True if num_addr_bits_dec < 4
+            (self.exist, True)  # self.exist is True otherwise
+        )
 
-        # self.num_in_signals = sp.Piecewise(
-        #     (2, sp.And(num_addr_bits_dec < 4, flag_way_select)),  # self.num_in_signals = 2 if num_addr_bits_dec < 4 and flag_way_select
-        #     (0, num_addr_bits_dec < 4, not flag_way_select),  # self.num_in_signals = 0 if num_addr_bits_dec < 4 and not flag_way_select
-        #     (3, sp.And(num_addr_bits_dec >= 4, flag_way_select)),  # self.num_in_signals = 3 if num_addr_bits_dec >= 4 and flag_way_select
-        #     (2, num_addr_bits_dec >= 4, True)  # self.num_in_signals = 2 if num_addr_bits_dec >= 4 and not flag_way_select
-        # )
+        self.num_in_signals = sp.Piecewise(
+            (2, sp.And(num_addr_bits_dec < 4, flag_way_select)),  # self.num_in_signals = 2 if num_addr_bits_dec < 4 and flag_way_select
+            (0, sp.And(num_addr_bits_dec < 4, not flag_way_select)),  # self.num_in_signals = 0 if num_addr_bits_dec < 4 and not flag_way_select
+            (3, sp.And(num_addr_bits_dec >= 4, flag_way_select)),  # self.num_in_signals = 3 if num_addr_bits_dec >= 4 and flag_way_select
+            (2, num_addr_bits_dec >= 4, True)  # self.num_in_signals = 2 if num_addr_bits_dec >= 4 and not flag_way_select
+        )
 
-        self.exist = True
-        self.num_in_signals = 3
+        # self.exist = True
+        # self.num_in_signals = 3
 
         # assert self.cell.h > 0
         # assert self.cell.w > 0
@@ -281,37 +282,37 @@ class PredecBlk(Component):
         self.R_wire_predec_blk_out = R_wire_predec_blk_out_
         self.C_ld_predec_blk_out = branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out
 
-        # self.exist = sp.Piecewise(
-        #     (self.exist, sp.And(is_blk1, num_addr_bits_dec <= 0)),
-        #     (True, True)
-        # )
+        self.exist = sp.Piecewise(
+            (self.exist, sp.And(is_blk1, num_addr_bits_dec <= 0)),
+            (True, True)
+        )
         
-        # self.number_input_addr_bits = sp.Piecewise(
-        #     (num_addr_bits_dec, sp.And(is_blk1, num_addr_bits_dec < 4)),  # self.number_input_addr_bits = num_addr_bits_dec if is_blk1 and 0 < num_addr_bits_dec < 4
-        #     (blk1_num_input_addr_bits, sp.And(is_blk1, num_addr_bits_dec >= 4)),  # self.number_input_addr_bits = blk1_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
-        #     (blk2_num_input_addr_bits, True)  # self.number_input_addr_bits = blk2_num_input_addr_bits if not is_blk1
-        # )
+        self.number_input_addr_bits = sp.Piecewise(
+            (num_addr_bits_dec, sp.And(is_blk1, num_addr_bits_dec < 4)),  # self.number_input_addr_bits = num_addr_bits_dec if is_blk1 and 0 < num_addr_bits_dec < 4
+            (blk1_num_input_addr_bits, sp.And(is_blk1, num_addr_bits_dec >= 4)),  # self.number_input_addr_bits = blk1_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
+            (blk2_num_input_addr_bits, True)  # self.number_input_addr_bits = blk2_num_input_addr_bits if not is_blk1
+        )
         
-        # branch_effort_predec_out = sp.Piecewise(
-        #     (sp.Pow(2, blk2_num_input_addr_bits), sp.And(is_blk1, num_addr_bits_dec >= 4)),  # branch_effort_predec_out = 2^blk2_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
-        #     (sp.Pow(2, blk1_num_input_addr_bits), True)
-        # )
+        branch_effort_predec_out = sp.Piecewise(
+            (sp.Pow(2, blk2_num_input_addr_bits), sp.And(is_blk1, num_addr_bits_dec >= 4)),  # branch_effort_predec_out = 2^blk2_num_input_addr_bits if is_blk1 and num_addr_bits_dec >= 4
+            (sp.Pow(2, blk1_num_input_addr_bits), True)
+        )
 
-        # C_ld_dec_gate = sp.Piecewise(
-        #     (num_dec_per_predec * gate_C(self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False),
-        #     num_addr_bits_dec >= 4), # C_ld_dec_gate calculation based on conditions
-        #     (1, True)  # C_ld_dec_gate = 13/10 if num_addr_bits_dec <= 0
-        # )
+        C_ld_dec_gate = sp.Piecewise(
+            (num_dec_per_predec * gate_C(self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False),
+            num_addr_bits_dec >= 4), # C_ld_dec_gate calculation based on conditions
+            (1, True)  # C_ld_dec_gate = 13/10 if num_addr_bits_dec <= 0
+        )
        
-        # self.R_wire_predec_blk_out = sp.Piecewise(
-        #     (self.dec.R_wire_dec_out, num_addr_bits_dec < 4),  # self.R_wire_predec_blk_out based on conditions
-        #     (R_wire_predec_blk_out_, True),  # self.R_wire_predec_blk_out = 3/2 if num_addr_bits_dec <= 0
-        # )
+        self.R_wire_predec_blk_out = sp.Piecewise(
+            (self.dec.R_wire_dec_out, num_addr_bits_dec < 4),  # self.R_wire_predec_blk_out based on conditions
+            (R_wire_predec_blk_out_, True),  # self.R_wire_predec_blk_out = 3/2 if num_addr_bits_dec <= 0
+        )
        
-        # self.C_ld_predec_blk_out = sp.Piecewise(
-        #     (self.dec.C_ld_dec_out, num_addr_bits_dec < 4),  # self.C_ld_predec_blk_out based on conditions
-        #     (branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out, True)  # self.C_ld_predec_blk_out = 13/10 if num_addr_bits_dec <= 0
-        # )  
+        self.C_ld_predec_blk_out = sp.Piecewise(
+            (self.dec.C_ld_dec_out, num_addr_bits_dec < 4),  # self.C_ld_predec_blk_out based on conditions
+            (branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out, True)  # self.C_ld_predec_blk_out = 13/10 if num_addr_bits_dec <= 0
+        )  
 
         print("PRE CHECKPOINT 1")
         self.compute_widths()
