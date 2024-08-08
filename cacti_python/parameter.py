@@ -5,71 +5,11 @@ import os
 from .const import *
 from .area import Area
 import sympy as sp
+import time
 
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from hw_symbols import symbol_table as sympy_var
-
-# sympy_var = {
-#     'C_g_ideal': sp.symbols('C_g_ideal'),
-#     'C_fringe': sp.symbols('C_fringe'),
-#     'C_junc': sp.symbols('C_junc'),
-#     'C_junc_sw': sp.symbols('C_junc_sw'),
-#     'l_phy': sp.symbols('l_phy'),
-#     'l_elec': sp.symbols('l_elec'),
-#     'nmos_effective_resistance_multiplier': sp.symbols('nmos_effective_resistance_multiplier'),
-#     'Vdd': sp.symbols('Vdd'),
-#     'Vth': sp.symbols('Vth'),
-#     'Vdsat': sp.symbols('Vdsat'),
-#     'I_on_n': sp.symbols('I_on_n'),
-#     'I_on_p': sp.symbols('I_on_p'),
-#     'I_off_n': sp.symbols('I_off_n'),
-#     'I_g_on_n': sp.symbols('I_g_on_n'),
-#     'C_ox': sp.symbols('C_ox'),
-#     't_ox': sp.symbols('t_ox'),
-#     'n2p_drv_rt': sp.symbols('n2p_drv_rt'),
-#     'lch_lk_rdc': sp.symbols('lch_lk_rdc'),
-#     'Mobility_n': sp.symbols('Mobility_n'),
-#     'gmp_to_gmn_multiplier': sp.symbols('gmp_to_gmn_multiplier'),
-#     'vpp': sp.symbols('vpp'),
-#     'Wmemcella': sp.symbols('Wmemcella'),
-#     'Wmemcellpmos': sp.symbols('Wmemcellpmos'),
-#     'Wmemcellnmos': sp.symbols('Wmemcellnmos'),
-#     'area_cell': sp.symbols('area_cell'),
-#     'asp_ratio_cell': sp.symbols('asp_ratio_cell'),
-#     'vdd_cell': sp.symbols('vdd_cell'),
-#     'dram_cell_I_on': sp.symbols('dram_cell_I_on'),
-#     'dram_cell_Vdd': sp.symbols('dram_cell_Vdd'),
-#     'dram_cell_C': sp.symbols('dram_cell_C'),
-#     'dram_cell_I_off_worst_case_len_temp': sp.symbols('dram_cell_I_off_worst_case_len_temp'),
-#     'logic_scaling_co_eff': sp.symbols('logic_scaling_co_eff'),
-#     'core_tx_density': sp.symbols('core_tx_density'),
-#     'sckt_co_eff': sp.symbols('sckt_co_eff'),
-#     'chip_layout_overhead': sp.symbols('chip_layout_overhead'),
-#     'macro_layout_overhead': sp.symbols('macro_layout_overhead'),
-#     'sense_delay': sp.symbols('sense_delay'),
-#     'sense_dy_power': sp.symbols('sense_dy_power'),
-#     'wire_pitch': sp.symbols('wire_pitch'),
-#     'barrier_thickness': sp.symbols('barrier_thickness'),
-#     'dishing_thickness': sp.symbols('dishing_thickness'),
-#     'alpha_scatter': sp.symbols('alpha_scatter'),
-#     'aspect_ratio': sp.symbols('aspect_ratio'),
-#     'miller_value': sp.symbols('miller_value'),
-#     'horiz_dielectric_constant': sp.symbols('horiz_dielectric_constant'),
-#     'vert_dielectric_constant': sp.symbols('vert_dielectric_constant'),
-#     'ild_thickness': sp.symbols('ild_thickness'),
-#     'fringe_cap': sp.symbols('fringe_cap'),
-#     'resistivity': sp.symbols('resistivity'),
-#     'wire_r_per_micron': sp.symbols('wire_r_per_micron'),
-#     'wire_c_per_micron': sp.symbols('wire_c_per_micron'),
-#     'tsv_pitch': sp.symbols('tsv_pitch'),
-#     'tsv_diameter': sp.symbols('tsv_diameter'),
-#     'tsv_length': sp.symbols('tsv_length'),
-#     'tsv_dielec_thickness': sp.symbols('tsv_dielec_thickness'),
-#     'tsv_contact_resistance': sp.symbols('tsv_contact_resistance'),
-#     'tsv_depletion_width': sp.symbols('tsv_depletion_width'),
-#     'tsv_liner_dielectric_cons': sp.symbols('tsv_liner_dielectric_cons')
-# }
 
 def contains_any_symbol(expr):
     # Extract all the symbols from the dictionary
@@ -227,6 +167,10 @@ class InputParameter:
         self.mirror_in_bob = False
         self.total_power = False
         self.verbose = False
+
+        self.repeater_spacing = 0.0
+        self.repeater_size = 0.0
+        
 
     def parse_cfg(self, in_file):
         try:
@@ -486,7 +430,6 @@ class InputParameter:
                 elif line.startswith("-Power Gating Performance Loss"):
                     val = line.split()[-1]
                     cleaned_value = val.strip('"').strip()
-                    print(cleaned_value)
                     self.perfloss = float(cleaned_value)
                 elif line.startswith("-Print input parameters"):
                     print_input = line.split("\"")[1]
@@ -506,7 +449,7 @@ class InputParameter:
                     self.ndsam2 = int(line.split()[-1])
                 elif line.startswith("-Ndcm"):
                     self.ndcm = int(line.split()[-1])
-                elif line.startswith("-dram type"):
+                elif line.startswith("-dram_type"):
                     dram_type = line.split("\"")[1]
                     if "DDR3" in dram_type:
                         self.io_type = "DDR3"
@@ -671,8 +614,7 @@ class InputParameter:
             print(f"{in_file} is missing!")
             exit(-1)
 
-    def error_checking(self):
-        print("IN ERROR CHECKING")
+    def error_checking(self): 
         A = 0
         seq_access = False
         fast_access = True
@@ -714,7 +656,6 @@ class InputParameter:
         NSER = self.num_se_rd_ports
         SCHP = self.num_search_ports
 
-        print("HAD SET B-1")
         if (RWP + ERP + EWP) < 1:
             print("Must have at least one port")
             return False
@@ -737,7 +678,7 @@ class InputParameter:
             print("Pure CAM must have associativity as 0")
             return False
 
-        if self.assoc == 0 and (not self.pure_cam and not self.is_cache):
+        if self.assoc == 0 and not self.pure_cam and not self.is_cache:
             print("Only CAM or Fully associative cache can have associativity as 0")
             return False
 
@@ -763,7 +704,6 @@ class InputParameter:
         if RWP == 0 and ERP == 0 and SCHP > 0 and (self.fully_assoc or self.pure_cam):
             ERP = SCHP
 
-        print("HAD SET B0")
         if self.assoc == 0:
             A = C / B
         else:
@@ -782,8 +722,6 @@ class InputParameter:
             return False
 
         self.block_sz = B
-        # TODO REMOVE
-        print("HAD SET B")
 
         if seq_access:
             self.tag_assoc = A
@@ -816,9 +754,10 @@ class InputParameter:
             return False
 
         self.power_gating = (self.array_power_gated or self.bitline_floating or self.wl_power_gated or
-                             self.cl_power_gated or self.interconect_power_gated)
+                            self.cl_power_gated or self.interconect_power_gated)
 
         return True
+
 
     def display_ip(self):
         print(f"Cache size                    : {self.cache_sz}")
@@ -999,11 +938,30 @@ class TechnologyParameter:
         self.dram = MemoryType()
         self.cam = MemoryType()
 
+        self.dram_cell_I_on = sympy_var['dram_cell_I_on']
+        self.dram_cell_Vdd = sympy_var['dram_cell_Vdd']
+        self.dram_cell_C = sympy_var['dram_cell_C']
+        self.dram_cell_I_off_worst_case_len_temp = sympy_var['dram_cell_I_off_worst_case_len_temp']
+        self.vpp = sympy_var['vpp']
+        self.sckt_co_eff = sympy_var['sckt_co_eff']
+        self.chip_layout_overhead = sympy_var['chip_layout_overhead']
+        self.macro_layout_overhead = sympy_var['macro_layout_overhead']
+
+        self.sense_delay = sympy_var['sense_delay']
+        self.sense_dy_power = sympy_var['sense_dy_power']
+        self.sckt_co_eff = sympy_var['sckt_co_eff']
+        self.chip_layout_overhead = sympy_var['chip_layout_overhead']
+        self.macro_layout_overhead = sympy_var['macro_layout_overhead']
+        self.dram_cell_I_on = sympy_var['dram_cell_I_on']
+        self.dram_cell_Vdd = sympy_var['dram_cell_Vdd']
+        self.dram_cell_C = sympy_var['dram_cell_C']
+        self.dram_cell_I_off_worst_case_len_temp = sympy_var['dram_cell_I_off_worst_case_len_temp']
+        self.vpp = sympy_var['vpp']
+
     def init_symbolic():
         return
 
     def find_upper_and_lower_tech(self, technology, tech_lo, in_file_lo, tech_hi, in_file_hi):
-        print(technology)
         if 179 < technology < 181:
             tech_lo = 180
             in_file_lo = "tech_params/180nm.dat"
@@ -1124,10 +1082,6 @@ class TechnologyParameter:
                 exit(0)
 
         alpha = 1 if tech_lo == tech_hi else (technology - tech_hi) / (tech_lo - tech_hi)
-        print(in_file_lo)
-        # TODO FILE CHECK
-        # in_file_lo = "cacti/" + in_file_lo
-        # print(in_file_lo)
         with open(in_file_lo, "r") as fp:
             lines = fp.readlines()
 
@@ -1170,18 +1124,12 @@ class TechnologyParameter:
         peri_global_lo = DeviceType()
         peri_global_hi = DeviceType()
         peri_global_lo.assign(in_file_lo, peri_global_tech_type, g_ip.temp)
-        print("peri lo")
-        peri_global_lo.display()
-        print()
+        # peri_global_lo.display()
         peri_global_hi.assign(in_file_hi, peri_global_tech_type, g_ip.temp)
-        print("peri hi")
-        peri_global_hi.display()
-        print()
+        # peri_global_hi.display()
         
         self.peri_global.interpolate(alpha, peri_global_lo, peri_global_hi)
-        print("peri_global")
-        self.peri_global.display()
-        print()
+        # self.peri_global.display()
 
         sleep_tx_lo = DeviceType()
         sleep_tx_hi = DeviceType()
@@ -1341,8 +1289,6 @@ class TechnologyParameter:
             self.max_w_nmos_dec = self.max_w_nmos_
             self.h_dec = 4  # in the unit of memory cell height
 
-        #TODO CHECK 388 for 180nm
-        print(self.peri_global.l_elec)
         gmn_sense_amp_latch = (self.peri_global.Mobility_n / 2) * self.peri_global.C_ox * (self.w_sense_n / self.peri_global.l_elec) * self.peri_global.Vdsat
         gmp_sense_amp_latch = self.peri_global.gmp_to_gmn_multiplier * gmn_sense_amp_latch
         self.gm_sense_amp_latch = gmn_sense_amp_latch + gmp_sense_amp_latch
@@ -1595,9 +1541,36 @@ class DeviceType:
         self.long_channel_leakage_reduction = 0
         self.Mobility_n = 0
 
+        # self.n_to_p_eff_curr_drv_ratio = sympy_var['n2p_drv_rt']
+
         # auxiliary parameters
         self.Vdsat = 0
         self.gmp_to_gmn_multiplier = 0
+
+        self.C_g_ideal = sympy_var['C_g_ideal']
+        self.C_fringe = sympy_var['C_fringe']
+        self.C_junc_sidewall = sympy_var['C_junc_sw']
+        self.C_junc = sympy_var['C_junc']
+        self.l_phy = sympy_var['l_phy']
+        self.l_elec = sympy_var['l_elec']
+        self.nmos_effective_resistance_multiplier = sympy_var['nmos_effective_resistance_multiplier']
+        self.Vdd = sympy_var['Vdd']
+        self.Vth = sympy_var['Vth']
+        self.Vdsat = sympy_var['Vdsat']
+        self.I_on_n = sympy_var['I_on_n']
+        self.I_on_p = sympy_var['I_on_p']
+        self.I_off_n = sympy_var['I_off_n']
+        self.I_g_on_n = sympy_var['I_g_on_n']
+        self.C_ox = sympy_var['C_ox']
+        self.t_ox = sympy_var['t_ox']
+        self.n_to_p_eff_curr_drv_ratio = sympy_var['n2p_drv_rt']
+        self.long_channel_leakage_reduction = sympy_var['lch_lk_rdc']
+        self.Mobility_n = sympy_var['Mobility_n']
+        self.gmp_to_gmn_multiplier = sympy_var['gmp_to_gmn_multiplier']
+
+        self.C_overlap = 0.2 * self.C_g_ideal
+        self.I_off_p = self.I_off_n
+        self.I_g_on_p = self.I_g_on_n
 
     def reset(self):
         self.C_g_ideal = 0
@@ -1627,6 +1600,31 @@ class DeviceType:
         # auxiliary parameters
         self.Vdsat = 0
         self.gmp_to_gmn_multiplier = 0
+
+        self.C_g_ideal = sympy_var['C_g_ideal']
+        self.C_fringe = sympy_var['C_fringe']
+        self.C_junc_sidewall = sympy_var['C_junc_sw']
+        self.C_junc = sympy_var['C_junc']
+        self.l_phy = sympy_var['l_phy']
+        self.l_elec = sympy_var['l_elec']
+        self.nmos_effective_resistance_multiplier = sympy_var['nmos_effective_resistance_multiplier']
+        self.Vdd = sympy_var['Vdd']
+        self.Vth = sympy_var['Vth']
+        self.Vdsat = sympy_var['Vdsat']
+        self.I_on_n = sympy_var['I_on_n']
+        self.I_on_p = sympy_var['I_on_p']
+        self.I_off_n = sympy_var['I_off_n']
+        self.I_g_on_n = sympy_var['I_g_on_n']
+        self.C_ox = sympy_var['C_ox']
+        self.t_ox = sympy_var['t_ox']
+        self.n_to_p_eff_curr_drv_ratio = sympy_var['n2p_drv_rt']
+        self.long_channel_leakage_reduction = sympy_var['lch_lk_rdc']
+        self.Mobility_n = sympy_var['Mobility_n']
+        self.gmp_to_gmn_multiplier = sympy_var['gmp_to_gmn_multiplier']
+
+        self.C_overlap = 0.2 * self.C_g_ideal
+        self.I_off_p = self.I_off_n
+        self.I_g_on_p = self.I_g_on_n
 
     def display(self, indent=0):
         indent_str = ' ' * indent
@@ -1768,11 +1766,9 @@ class DeviceType:
 
         self.C_overlap = 0.2 * self.C_g_ideal
         if tech_flavor >= 3:
-            if(self.I_on_n): # TODO Check values of I_on_n
-                self.R_nch_on = self.nmos_effective_resistance_multiplier * g_tp.vpp / self.I_on_n
+            self.R_nch_on = self.nmos_effective_resistance_multiplier * g_tp.vpp / self.I_on_n
         else:
-            if(self.I_on_n): # TODO Check values of I_on_n
-                self.R_nch_on = self.nmos_effective_resistance_multiplier * self.Vdd / self.I_on_n
+            self.R_nch_on = self.nmos_effective_resistance_multiplier * self.Vdd / self.I_on_n
         # CHECKPOINT _pch_on issue
         # print(f"nmos_effective_resistance_multiplier {nmos_effective_resistance_multiplier}")
         # print(f"tech_flavor {tech_flavor}")
@@ -1789,7 +1785,6 @@ class DeviceType:
     def interpolate(self, alpha, dev1, dev2):
         result = DeviceType()
         self.C_g_ideal = alpha * dev1.C_g_ideal + (1 - alpha) * dev2.C_g_ideal
-        print(f'GLOBAL result {self.C_g_ideal}')
         self.C_fringe = alpha * dev1.C_fringe + (1 - alpha) * dev2.C_fringe
         self.C_overlap = alpha * dev1.C_overlap + (1 - alpha) * dev2.C_overlap
         self.C_junc = alpha * dev1.C_junc + (1 - alpha) * dev2.C_junc
@@ -1835,6 +1830,24 @@ class InterconnectType:
         self.alpha_scatter = 0
         self.fringe_cap = 0
 
+        self.pitch = sympy_var['wire_pitch']
+        self.barrier_thickness = sympy_var['barrier_thickness']
+        self.dishing_thickness = sympy_var['dishing_thickness']
+        self.alpha_scatter = sympy_var['alpha_scatter']
+        self.aspect_ratio = sympy_var['aspect_ratio']
+        self.miller_value = sympy_var['miller_value']
+        self.horiz_dielectric_constant = sympy_var['horiz_dielectric_constant']
+        self.vert_dielectric_constant = sympy_var['vert_dielectric_constant']
+        self.ild_thickness = sympy_var['ild_thickness']
+        self.fringe_cap = sympy_var['fringe_cap']
+        self.R_per_um = sympy_var['wire_r_per_micron']
+        self.C_per_um = sympy_var['wire_c_per_micron']
+        self.resistivity = sympy_var['resistivity']
+        self.pitch *= g_ip.F_sz_um
+        self.wire_width = self.pitch / 2  # micron
+        self.wire_thickness = self.aspect_ratio * self.wire_width  # micron
+        self.wire_spacing = self.pitch - self.wire_width  # micron
+
         self.reset()
 
     def reset(self):
@@ -1855,6 +1868,24 @@ class InterconnectType:
         self.dishing_thickness = 0
         self.alpha_scatter = 0
         self.fringe_cap = 0
+
+        self.pitch = sympy_var['wire_pitch']
+        self.barrier_thickness = sympy_var['barrier_thickness']
+        self.dishing_thickness = sympy_var['dishing_thickness']
+        self.alpha_scatter = sympy_var['alpha_scatter']
+        self.aspect_ratio = sympy_var['aspect_ratio']
+        self.miller_value = sympy_var['miller_value']
+        self.horiz_dielectric_constant = sympy_var['horiz_dielectric_constant']
+        self.vert_dielectric_constant = sympy_var['vert_dielectric_constant']
+        self.ild_thickness = sympy_var['ild_thickness']
+        self.fringe_cap = sympy_var['fringe_cap']
+        self.R_per_um = sympy_var['wire_r_per_micron']
+        self.C_per_um = sympy_var['wire_c_per_micron']
+        self.resistivity = sympy_var['resistivity']
+        self.pitch *= g_ip.F_sz_um
+        self.wire_width = self.pitch / 2  # micron
+        self.wire_thickness = self.aspect_ratio * self.wire_width  # micron
+        self.wire_spacing = self.pitch - self.wire_width  # micron
 
     def is_equal(self, inter):
         if not is_equal(self.pitch, inter.pitch): return False
@@ -1978,7 +2009,22 @@ class MemoryType:
         self.Vbitfloating = 0
         self.area_cell = 0
         self.asp_ratio_cell = 0
+
+        self.cell_a_w = sympy_var['Wmemcella']
+        self.cell_pmos_w = sympy_var['Wmemcellpmos']
+        self.cell_nmos_w = sympy_var['Wmemcellnmos']
+        self.area_cell = sympy_var['area_cell']
+        self.asp_ratio_cell = sympy_var['asp_ratio_cell']
+
         self.reset()
+
+        self.cell_a_w = sympy_var['Wmemcella']
+        self.cell_pmos_w = sympy_var['Wmemcellpmos']
+        self.cell_nmos_w = sympy_var['Wmemcellnmos']
+        self.area_cell = sympy_var['area_cell']
+        self.asp_ratio_cell = sympy_var['asp_ratio_cell']
+        self.cell_pmos_w *= g_ip.F_sz_um
+        self.cell_nmos_w *= g_ip.F_sz_um
 
     def reset(self):
         self.b_w = 0
@@ -1991,8 +2037,15 @@ class MemoryType:
         self.area_cell = 0
         self.asp_ratio_cell = 0
 
+        self.cell_a_w = sympy_var['Wmemcella']
+        self.cell_pmos_w = sympy_var['Wmemcellpmos']
+        self.cell_nmos_w = sympy_var['Wmemcellnmos']
+        self.area_cell = sympy_var['area_cell']
+        self.asp_ratio_cell = sympy_var['asp_ratio_cell']
+        self.cell_pmos_w *= g_ip.F_sz_um
+        self.cell_nmos_w *= g_ip.F_sz_um
+
     def assign(self, in_file, tech_flavor, cell_type):
-        print("ASSIGN MEMORY")
         try:
             with open(in_file, "r") as fp:
                 lines = fp.readlines()
@@ -2002,8 +2055,6 @@ class MemoryType:
 
         vdd_cell = 0
         vdd = 0
-
-        print(f'tech_flavor {tech_flavor}')
 
         vdd = sympy_var['Vdd']
         vdd_cell = sympy_var['vdd_cell']
@@ -2045,16 +2096,12 @@ class MemoryType:
         # print(g_ip.F_sz_um)
         # print(self.cell_pmos_w)
         if cell_type != 2:
-            print(self.cell_a_w)
             self.cell_a_w *= g_ip.F_sz_um
         self.cell_pmos_w *= g_ip.F_sz_um
         self.cell_nmos_w *= g_ip.F_sz_um
         if cell_type != 2:
             self.area_cell *= (g_ip.F_sz_um * g_ip.F_sz_um)
 
-        print(f"DEBUG: {self.cell_a_w}")
-
-        #TODO 1028-1030
         self.b_w = sp.sqrt(self.area_cell / self.asp_ratio_cell)
         self.b_h = self.asp_ratio_cell * self.b_w
         if cell_type == 2:
@@ -2073,33 +2120,17 @@ class MemoryType:
         self.Vbitpre = mem2.Vbitpre
         self.Vbitfloating = self.Vbitpre * 0.7
 
-        #TODO 1028-1030
         self.b_w = sp.sqrt(self.area_cell / self.asp_ratio_cell)
         self.b_h = self.asp_ratio_cell * self.b_w
 
     def isEqual(self, mem):
-        if not self.is_equal(self.b_w, mem.b_w): return False
-        if not self.is_equal(self.b_h, mem.b_h): return False
-        if not self.is_equal(self.cell_a_w, mem.cell_a_w): return False
-        if not self.is_equal(self.cell_pmos_w, mem.cell_pmos_w): return False
-        if not self.is_equal(self.cell_nmos_w, mem.cell_nmos_w): return False
-        if not self.is_equal(self.Vbitpre, mem.Vbitpre): return False
+        if not is_equal(self.b_w, mem.b_w): return False
+        if not is_equal(self.b_h, mem.b_h): return False
+        if not is_equal(self.cell_a_w, mem.cell_a_w): return False
+        if not is_equal(self.cell_pmos_w, mem.cell_pmos_w): return False
+        if not is_equal(self.cell_nmos_w, mem.cell_nmos_w): return False
+        if not is_equal(self.Vbitpre, mem.Vbitpre): return False
         return True
-
-    def is_equal(self, first, second):
-        if (first == 0) and (second == 0):
-            return True
-        if (second == 0) or (second != second):
-            return True
-        if (first != first) or (second != second):  # both are NaNs
-            return True
-        if first == 0:
-            if abs(first - second) < (second * 0.000001):
-                return True
-        else:
-            if abs(first - second) < (first * 0.000001):
-                return True
-        return False
 
     def scan_five_input_double(self, line, name, unit_name, flavor, print_flag):
         temp = [0] * 5
@@ -2107,7 +2138,6 @@ class MemoryType:
 
         pattern = re.compile(rf"{name}\s+(\S+)\s+(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)")
         match = pattern.search(line)
-        print(f'{line},  {match}')
 
         if match:
             unit = match.group(1)
@@ -2130,6 +2160,9 @@ class ScalingFactor:
         self.logic_scaling_co_eff = 0
         self.core_tx_density = 0
         self.long_channel_leakage_reduction = 0
+
+        self.logic_scaling_co_eff = sympy_var['logic_scaling_co_eff']
+        self.core_tx_density = sympy_var['core_tx_density']
 
     def assign(self, in_file):
         try:
@@ -2234,70 +2267,37 @@ class DynamicParameter:
         self.cell = Area()
         self.cam_cell = Area()
         self.is_valid = False
-        print("SETING UP DYNAMIC PARAM")
         self.init_parameters()
 
     def init_parameters(self):
-        if self.is_tag:
-            self.ram_cell_tech_type = g_ip.tag_arr_ram_cell_tech_type
-        else:
-            self.ram_cell_tech_type = g_ip.data_arr_ram_cell_tech_type
-        
+        self.ram_cell_tech_type = g_ip.tag_arr_ram_cell_tech_type if self.is_tag else g_ip.data_arr_ram_cell_tech_type
         self.is_dram = (self.ram_cell_tech_type == lp_dram or self.ram_cell_tech_type == comm_dram)
         self.fully_assoc = bool(g_ip.fully_assoc)
         capacity_per_die = g_ip.cache_sz / NUMBER_STACKED_DIE_LAYERS
         wire_local = g_tp.wire_local
-        
-        print("HELLO!")
+
         if self.pure_cam:
             self.init_CAM()
-            print("init_CAM")
             return
 
         if self.fully_assoc:
             self.init_FA()
-            print("init_FA")
             return
 
         if not self.calc_subarr_rc(capacity_per_die):
-            print("init rc")
             return
-        
-        print("HELLO4!")
 
         if self.is_tag:
             self.cell.h = g_tp.sram.b_h + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + g_ip.num_rd_ports + g_ip.num_wr_ports)
             self.cell.w = g_tp.sram.b_w + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + g_ip.num_wr_ports + (g_ip.num_rd_ports - g_ip.num_se_rd_ports)) + wire_local.pitch * g_ip.num_se_rd_ports
-            print("cell_tag!")
         else:
             if self.is_dram:
                 self.cell.h = g_tp.dram.b_h
                 self.cell.w = g_tp.dram.b_w
-                print(f"is_dram {self.cell.h}")
-                print(f"is_dram {self.cell.w}")
             else:
                 self.cell.h = g_tp.sram.b_h + 2 * wire_local.pitch * (g_ip.num_wr_ports + g_ip.num_rw_ports - 1 + g_ip.num_rd_ports)
                 self.cell.w = g_tp.sram.b_w + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + (g_ip.num_rd_ports - g_ip.num_se_rd_ports) + g_ip.num_wr_ports) + g_tp.wire_local.pitch * g_ip.num_se_rd_ports
-                
-                print(f"g_tp.sram.b_h: {g_tp.sram.b_h}")
-                print(f"wire_local.pitch: {wire_local.pitch}")
-                print(f"g_ip.num_wr_ports: {g_ip.num_wr_ports}")
-                print(f"g_ip.num_rw_ports: {g_ip.num_rw_ports}")
-                print(f"g_ip.num_rd_ports: {g_ip.num_rd_ports}")
-                print()
 
-                print(f"g_tp.sram.b_w: {g_tp.sram.b_w}")
-                print(f"wire_local.pitch: {wire_local.pitch}")
-                print(f"g_ip.num_rw_ports: {g_ip.num_rw_ports}")
-                print(f"g_ip.num_rd_ports: {g_ip.num_rd_ports}")
-                print(f"g_ip.num_se_rd_ports: {g_ip.num_se_rd_ports}")
-                print(f"g_ip.num_wr_ports: {g_ip.num_wr_ports}")
-                print()
-
-                print(f"not is_dram {self.cell.h}")
-                print(f"not is_dram {self.cell.h}")
-
-        
         c_b_metal = self.cell.h * wire_local.C_per_um
 
         if self.is_dram:
@@ -2324,15 +2324,15 @@ class DynamicParameter:
             C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
             self.dram_refresh_period = 0
 
-        self.num_mats_h_dir = symbolic_convex_max(self.Ndwl // 2, 1)
-        self.num_mats_v_dir = symbolic_convex_max(self.Ndbl // 2, 1)
+        # RECENT CHANGE
+        self.num_mats_h_dir = max(self.Ndwl // 2, 1)
+        self.num_mats_v_dir = max(self.Ndbl // 2, 1)
+
         self.num_mats = self.num_mats_h_dir * self.num_mats_v_dir
-        print(f'NUM_MATS {self.num_mats}')
         self.num_do_b_mat = symbolic_convex_max((self.num_subarrays / self.num_mats) * self.num_c_subarray / (self.deg_bl_muxing * self.Ndsam_lev_1 * self.Ndsam_lev_2), 1)
 
-        # TODO relational
-        # if not (self.fully_assoc or self.pure_cam) and self.num_do_b_mat < (self.num_subarrays / self.num_mats):
-        #     return
+        if not (self.fully_assoc or self.pure_cam) and self.num_do_b_mat < (self.num_subarrays / self.num_mats):
+            return
 
         if not self.is_tag:
             if self.is_main_mem:
@@ -2347,12 +2347,8 @@ class DynamicParameter:
                 else:
                     self.num_do_b_subbank = g_ip.out_w
                     deg_sa_mux_l1_non_assoc = self.Ndsam_lev_1 / g_ip.data_assoc
-                    # TODO relational
-                    simplify_deg_sa_mux_l1_non_assoc = sp.simplify(deg_sa_mux_l1_non_assoc)
-                    if simplify_deg_sa_mux_l1_non_assoc.is_zero or simplify_deg_sa_mux_l1_non_assoc.is_negative:
+                    if deg_sa_mux_l1_non_assoc < 1:
                         return
-                    # if deg_sa_mux_l1_non_assoc < 1:
-                    #     return
         else:
             self.num_do_b_subbank = self.tagbits * g_ip.tag_assoc
             if self.num_do_b_mat < self.tagbits:
@@ -2378,9 +2374,8 @@ class DynamicParameter:
         if (not self.is_tag) and (g_ip.is_main_mem) and (self.num_act_mats_hor_dir * self.num_do_b_mat * self.Ndsam_lev_1 * self.Ndsam_lev_2 < int(g_ip.out_w * g_ip.burst_len * g_ip.data_assoc)):
             return
 
-        # TODO relational
-        # if self.num_act_mats_hor_dir > self.num_mats_h_dir:
-        #     return
+        if self.num_act_mats_hor_dir > self.num_mats_h_dir:
+            return
 
         if not self.is_tag:
             if g_ip.fast_access:
@@ -2393,11 +2388,11 @@ class DynamicParameter:
         self.num_di_b_subbank = self.num_di_b_mat * self.num_act_mats_hor_dir
         self.num_si_b_subbank = self.num_si_b_mat
 
-        num_addr_b_row_dec = sp.log(self.num_r_subarray, 2)
+        num_addr_b_row_dec = _log2(self.num_r_subarray)
         if self.fully_assoc or self.pure_cam:
             num_addr_b_row_dec += _log2(self.num_subarrays // self.num_mats)
         number_subbanks = self.num_mats // self.num_act_mats_hor_dir
-        self.number_subbanks_decode = sp.log(number_subbanks, 2)
+        self.number_subbanks_decode = _log2(number_subbanks)
 
         self.num_rw_ports = g_ip.num_rw_ports
         self.num_rd_ports = g_ip.num_rd_ports
@@ -2405,20 +2400,14 @@ class DynamicParameter:
         self.num_se_rd_ports = g_ip.num_se_rd_ports
         self.num_search_ports = g_ip.num_search_ports
 
-        print("BruHHSKJnhd")
-        print(deg_sa_mux_l1_non_assoc)
-        
-        # TODO had to make int
-        deg_sa_mux_l1_non_assoc = deg_sa_mux_l1_non_assoc
-
         if self.is_dram and self.is_main_mem:
-            self.number_addr_bits_mat = max(num_addr_b_row_dec, _log2(self.deg_bl_muxing) + _log2(deg_sa_mux_l1_non_assoc) + _log2(self.Ndsam_lev_2))
+            self.number_addr_bits_mat = symbolic_convex_max(num_addr_b_row_dec, _log2(self.deg_bl_muxing) + _log2(deg_sa_mux_l1_non_assoc) + _log2(self.Ndsam_lev_2))
             if g_ip.print_detail_debug:
                 print(f"parameter.cc: number_addr_bits_mat = {num_addr_b_row_dec}")
                 print(f"parameter.cc: num_addr_b_row_dec = {num_addr_b_row_dec}")
                 print(f"parameter.cc: num_addr_b_mux_sel = {_log2(self.deg_bl_muxing) + _log2(deg_sa_mux_l1_non_assoc) + _log2(self.Ndsam_lev_2)}")
         else:
-            self.number_addr_bits_mat = num_addr_b_row_dec + _log2(self.deg_bl_muxing) + sp.log(deg_sa_mux_l1_non_assoc, 2) + _log2(self.Ndsam_lev_2)
+            self.number_addr_bits_mat = num_addr_b_row_dec + _log2(self.deg_bl_muxing) + _log2(deg_sa_mux_l1_non_assoc) + _log2(self.Ndsam_lev_2)
 
         if self.is_tag:
             self.num_di_b_bank_per_port = self.tagbits
@@ -2443,23 +2432,17 @@ class DynamicParameter:
             return
 
         if g_ip.specific_tag:
-            self.tagbits = sp.ceiling(g_ip.tag_w / 8.0) * 8
+            self.tagbits = math.ceil(g_ip.tag_w / 8.0) * 8
         else:
-            self.tagbits = sp.ceiling((ADDRESS_BITS + EXTRA_TAG_BITS) / 8.0) * 8
+            self.tagbits = math.ceil((ADDRESS_BITS + EXTRA_TAG_BITS) / 8.0) * 8
 
-        self.tag_num_r_subarray = sp.ceiling(capacity_per_die / (g_ip.nbanks * self.tagbits / 8.0 * self.Ndbl))
+        self.tag_num_r_subarray = math.ceil(capacity_per_die / (g_ip.nbanks * self.tagbits / 8.0 * self.Ndbl))
         self.tag_num_c_subarray = self.tagbits
 
-        if self.tag_num_r_subarray == 0:
+        if self.tag_num_r_subarray == 0 or self.tag_num_r_subarray > MAXSUBARRAYROWS or self.tag_num_c_subarray < MINSUBARRAYCOLS or self.tag_num_c_subarray > MAXSUBARRAYCOLS:
             return
-        if self.tag_num_r_subarray > MAXSUBARRAYROWS:
-            return
-        if self.tag_num_c_subarray < MINSUBARRAYCOLS:
-            return
-        if self.tag_num_c_subarray > MAXSUBARRAYCOLS:
-            return
-        self.num_r_subarray = self.tag_num_r_subarray
 
+        self.num_r_subarray = self.tag_num_r_subarray
         self.num_subarrays = self.Ndwl * self.Ndbl
 
         self.cam_cell.h = g_tp.cam.b_h + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + g_ip.num_rd_ports + g_ip.num_wr_ports) + 2 * wire_local.pitch * (g_ip.num_search_ports - 1) + wire_local.pitch * g_ip.num_se_rd_ports
@@ -2486,17 +2469,17 @@ class DynamicParameter:
             self.num_mats_h_dir = 1
             self.num_mats_v_dir = 1
         else:
-            self.num_mats_h_dir = sp.floor(sp.sqrt(self.Ndbl / 4.0))
+            self.num_mats_h_dir = math.floor(sp.sqrt(self.Ndbl / 4.0))
             self.num_mats_v_dir = int(self.Ndbl / 4.0 / self.num_mats_h_dir)
 
         self.num_mats = self.num_mats_h_dir * self.num_mats_v_dir
 
-        self.num_so_b_mat = sp.ceiling(_log2(self.num_r_subarray)) + sp.ceiling(_log2(self.num_subarrays))
+        self.num_so_b_mat = math.ceil(_log2(self.num_r_subarray)) + math.ceil(_log2(self.num_subarrays))
         self.num_do_b_mat = self.tagbits
 
         deg_sa_mux_l1_non_assoc = 1
 
-        self.num_so_b_subbank = sp.ceiling(_log2(self.num_r_subarray)) + sp.ceiling(_log2(self.num_subarrays))
+        self.num_so_b_subbank = math.ceil(_log2(self.num_r_subarray)) + math.ceil(_log2(self.num_subarrays))
         self.num_do_b_subbank = self.tag_num_c_subarray
 
         self.deg_senseamp_muxing_non_associativity = deg_sa_mux_l1_non_assoc
@@ -2529,7 +2512,7 @@ class DynamicParameter:
         self.num_di_b_bank_per_port = self.tagbits
         self.num_si_b_bank_per_port = self.tagbits
         self.num_do_b_bank_per_port = self.tagbits
-        self.num_so_b_bank_per_port = sp.ceiling(_log2(self.num_r_subarray)) + sp.ceiling(_log2(self.num_subarrays))
+        self.num_so_b_bank_per_port = math.ceil(_log2(self.num_r_subarray)) + math.ceil(_log2(self.num_subarrays))
 
         if not self.is_tag and g_ip.data_assoc > 1 and not g_ip.fast_access:
             self.number_way_select_signals_mat = g_ip.data_assoc
@@ -2544,20 +2527,17 @@ class DynamicParameter:
         assert NUMBER_STACKED_DIE_LAYERS == 1
         capacity_per_die = g_ip.cache_sz
 
-        # TODO CHECK
-        # if self.Ndwl != 1 or self.Ndcm != 1 or self.Nspd < 1 or self.Nspd > 1 or self.Ndsam_lev_1 != 1 or self.Ndsam_lev_2 != 1 or self.Ndbl < 2:
-        #     return
+        if self.Ndwl != 1 or self.Ndcm != 1 or self.Nspd < 1 or self.Nspd > 1 or self.Ndsam_lev_1 != 1 or self.Ndsam_lev_2 != 1 or self.Ndbl < 2:
+            return
 
         if g_ip.specific_tag:
             self.tagbits = g_ip.tag_w
         else:
-            print(f'blksz {g_ip.block_sz}')
             self.tagbits = ADDRESS_BITS + EXTRA_TAG_BITS - _log2(g_ip.block_sz)
         self.tagbits = (((self.tagbits + 3) >> 2) << 2)
 
-        # TODO check ceiling
         self.tag_num_r_subarray = math.ceil(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * self.Ndbl))
-        self.tag_num_c_subarray = sp.ceiling((self.tagbits * self.Nspd / self.Ndwl))
+        self.tag_num_c_subarray = math.ceil((self.tagbits * self.Nspd / self.Ndwl))
 
         if self.tag_num_r_subarray == 0:
             return
@@ -2588,7 +2568,6 @@ class DynamicParameter:
         self.cell.h = g_tp.sram.b_h + 2 * wire_local.pitch * (g_ip.num_wr_ports + g_ip.num_rw_ports - 1 + g_ip.num_rd_ports) + 2 * wire_local.pitch * (g_ip.num_search_ports - 1)
         self.cell.w = g_tp.sram.b_w + 2 * wire_local.pitch * (g_ip.num_rw_ports - 1 + (g_ip.num_rd_ports - g_ip.num_se_rd_ports) + g_ip.num_wr_ports) + g_tp.wire_local.pitch * g_ip.num_se_rd_ports + 2 * wire_local.pitch * (g_ip.num_search_ports - 1)
 
-        c_b_metal = self.cell.h * wire_local.C_per_um
         c_b_metal = self.cam_cell.h * wire_local.C_per_um
         self.V_b_sense = symbolic_convex_max(0.05 * g_tp.sram_cell.Vdd, VBITSENSEMIN)
         self.deg_bl_muxing = 1
@@ -2606,7 +2585,7 @@ class DynamicParameter:
             self.num_mats_h_dir = 1
             self.num_mats_v_dir = 1
         else:
-            self.num_mats_h_dir = sp.floor(sp.sqrt(self.Ndbl / 4.0))
+            self.num_mats_h_dir = math.floor(sp.sqrt(self.Ndbl / 4.0))
             self.num_mats_v_dir = int(self.Ndbl / 4.0 / self.num_mats_h_dir)
 
         self.num_mats = self.num_mats_h_dir * self.num_mats_v_dir
@@ -2631,8 +2610,8 @@ class DynamicParameter:
         self.num_di_b_subbank = self.num_di_b_mat * self.num_act_mats_hor_dir
         self.num_si_b_subbank = self.num_si_b_mat
 
-        num_addr_b_row_dec = sp.log(self.num_r_subarray, 2)
-        num_addr_b_row_dec += sp.log(self.num_subarrays / self.num_mats, 2)
+        num_addr_b_row_dec = _log2(self.num_r_subarray)
+        num_addr_b_row_dec += _log2(self.num_subarrays / self.num_mats)
         number_subbanks = self.num_mats / self.num_act_mats_hor_dir
         self.number_subbanks_decode = _log2(number_subbanks)
 
@@ -2657,24 +2636,26 @@ class DynamicParameter:
 
         self.is_valid = True
 
-    def ECC_adjustment(self):
-        self.num_do_b_mat += sp.ceiling(self.num_do_b_mat / num_bits_per_ecc_b_)
-        self.num_di_b_mat += sp.ceiling(self.num_di_b_mat / num_bits_per_ecc_b_)
-        self.num_di_b_subbank += sp.ceiling(self.num_di_b_subbank / num_bits_per_ecc_b_)
-        self.num_do_b_subbank += sp.ceiling(self.num_do_b_subbank / num_bits_per_ecc_b_)
-        self.num_di_b_bank_per_port += sp.ceiling(self.num_di_b_bank_per_port / num_bits_per_ecc_b_)
-        self.num_do_b_bank_per_port += sp.ceiling(self.num_do_b_bank_per_port / num_bits_per_ecc_b_)
 
-        self.num_so_b_mat += sp.ceiling(self.num_so_b_mat / num_bits_per_ecc_b_)
-        self.num_si_b_mat += sp.ceiling(self.num_si_b_mat / num_bits_per_ecc_b_)
-        self.num_si_b_subbank += sp.ceiling(self.num_si_b_subbank / num_bits_per_ecc_b_)
-        self.num_so_b_subbank += sp.ceiling(self.num_so_b_subbank / num_bits_per_ecc_b_)
-        self.num_si_b_bank_per_port += sp.ceiling(self.num_si_b_bank_per_port / num_bits_per_ecc_b_)
-        self.num_so_b_bank_per_port += sp.ceiling(self.num_so_b_bank_per_port / num_bits_per_ecc_b_)
+    def ECC_adjustment(self):
+        self.num_do_b_mat += int(math.ceil(self.num_do_b_mat / num_bits_per_ecc_b_))
+        self.num_di_b_mat += int(math.ceil(self.num_di_b_mat / num_bits_per_ecc_b_))
+        self.num_di_b_subbank += int(math.ceil(self.num_di_b_subbank / num_bits_per_ecc_b_))
+        self.num_do_b_subbank += int(math.ceil(self.num_do_b_subbank / num_bits_per_ecc_b_))
+        self.num_di_b_bank_per_port += int(math.ceil(self.num_di_b_bank_per_port / num_bits_per_ecc_b_))
+        self.num_do_b_bank_per_port += int(math.ceil(self.num_do_b_bank_per_port / num_bits_per_ecc_b_))
+
+        self.num_so_b_mat += int(math.ceil(self.num_so_b_mat / num_bits_per_ecc_b_))
+        self.num_si_b_mat += int(math.ceil(self.num_si_b_mat / num_bits_per_ecc_b_))
+        self.num_si_b_subbank += int(math.ceil(self.num_si_b_subbank / num_bits_per_ecc_b_))
+        self.num_so_b_subbank += int(math.ceil(self.num_so_b_subbank / num_bits_per_ecc_b_))
+        self.num_si_b_bank_per_port += int(math.ceil(self.num_si_b_bank_per_port / num_bits_per_ecc_b_))
+        self.num_so_b_bank_per_port += int(math.ceil(self.num_so_b_bank_per_port / num_bits_per_ecc_b_))
+
 
     def calc_subarr_rc(self, capacity_per_die):
         if self.Ndwl < 2 or self.Ndbl < 2:
-            print("Ndwl and Ndbl set less than 2 paramter.py")
+            print("Ndwl and Ndbl set less than 2 parameter.py")
             return False
 
         if self.is_dram and not self.is_tag and self.Ndcm > 1:
@@ -2684,32 +2665,27 @@ class DynamicParameter:
             if g_ip.specific_tag:
                 self.tagbits = g_ip.tag_w
             else:
-                self.tagbits = ADDRESS_BITS + EXTRA_TAG_BITS - sp.log(capacity_per_die, 2) + _log2(g_ip.tag_assoc * 2 - 1)
-            
-            print(f'{g_ip.nbanks} {g_ip.block_sz} {g_ip.tag_assoc} {self.Ndbl} {self.Nspd}')
-            self.num_r_subarray = sp.ceiling(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * g_ip.tag_assoc * self.Ndbl * self.Nspd))
-            self.num_c_subarray = sp.ceiling((self.tagbits * g_ip.tag_assoc * self.Nspd / self.Ndwl))
+                self.tagbits = ADDRESS_BITS + EXTRA_TAG_BITS - math.log2(capacity_per_die) + _log2(g_ip.tag_assoc * 2 - 1)
+
+            self.num_r_subarray = math.ceil(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * g_ip.tag_assoc * self.Ndbl * self.Nspd))
+            self.num_c_subarray = math.ceil((self.tagbits * g_ip.tag_assoc * self.Nspd / self.Ndwl))
         else:
-            self.num_r_subarray = sp.ceiling(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * g_ip.data_assoc * self.Ndbl * self.Nspd))
-            self.num_c_subarray = sp.ceiling((8 * g_ip.block_sz * g_ip.data_assoc * self.Nspd / self.Ndwl))
+            self.num_r_subarray = math.ceil(capacity_per_die / (g_ip.nbanks * g_ip.block_sz * g_ip.data_assoc * self.Ndbl * self.Nspd))
+            self.num_c_subarray = math.ceil((8 * g_ip.block_sz * g_ip.data_assoc * self.Nspd / self.Ndwl))
             if g_ip.is_3d_mem:
                 capacity_per_die_double = float(g_ip.cache_sz) / g_ip.num_die_3d
                 self.num_c_subarray = g_ip.page_sz_bits / self.Ndwl
-                # TODO check used to be 1 <<
-                self.num_r_subarray = sp.Pow(2, sp.floor(_log2(float(g_ip.cache_sz) / g_ip.num_die_3d / self.num_c_subarray / g_ip.nbanks / self.Ndbl / self.Ndwl * 1024 * 1024 * 1024) + 0.5))
+                self.num_r_subarray = 1 << int(math.floor(math.log2(float(g_ip.cache_sz) / g_ip.num_die_3d / self.num_c_subarray / g_ip.nbanks / self.Ndbl / self.Ndwl * 1024 * 1024 * 1024) + 0.5))
                 if g_ip.print_detail_debug:
                     print(f"parameter.cc: capacity_per_die_double = {capacity_per_die_double} Gbit")
                     print(f"parameter.cc: g_ip.nbanks * Ndbl * Ndwl = {g_ip.nbanks * self.Ndbl * self.Ndwl}")
                     print(f"parameter.cc: num_r_subarray = {self.num_r_subarray}")
                     print(f"parameter.cc: num_c_subarray = {self.num_c_subarray}")
 
-        print(self.num_r_subarray)
-        print(self.num_c_subarray)
-        # TODO RELATIONAL
-        # if self.num_r_subarray < MINSUBARRAYROWS or self.num_r_subarray == 0 or self.num_r_subarray > MAXSUBARRAYROWS:
-        #     return False
-        # if self.num_c_subarray < MINSUBARRAYCOLS or self.num_c_subarray > MAXSUBARRAYCOLS:
-        #     return False
+        if self.num_r_subarray < MINSUBARRAYROWS or self.num_r_subarray == 0 or self.num_r_subarray > MAXSUBARRAYROWS:
+            return False
+        if self.num_c_subarray < MINSUBARRAYCOLS or self.num_c_subarray > MAXSUBARRAYCOLS:
+            return False
 
         self.num_subarrays = self.Ndwl * self.Ndbl
         return True
@@ -2830,7 +2806,7 @@ def scan_input_double_tsv_type(line, name, unit_name, proj_type, tsv_type, print
 
 
 
-
+### basic_circuit.py
 #### TO AVOID CIRCULAR DEPENDNCY
 UNI_LEAK_STACK_FACTOR = 0.43
 
@@ -2849,8 +2825,9 @@ def is_pow2(val):
         return (_log2(val) != _log2(val - 1))
 
 def _log2(num):
+    num = int(num)
     if num == 0:
-        raise ValueError("log0?")
+        num = 1
     log2 = 0
     while num > 1:
         num >>= 1
@@ -2940,6 +2917,7 @@ def gate_C(width, wirelength, _is_dram=False, _is_sram=False, _is_wl_tr=False, _
         dt = g_tp.sleep_tx  # Sleep transistor
     else:
         dt = g_tp.peri_global
+    
     return (dt.C_g_ideal + dt.C_overlap + 3 * dt.C_fringe) * width + dt.l_phy * Cpolywire
 
 def gate_C_pass(width, wirelength, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
@@ -2961,47 +2939,46 @@ def drain_C_(width, nchannel, stack, next_arg_thresh_folding_width_or_height_cel
     c_junc_sidewall = dt.C_junc_sidewall
     c_fringe = 2 * dt.C_fringe
     c_overlap = 2 * dt.C_overlap
-    drain_C_metal_connecting_folded_tr = 0
 
     if next_arg_thresh_folding_width_or_height_cell == 0:
         w_folded_tr = fold_dimension
-        # print(f"fold_dimension {w_folded_tr}")
     else:
-        # print("else fold_dimension")
         h_tr_region = fold_dimension - 2 * g_tp.HPOWERRAIL
         ratio_p_to_n = 2.0 / (2.0 + 1.0)
         if nchannel:
             w_folded_tr = (1 - ratio_p_to_n) * (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)
         else:
             w_folded_tr = ratio_p_to_n * (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)
-
-    # TODO RELATIONAL
+        
     num_folded_tr = sp.ceiling(width / w_folded_tr)
-    # print(f'num_folded_tr {num_folded_tr}')
-    # # print(width/w_folded_tr)
-    # w_folded_tr = sp.Piecewise(
-    #     (width, num_folded_tr < 2),  # Set w_folded_tr to width if num_folded_tr < 2
-    #     (w_folded_tr, True)  # Keep w_folded_tr unchanged otherwise
-    # )
-    if (not contains_any_symbol(num_folded_tr)) and num_folded_tr < 2:
-        w_folded_tr = width
-        # TODO VISIT
+    w_folded_tr = sp.Piecewise((width, num_folded_tr < 2), (w_folded_tr, True))
 
     total_drain_w = (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (stack - 1) * g_tp.spacing_poly_to_poly
-    drain_h_for_sidewall = w_folded_tr
+    total_drain_w = sp.Piecewise(
+        (total_drain_w, num_folded_tr <= 1),
+        (total_drain_w + (num_folded_tr - 2) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (num_folded_tr - 1) * ((stack - 1) * g_tp.spacing_poly_to_poly), True)
+    )
+
+    drain_h_for_sidewall = sp.Piecewise((w_folded_tr, num_folded_tr <= 1), (0, num_folded_tr > 1))
+    
     total_drain_height_for_cap_wrt_gate = w_folded_tr + 2 * w_folded_tr * (stack - 1)
-    if (not contains_any_symbol(num_folded_tr)) and num_folded_tr > 1:
-        total_drain_w += (num_folded_tr - 2) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (num_folded_tr - 1) * ((stack - 1) * g_tp.spacing_poly_to_poly)
-        if num_folded_tr % 2 == 0:
-            drain_h_for_sidewall = 0
-        total_drain_height_for_cap_wrt_gate *= num_folded_tr
-        drain_C_metal_connecting_folded_tr = g_tp.wire_local.C_per_um * total_drain_w
+    total_drain_height_for_cap_wrt_gate = sp.Piecewise(
+        (total_drain_height_for_cap_wrt_gate, num_folded_tr <= 1),
+        (total_drain_height_for_cap_wrt_gate * num_folded_tr, True)
+    )
+
+    drain_C_metal_connecting_folded_tr = sp.Piecewise(
+        (0, num_folded_tr <= 1),
+        (g_tp.wire_local.C_per_um * total_drain_w, True)
+    )
 
     drain_C_area = c_junc_area * total_drain_w * w_folded_tr
     drain_C_sidewall = c_junc_sidewall * (drain_h_for_sidewall + 2 * total_drain_w)
     drain_C_wrt_gate = (c_fringe + c_overlap) * total_drain_height_for_cap_wrt_gate
 
     return drain_C_area + drain_C_sidewall + drain_C_wrt_gate + drain_C_metal_connecting_folded_tr
+
+
 
 def tr_R_on(width, nchannel, stack, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
     if _is_dram and _is_sram:
@@ -3016,9 +2993,6 @@ def tr_R_on(width, nchannel, stack, _is_dram=False, _is_sram=False, _is_wl_tr=Fa
         dt = g_tp.peri_global
 
     restrans = dt.R_nch_on if nchannel else dt.R_pch_on
-    # print("tr_R_on")
-    # print(stack, restrans, width)
-    # print("end tr_R_on")
     return stack * restrans / width
 
 def R_to_w(res, nchannel, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
@@ -3045,19 +3019,8 @@ def pmos_to_nmos_sz_ratio(_is_dram=False, _is_wl_tr=False, _is_sleep_tx=False):
         return g_tp.peri_global.n_to_p_eff_curr_drv_ratio
 
 def horowitz(inputramptime, tf, vs1, vs2, rise):
-    #print(tf)
     if inputramptime == 0 and vs1 == vs2:
-        # #TODO important relational cannot handle
-        # print("HERE????")
-        # print(vs1)
-        # print(-sp.log(vs1))
-        # print(f"tf: {tf}")
-        # print(f"tf result: {tf * (-sp.log(vs1) if vs1 < 1 else sp.log(vs1))}")
-        # print("ENDHEREE")
-        # TODO RELATIONAL
-        return sp.Piecewise((-sp.log(vs1), vs1 < 1), (sp.log(vs1), vs1 >= 1))
-        # print("here???")
-        # return tf * -sp.log(vs1)
+        return tf * sp.Piecewise((-sp.log(vs1), vs1 < 1), (sp.log(vs1), vs1 >= 1))
 
     a = inputramptime / tf
     if rise == RISE:
@@ -3067,6 +3030,7 @@ def horowitz(inputramptime, tf, vs1, vs2, rise):
         b = 0.4
         td = tf * sp.sqrt(sp.log(1.0 - vs1) ** 2 + 2 * a * b * vs1) + tf * (sp.log(1.0 - vs1) - sp.log(1.0 - vs2))
     return td
+
 
 def cmos_Ileak(nWidth, pWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
@@ -3157,9 +3121,7 @@ def cmos_Isub_leakage(nWidth, pWidth, fanin, g_type, _is_dram=False, _is_cell=Fa
     nmos_leak = simplified_nmos_leakage(nWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
     pmos_leak = simplified_pmos_leakage(pWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
     Isub = 0
-    #TODO Check
-    #num_states = int(sp.Pow(2.0, fanin))
-    num_states = sp.Pow(2.0, fanin)
+    num_states = int(sp.Pow(2.0, fanin))
 
     if g_type == nmos:
         if fanin == 1:
@@ -3217,9 +3179,7 @@ def cmos_Ig_leakage(nWidth, pWidth, fanin, g_type, _is_dram=False, _is_cell=Fals
     pmos_leak = cmos_Ig_p(pWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
     Ig_on = 0
     
-    #TODO Check
-    #num_states = int(sp.Pow(2.0, fanin))
-    num_states = sp.Pow(2.0, fanin)
+    num_states = int(sp.Pow(2.0, fanin))
 
     if g_type == nmos:
         if fanin == 1:

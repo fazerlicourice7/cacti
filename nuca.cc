@@ -414,7 +414,7 @@ Nuca::sim_nuca()
   {
     delete router_s[i];
   }
-  g_ip->display_ip();
+  //  g_ip->display_ip();
   //  g_ip->force_cache_config = true;
   //  g_ip->ndwl = 8;
   //  g_ip->ndbl = 16;

@@ -2600,6 +2600,11 @@ void output_data_csv(const uca_org_t & fin_res, string fn)
       file << "IO power termination and bias, ";
       // MODIFIED end
 
+      // MODIFIED to output wire repeater metrics
+      file << "Repeater spacing, ";
+      file << "Repeater size ";
+      // MODIFIED end
+
 //      file << "Resistance per unit micron (ohm-micron), ";
 //      file << "Capacitance per unit micron (fF per micron), ";
 //      file << "Unit-length wire delay (ps), ";
@@ -2719,6 +2724,11 @@ void output_data_csv(const uca_org_t & fin_res, string fn)
     file << testextio.extio_power_dynamic() << ", ";
     file << testextio.extio_power_phy() << ", ";
     file << testextio.extio_power_term() << ", ";
+    // MODIFIED end
+
+    // MODIFIED to output wire repeater metrics
+    file << g_ip->repeater_spacing << ", ";
+    file << g_ip->repeater_size;
     // MODIFIED end
 
 //    file << g_tp.wire_inside_mat.R_per_um << ", ";

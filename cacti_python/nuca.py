@@ -39,9 +39,7 @@ class Nuca(Component):
     def init_cont(self):
         cont_stats = [[[[[0 for _ in range(8)] for _ in range(7)] for _ in range(ROUTER_TYPES)] for _ in range(5)] for _ in range(2)]
         try:
-            print("HUH")
             with open("contention.dat", "r") as cont:
-                print("BUH")
                 for i in range(2):
                     for j in range(2, 5):
                         for k in range(ROUTER_TYPES):
@@ -49,10 +47,9 @@ class Nuca(Component):
                                 line = cont.readline().strip()
                                 parts = line.split(":")[1].strip().split()
                                 for m in range(8):
-                                    #TODO deleted int
+                                    # Change: deleted int since symbolic
                                     cont_stats[i][j][k][l][m] = parts[m]
         except FileNotFoundError:
-            print("BRUH")
             print("contention.dat file is missing!")
             exit(0)
         self.cont_stats = cont_stats
@@ -78,7 +75,7 @@ class Nuca(Component):
         cycle_time = 1.0 / (oper_freq * 1e9)
         cycle_time -= LATCH_DELAY
         cycle_time -= FIXED_OVERHEAD
-        #TODO deleted int
+        # Change: deleted int since symbolic
         return sp.ceiling(lat / cycle_time)
 
 # Constants and placeholder classes/functions for the sake of completeness

@@ -65,7 +65,6 @@ class Mat(Component):
         self.power_comparator = PowerDef()
         self.num_do_b_mat = dyn_p.num_do_b_mat
         self.num_so_b_mat = dyn_p.num_so_b_mat
-        #print(self.dp.num_subarrays, self.dp.num_mats)
         self.num_subarrays_per_mat = self.dp.num_subarrays / self.dp.num_mats
         self.num_subarrays_per_row = self.dp.Ndwl / self.dp.num_mats_h_dir
         self.array_leakage = 0
@@ -87,10 +86,10 @@ class Mat(Component):
         self.cl_wakeup_t = 0
         self.cl_sleep_tx_area = 0
 
-        print("CHECKPOINT 0")
+        # Change: Assert: ignored due to relational
+        # assert self.num_subarrays_per_mat <= 4
+        # assert self.num_subarrays_per_row <= 2
 
-        assert self.num_subarrays_per_mat <= 4
-        assert self.num_subarrays_per_row <= 2
         self.is_fa = self.dp.fully_assoc
         self.camFlag = self.is_fa or self.pure_cam
 
@@ -146,14 +145,11 @@ class Mat(Component):
             R_wire_bit_mux_dec_out /= 2.0
             R_wire_sa_mux_dec_out /= 2.0
 
-        print("CHECKPOINT 1")
-
         self.row_dec = Decoder(num_dec_signals, False, self.subarray.C_wl, R_wire_wl_drv_out, False, self.is_dram, True, self.cam_cell if self.camFlag else self.cell)
         self.row_dec.nodes_DSTN = self.subarray.num_rows
 
-        print("CHECKPOINT 2")
-
         self.bit_mux_dec = Decoder(self.deg_bl_muxing, False, C_ld_bit_mux_dec_out, R_wire_bit_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
+ 
         self.sa_mux_lev_1_dec = Decoder(self.dp.deg_senseamp_muxing_non_associativity, self.dp.number_way_select_signals_mat, C_ld_sa_mux_lev_1_dec_out, R_wire_sa_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
         self.sa_mux_lev_2_dec = Decoder(self.dp.Ndsam_lev_2, False, C_ld_sa_mux_lev_2_dec_out, R_wire_sa_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
 
@@ -167,24 +163,17 @@ class Mat(Component):
         if self.is_fa or self.pure_cam:
             num_dec_signals += int(math.log2(self.num_subarrays_per_mat))
 
-        print("CHECKPOINT 3")
-        print(f'num_dec_signals {num_dec_signals}')
-        print(f'deg_bl_muxing {self.deg_bl_muxing}')
         self.r_predec_blk1 = PredecBlk(num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, True)
-        print("CHECKPOINT 3.1")
         self.r_predec_blk2 = PredecBlk(num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, False)
         self.b_mux_predec_blk1 = PredecBlk(self.deg_bl_muxing, self.bit_mux_dec, 0, 0, 1, self.is_dram, True)
         self.b_mux_predec_blk2 = PredecBlk(self.deg_bl_muxing, self.bit_mux_dec, 0, 0, 1, self.is_dram, False)
-        print("CHECKPOINT 3.2")
         self.sa_mux_lev_1_predec_blk1 = PredecBlk(dyn_p.deg_senseamp_muxing_non_associativity, self.sa_mux_lev_1_dec, 0, 0, 1, self.is_dram, True)
         self.sa_mux_lev_1_predec_blk2 = PredecBlk(dyn_p.deg_senseamp_muxing_non_associativity, self.sa_mux_lev_1_dec, 0, 0, 1, self.is_dram, False)
-        print("CHECKPOINT 3.3")
         self.sa_mux_lev_2_predec_blk1 = PredecBlk(self.dp.Ndsam_lev_2, self.sa_mux_lev_2_dec, 0, 0, 1, self.is_dram, True)
         self.sa_mux_lev_2_predec_blk2 = PredecBlk(self.dp.Ndsam_lev_2, self.sa_mux_lev_2_dec, 0, 0, 1, self.is_dram, False)
         self.dummy_way_sel_predec_blk1 = PredecBlk(1, self.sa_mux_lev_1_dec, 0, 0, 0, self.is_dram, True)
         self.dummy_way_sel_predec_blk2 = PredecBlk(1, self.sa_mux_lev_1_dec, 0, 0, 0, self.is_dram, False)
 
-        print("CHECKPOINT 4")
         self.r_predec_blk_drv1 = PredecBlkDrv(0, self.r_predec_blk1, self.is_dram)
         self.r_predec_blk_drv2 = PredecBlkDrv(0, self.r_predec_blk2, self.is_dram)
         self.b_mux_predec_blk_drv1 = PredecBlkDrv(0, self.b_mux_predec_blk1, self.is_dram)
@@ -196,18 +185,15 @@ class Mat(Component):
         self.way_sel_drv1 = PredecBlkDrv(dyn_p.number_way_select_signals_mat, self.dummy_way_sel_predec_blk1, self.is_dram)
         self.dummy_way_sel_predec_blk_drv2 = PredecBlkDrv(1, self.dummy_way_sel_predec_blk2, self.is_dram)
 
-        print("CHECKPOINT 5")
         self.r_predec = Predec(self.r_predec_blk_drv1, self.r_predec_blk_drv2)
         self.b_mux_predec = Predec(self.b_mux_predec_blk_drv1, self.b_mux_predec_blk_drv2)
         self.sa_mux_lev_1_predec = Predec(self.sa_mux_lev_1_predec_blk_drv1, self.sa_mux_lev_1_predec_blk_drv2)
         self.sa_mux_lev_2_predec = Predec(self.sa_mux_lev_2_predec_blk_drv1, self.sa_mux_lev_2_predec_blk_drv2)
 
-        print("CHECKPOINT 6")
         self.subarray_out_wire = Wire(self.dp.wtype, self.subarray.area.w if g_ip.cl_vertical else self.subarray.area.h)
 
         # def __init__(self, wire_model, length, nsense=1, width_scaling=1, spacing_scaling=1, wire_placement=outside_mat, resistivity=CU_RESISTIVITY, dt=g_tp.peri_global):
 
-        print("CHECKPOINT 7")
         if self.is_fa or self.pure_cam:
             driver_c_gate_load = self.subarray.num_cols_fa_cam * gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
             driver_c_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * g_tp.wire_outside_mat.C_per_um
@@ -302,7 +288,6 @@ class Mat(Component):
         # assert self.area.w > 0
 
     def compute_delays(self, inrisetime):
-        print("CHECKPOINT 0")
         if self.is_fa or self.pure_cam:
             outrisetime_search = self.compute_cam_delay(inrisetime)
 
@@ -327,29 +312,23 @@ class Mat(Component):
                 outrisetime_search = self.compute_bitline_delay(outrisetime_search)
                 outrisetime_search = self.compute_sa_delay(outrisetime_search)
 
-            print("CHECKPOINT 1")
             outrisetime_search = self.compute_subarray_out_drv(outrisetime_search)
             self.subarray_out_wire.set_in_rise_time(outrisetime_search)
             outrisetime_search = self.subarray_out_wire.signal_rise_time()
             self.delay_subarray_out_drv_htree = self.delay_subarray_out_drv + self.subarray_out_wire.delay
 
-            print("CHECKPOINT 2")
             outrisetime = self.r_predec.compute_delays(inrisetime)
             row_dec_outrisetime = self.row_dec.compute_delays(outrisetime)
 
-            print("CHECKPOINT 3")
             outrisetime = self.b_mux_predec.compute_delays(inrisetime)
             self.bit_mux_dec.compute_delays(outrisetime)
 
-            print("CHECKPOINT 4")
             outrisetime = self.sa_mux_lev_1_predec.compute_delays(inrisetime)
             self.sa_mux_lev_1_dec.compute_delays(outrisetime)
 
-            print("CHECKPOINT 5")
             outrisetime = self.sa_mux_lev_2_predec.compute_delays(inrisetime)
             self.sa_mux_lev_2_dec.compute_delays(outrisetime)
 
-            print("Computed all predec delays")
 
             if self.pure_cam:
                 outrisetime = self.compute_bitline_delay(row_dec_outrisetime)
@@ -357,9 +336,7 @@ class Mat(Component):
 
             return outrisetime_search
         else:
-            print("compute delays CHECKPOINT 6 ?")
             self.bl_precharge_eq_drv.compute_delay(0)
-            print("compute delays CHECKPOINT 6.5 ?")
             if self.row_dec.exist:
                 k = self.row_dec.num_gates - 1
                 rd = tr_R_on(self.row_dec.w_dec_n[k], NCH, 1, self.is_dram, False, True)
@@ -381,51 +358,34 @@ class Mat(Component):
                                         sp.log((g_tp.sram.Vbitpre - 0.1 * self.dp.V_b_sense) / (g_tp.sram.Vbitpre - self.dp.V_b_sense)) * \
                                         (R_bl_precharge * C_bl + R_bl * C_bl / 2)
 
-        print("CHECKPOINT 7")
         outrisetime = self.r_predec.compute_delays(inrisetime)
         row_dec_outrisetime = self.row_dec.compute_delays(outrisetime)
 
-        print(outrisetime)
-        print(row_dec_outrisetime)
-
-        print("CHECKPOINT 8")
         outrisetime = self.b_mux_predec.compute_delays(inrisetime)
         self.bit_mux_dec.compute_delays(outrisetime)
 
-        print(outrisetime)
-        print(self.b_mux_predec.delay)
-        print(self.bit_mux_dec.delay)
-
-        print("CHECKPOINT 9")
         outrisetime = self.sa_mux_lev_1_predec.compute_delays(inrisetime)
         self.sa_mux_lev_1_dec.compute_delays(outrisetime)
 
-        print("CHECKPOINT 10")
         outrisetime = self.sa_mux_lev_2_predec.compute_delays(inrisetime)
         self.sa_mux_lev_2_dec.compute_delays(outrisetime)
 
         if g_ip.is_3d_mem:
             row_dec_outrisetime = inrisetime
 
-        print("CHECKPOINT 11")
         outrisetime = self.compute_bitline_delay(row_dec_outrisetime)
         outrisetime = self.compute_sa_delay(outrisetime)
         outrisetime = self.compute_subarray_out_drv(outrisetime)
         self.subarray_out_wire.set_in_rise_time(outrisetime)
         outrisetime = self.subarray_out_wire.signal_rise_time()
 
-        print("CHECKPOINT 12")
         self.delay_subarray_out_drv_htree = self.delay_subarray_out_drv + self.subarray_out_wire.delay
 
         if self.dp.is_tag and not self.dp.fully_assoc:
             self.compute_comparator_delay(0)
 
-        print("CHECKPOINT 13")
-
         if not self.row_dec.exist:
             self.delay_wl_reset = symbolic_convex_max(self.r_predec.blk1.delay, self.r_predec.blk2.delay)
-
-        print("CHECKPOINT 14")
 
         return outrisetime
     
@@ -467,16 +427,16 @@ class Mat(Component):
         driver_c_wire_load = 0
         driver_r_wire_load = 0
 
-        leak_power_cc_inverters_sram_cell = 0
-        leak_power_acc_tr_RW_or_WR_port_sram_cell = 0
-        leak_power_RD_port_sram_cell = 0
-        leak_power_SCHP_port_sram_cell = 0
-        leak_comparator_cam_cell = 0
+        self.leak_power_cc_inverters_sram_cell = 0
+        self.leak_power_acc_tr_RW_or_WR_port_sram_cell = 0
+        self.leak_power_RD_port_sram_cell = 0
+        self.leak_power_SCHP_port_sram_cell = 0
+        self.leak_comparator_cam_cell = 0
 
-        gate_leak_comparator_cam_cell = 0
-        gate_leak_power_cc_inverters_sram_cell = 0
-        gate_leak_power_RD_port_sram_cell = 0
-        gate_leak_power_SCHP_port_sram_cell = 0
+        self.gate_leak_comparator_cam_cell = 0
+        self.gate_leak_power_cc_inverters_sram_cell = 0
+        self.gate_leak_power_RD_port_sram_cell = 0
+        self.gate_leak_power_SCHP_port_sram_cell = 0
 
         c_matchline_metal = self.cam_cell.get_w() * g_tp.wire_local.C_per_um
         c_searchline_metal = self.cam_cell.get_h() * g_tp.wire_local.C_per_um
@@ -511,8 +471,7 @@ class Mat(Component):
             W_hit_miss_n = Wdummyn
             W_hit_miss_p = g_tp.min_w_nmos_ * p_to_n_sizing_r
 
-        #TODO deleted int
-        Htagbits = sp.ceiling(self.subarray.num_cols_fa_cam / 2.0)
+        Htagbits = int(sp.ceiling(self.subarray.num_cols_fa_cam / 2.0))
 
         driver_c_gate_load = self.subarray.num_cols_fa_cam * gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
         driver_c_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * g_tp.wire_outside_mat.C_per_um
@@ -777,8 +736,7 @@ class Mat(Component):
 
         m = V_wl / inrisetime
 
-        print(f'tstep: {tstep}')
-        # TODO Relational
+        # Change: Relational set to one value, otherwise, expression will be too long
         # if tstep <= (0.5 * (V_wl - v_th_mem_cell) / m):
         self.delay_bitline = sp.sqrt(2 * tstep * (V_wl - v_th_mem_cell) / m)
         # else:
@@ -791,7 +749,6 @@ class Mat(Component):
         # self.delay_bitline = sp.Piecewise((delay_bitline_if_true, condition),
         #                             (delay_bitline_if_false, not condition))
 
-        # TODO VISIT
 
         is_fa = bool(self.dp.fully_assoc)
 
@@ -952,13 +909,14 @@ class Mat(Component):
         tstep = (r2 * c2 + (r1 + r2) * c1) * sp.log(1.0 / VTHMUXNAND)
         m = g_tp.peri_global.Vdd / nextinputtime
 
-        # TODO RELATIONAL
+        # Change: Relational set to one value, otherwise, expression will be too long
         # if tstep <= (0.5 * (g_tp.peri_global.Vdd - g_tp.peri_global.Vth) / m):
         #     a = m
         #     b = 2 * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth)
         #     c = -2 * tstep * (g_tp.peri_global.Vdd - g_tp.peri_global.Vth) + 1 / m * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth) * ((g_tp.peri_global.Vdd * VTHEVALINV) - g_tp.peri_global.Vth)
         #     Tcomparatorni = (-b + sp.sqrt(b * b - 4 * a * c)) / (2 * a)
         # else:
+        #     Tcomparatorni = tstep + (g_tp.peri_global.Vdd + g_tp.peri_global.Vth) / (2 * m) - (g_tp.peri_global.Vdd * VTHEVALINV) / m
         Tcomparatorni = tstep + (g_tp.peri_global.Vdd + g_tp.peri_global.Vth) / (2 * m) - (g_tp.peri_global.Vdd * VTHEVALINV) / m
 
         self.delay_comparator = Tcomparatorni + st1del + st2del + st3del

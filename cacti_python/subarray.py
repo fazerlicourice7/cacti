@@ -1,5 +1,3 @@
-# TODO figure out area
-
 import math
 from math import ceil, log, pow
 import sys
@@ -22,16 +20,6 @@ class Subarray(Component):
         self.cell = dp_.cell
         self.cam_cell = dp_.cam_cell
         self.is_fa = is_fa_
-
-        print("\n CURR DEBUG")
-        print(f"Number of rows: {self.num_rows}")
-        print(f"Number of columns: {self.num_cols}")
-        print(f"Number of columns for FA CAM: {self.num_cols_fa_cam}")
-        print(f"Number of columns for FA RAM: {self.num_cols_fa_ram}")
-        print(f"Cell: {self.cell}")
-        print(f"CAM Cell: {self.cam_cell}")
-        print(f"Is FA: {self.is_fa}")
-        #self.area = Area()
         
         if not (is_fa_ or dp_.pure_cam):
             self.num_cols += sp.ceiling(self.num_cols / num_bits_per_ecc_b_) if g_ip.add_ecc_b_ else 0

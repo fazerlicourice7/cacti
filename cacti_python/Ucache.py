@@ -151,11 +151,7 @@ def calc_time_mt_wrapper(void_obj):
         wt_min = 'Global'
         wt_max = 'Low_swing'
 
-    print("CHECKPOINT Nspd_min")
-    print(Nspd_min)
-    # print(MAXDATASPD)
-    # print()
-    #TODO Npsd_min messed up
+    # Check Npsd_min 
     for Nspd in range(int(Nspd_min), int(MAXDATASPD), int(math.ceil(Nspd_min*2))):
         # replace with proper enum
         if(wt_min == "Global"):
@@ -203,11 +199,6 @@ def calc_time_mt_wrapper(void_obj):
             wt_max = 9
         else:
             wt_max = 10
-
-        print("CHECKPOINT")
-        print(wt_min)
-        print(wt_max)
-        print()
 
         for wr in range(wt_min, wt_max+1):
             for iter in range(tid, niter, NTHREADS):
@@ -322,7 +313,11 @@ def calculate_time(
         ptr_array.subarray_height = uca.bank.mat.subarray.area.h
         ptr_array.subarray_length = uca.bank.mat.subarray.area.w
         ptr_array.power = uca.power
+
+        #RECENT CHANGE: MAX - ignore to reduce expression size
         ptr_array.delay_senseamp_mux_decoder = symbolic_convex_max(uca.delay_array_to_sa_mux_lev_1_decoder, uca.delay_array_to_sa_mux_lev_2_decoder)
+        # ptr_array.delay_senseamp_mux_decoder = uca.delay_array_to_sa_mux_lev_1_decoder
+
         ptr_array.delay_before_subarray_output_driver = uca.delay_before_subarray_output_driver
         ptr_array.delay_from_subarray_output_driver_to_output = uca.delay_from_subarray_out_drv_to_out
         ptr_array.delay_route_to_bank = uca.htree_in_add.delay
@@ -711,14 +706,8 @@ def solve(fin_res):
         for t in range(NTHREADS):
             threads[t].join()
 
-
-        print("HELLo?")
         for t in range(NTHREADS):
             calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
-
-            # CHECKPOINT
-            print(f'WAT {calc_array[t].data_arr[0].access_time}')
-
             data_arr.extend(calc_array[t].data_arr)
             calc_array[t].tag_arr.sort(key=cmp_to_key(MemArray.lt))
             tag_arr.extend(calc_array[t].tag_arr)
@@ -767,7 +756,6 @@ def solve(fin_res):
             curr_org.data_array2 = m
 
             curr_org.find_delay()
-            print(f'ACCESS TIME: {curr_org.access_time}')
             curr_org.find_energy()
             curr_org.find_area()
             curr_org.find_cyc()
@@ -784,7 +772,6 @@ def solve(fin_res):
                 curr_org.data_array2 = m
 
                 curr_org.find_delay()
-                print(f'ACCESS TIME: {curr_org.access_time}')
                 curr_org.find_energy()
                 curr_org.find_area()
                 curr_org.find_cyc()
@@ -907,8 +894,9 @@ def calculate_time_single(
         ptr_array.subarray_height = uca.bank.mat.subarray.area.h
         ptr_array.subarray_length = uca.bank.mat.subarray.area.w
         ptr_array.power = uca.power
-        # TODO check
+
         ptr_array.delay_senseamp_mux_decoder = symbolic_convex_max(uca.delay_array_to_sa_mux_lev_1_decoder, uca.delay_array_to_sa_mux_lev_2_decoder)
+
         ptr_array.delay_before_subarray_output_driver = uca.delay_before_subarray_output_driver
         ptr_array.delay_from_subarray_output_driver_to_output = uca.delay_from_subarray_out_drv_to_out
         ptr_array.delay_route_to_bank = uca.htree_in_add.delay
@@ -1137,7 +1125,7 @@ def solve_single():
         curr_org.data_array2 = data_arr
 
         curr_org.find_delay()
-        # curr_org.find_energy()
+        curr_org.find_energy()
         # curr_org.find_area()
         # curr_org.find_cyc()
 
@@ -1147,7 +1135,7 @@ def solve_single():
         curr_org.data_array2 = data_arr
 
         curr_org.find_delay()
-        # curr_org.find_energy()
+        curr_org.find_energy()
         # curr_org.find_area()
         # curr_org.find_cyc()
 
