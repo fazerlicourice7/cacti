@@ -251,7 +251,7 @@ class Wire(Component):
         driver_res = (-8 * g_tp.FO4 / (math.log(0.5) * cwire)) / RES_ADJ
         nsize = R_to_w(driver_res, NCH)
 
-        # RECENT CHANGE: MAX - ignore to reduce expression length
+        # CHANGE: MAX - can ignore to reduce expression length
         # nsize = sp.Min(nsize, g_tp.max_w_nmos_)
         # nsize = symbolic_convex_max(nsize, g_tp.min_w_nmos_)
 
@@ -269,7 +269,7 @@ class Wire(Component):
         req_cin = ((2 + beta / 1 + beta) * gate_C(nsize, 0)) / st_eff
         inv_size = req_cin / (gate_C(self.min_w_pmos, 0) + gate_C(g_tp.min_w_nmos_, 0))
 
-        # RECENT CHANGE: MAX - ignore to reduce expression size
+        # CHANGE: MAX - can ignore to reduce expression size
         inv_size = symbolic_convex_max(inv_size, 1)
 
         res_eq = 2 * tr_R_on(g_tp.min_w_nmos_, NCH, 1)

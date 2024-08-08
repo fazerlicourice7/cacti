@@ -138,7 +138,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
 
     w_n[i] = (1.0 / (1.0 + p_to_n_sz_ratio)) * C_in / gate_C(1, 0, is_dram_, False, is_wl_tr_)
 
-    # RECENT CHANGE: Max - ignore to reduce expression length
+    # CHANGE: Max - can ignore to reduce expression length
     w_n[i] = symbolic_convex_max(w_n[i], g_tp.min_w_nmos_)
 
     w_p[i] = p_to_n_sz_ratio * w_n[i]
@@ -160,7 +160,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
         if w_item == sp.zoo:
             w_item = 0
 
-        # RECENT CHANGE: Max - ignore to reduce expression length
+        # CHANGE: Max - can ignore to reduce expression length
         # w_n[i] = symbolic_convex_max(w_item, g_tp.min_w_nmos_)
         w_n[i] = w_item
 

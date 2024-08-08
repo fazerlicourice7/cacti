@@ -2324,7 +2324,6 @@ class DynamicParameter:
             C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
             self.dram_refresh_period = 0
 
-        # RECENT CHANGE
         self.num_mats_h_dir = max(self.Ndwl // 2, 1)
         self.num_mats_v_dir = max(self.Ndbl // 2, 1)
 
