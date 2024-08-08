@@ -314,7 +314,7 @@ def calculate_time(
         ptr_array.subarray_length = uca.bank.mat.subarray.area.w
         ptr_array.power = uca.power
 
-        #RECENT CHANGE: MAX - ignore to reduce expression size
+        # CHANGE: MAX - can ignore to reduce expression size
         ptr_array.delay_senseamp_mux_decoder = symbolic_convex_max(uca.delay_array_to_sa_mux_lev_1_decoder, uca.delay_array_to_sa_mux_lev_2_decoder)
         # ptr_array.delay_senseamp_mux_decoder = uca.delay_array_to_sa_mux_lev_1_decoder
 

@@ -219,7 +219,6 @@ class Htree2(Component):
         ht_temp = 0
         option = 0
 
-        # RECENT CHANGE
         h = max(int(_log2(self.ndwl / 2)), 1) # horizontal nodes
         v = max(int(_log2(self.ndbl / 2)), 1)  # vertical nodes
 
@@ -420,7 +419,6 @@ class Htree2(Component):
         ht = 0
         option = 0
 
-        # RECENT Change: Round up h and v from 0
         h = max(int(_log2(self.ndwl / 2)), 1)
         v = max(int(_log2(self.ndbl / 2)), 1)
         len_temp = 0
