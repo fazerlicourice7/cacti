@@ -328,6 +328,8 @@ class Htree2(Component):
                 # if len_temp > wtemp1.repeater_spacing:
                 #     s1 = wtemp1.repeater_size
                 #     l_eff = wtemp1.repeater_spacing
+                #     s1 = wtemp1.repeater_size
+                #     l_eff = wtemp1.repeater_spacing
                 # else:
                 #     s1 = (len_temp / wtemp1.repeater_spacing) * wtemp1.repeater_size
                 #     l_eff = len_temp
@@ -522,6 +524,8 @@ class Htree2(Component):
                 # if len_temp > wtemp1.repeater_spacing:
                 #     s1 = wtemp1.repeater_size
                 #     l_eff = wtemp1.repeater_spacing
+                #     s1 = wtemp1.repeater_size
+                #     l_eff = wtemp1.repeater_spacing
                 # else:
                 #     s1 = (len_temp / wtemp1.repeater_spacing) * wtemp1.repeater_size
                 #     l_eff = len_temp
@@ -541,6 +545,7 @@ class Htree2(Component):
 
                 # Change: Relational set to one value, otherwise, expression will be too long
                 # if ht_temp > wtemp2.repeater_spacing:
+                #     s2 = wtemp2.repeater_size
                 #     s2 = wtemp2.repeater_size
                 # else:
                 #     s2 = (len_temp / wtemp2.repeater_spacing) * wtemp2.repeater_size
@@ -572,6 +577,8 @@ class Htree2(Component):
 
                 # Change: Relational set to one value, otherwise, expression will be too long
                 # if ht_temp > wtemp3.repeater_spacing:
+                #     s3 = wtemp3.repeater_size
+                #     l_eff = wtemp3.repeater_spacing
                 #     s3 = wtemp3.repeater_size
                 #     l_eff = wtemp3.repeater_spacing
                 # else:
