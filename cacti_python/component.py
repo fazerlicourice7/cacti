@@ -143,7 +143,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
 
     w_p[i] = p_to_n_sz_ratio * w_n[i]
 
-    # CHANGE: ARRAY LOGIC
+    # CHANGE: ARRAY LOGIC - cannot index with symbolic expressions
     # #TODO IMPORTANT SINCE RELATIONAL
     # if w_n[i] > max_w_nmos:
     #     C_ld = gate_C((1 + p_to_n_sz_ratio) * max_w_nmos, 0, is_dram_, False, is_wl_tr_)

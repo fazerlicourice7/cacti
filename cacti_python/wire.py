@@ -449,7 +449,6 @@ class Wire(Component):
         self.repeated_wire.pop()
         self.update_fullswing()
 
-        # CHANGE: SET LOGIC - just set global_ to be spacing and size
         Wire.global_.area.h = si
         Wire.global_.area.w = sp * 1e-6  # m
 
