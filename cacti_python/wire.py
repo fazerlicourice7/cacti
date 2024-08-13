@@ -259,10 +259,11 @@ class Wire(Component):
         # if rwire * cwire > 8 * g_tp.FO4:
         #     nsize = g_tp.max_w_nmos_
 
-        nsize = sp.Piecewise(
-            (g_tp.max_w_nmos_, rwire * cwire > 8 * g_tp.FO4),
-            (nsize, True)
-        )
+        if g_ip.use_piecewise:
+            nsize = sp.Piecewise(
+                (g_tp.max_w_nmos_, rwire * cwire > 8 * g_tp.FO4),
+                (nsize, True)
+            )
 
         st_eff = sp.sqrt((2 + beta / 1 + beta) * gate_C(nsize, 0) / 
                            (gate_C(2 * g_tp.min_w_nmos_, 0) + gate_C(2 * self.min_w_pmos, 0)))

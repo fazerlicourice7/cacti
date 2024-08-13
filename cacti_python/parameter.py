@@ -167,6 +167,7 @@ class InputParameter:
         self.mirror_in_bob = False
         self.total_power = False
         self.verbose = False
+        self.use_piecewise = True
 
         self.repeater_spacing = 0.0
         self.repeater_size = 0.0
@@ -2950,26 +2951,42 @@ def drain_C_(width, nchannel, stack, next_arg_thresh_folding_width_or_height_cel
             w_folded_tr = ratio_p_to_n * (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)
         
     num_folded_tr = sp.ceiling(width / w_folded_tr)
-    w_folded_tr = sp.Piecewise((width, num_folded_tr < 2), (w_folded_tr, True))
+
+    if g_ip.use_piecewise:
+        w_folded_tr = sp.Piecewise((width, num_folded_tr < 2), (w_folded_tr, True))
 
     total_drain_w = (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (stack - 1) * g_tp.spacing_poly_to_poly
-    total_drain_w = sp.Piecewise(
-        (total_drain_w, num_folded_tr <= 1),
-        (total_drain_w + (num_folded_tr - 2) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (num_folded_tr - 1) * ((stack - 1) * g_tp.spacing_poly_to_poly), True)
-    )
+   
+    if g_ip.use_piecewise:
+        total_drain_w = sp.Piecewise(
+            (total_drain_w, num_folded_tr <= 1),
+            (total_drain_w + (num_folded_tr - 2) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (num_folded_tr - 1) * ((stack - 1) * g_tp.spacing_poly_to_poly), True)
+        )
+    else:
+        total_drain_w += (num_folded_tr - 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact) + (num_folded_tr - 1) * ((stack - 1) * g_tp.spacing_poly_to_poly)
 
-    drain_h_for_sidewall = sp.Piecewise((w_folded_tr, num_folded_tr <= 1), (0, num_folded_tr > 1))
+    if g_ip.use_piecewise:
+        drain_h_for_sidewall = sp.Piecewise((w_folded_tr, num_folded_tr <= 1), (0, num_folded_tr > 1))
+    else:
+        drain_h_for_sidewall = w_folded_tr
     
     total_drain_height_for_cap_wrt_gate = w_folded_tr + 2 * w_folded_tr * (stack - 1)
-    total_drain_height_for_cap_wrt_gate = sp.Piecewise(
-        (total_drain_height_for_cap_wrt_gate, num_folded_tr <= 1),
-        (total_drain_height_for_cap_wrt_gate * num_folded_tr, True)
-    )
 
-    drain_C_metal_connecting_folded_tr = sp.Piecewise(
-        (0, num_folded_tr <= 1),
-        (g_tp.wire_local.C_per_um * total_drain_w, True)
-    )
+    if g_ip.use_piecewise:
+        total_drain_height_for_cap_wrt_gate = sp.Piecewise(
+            (total_drain_height_for_cap_wrt_gate, num_folded_tr <= 1),
+            (total_drain_height_for_cap_wrt_gate * num_folded_tr, True)
+        )
+    else:
+        total_drain_height_for_cap_wrt_gate = total_drain_height_for_cap_wrt_gate * num_folded_tr
+
+    if g_ip.use_piecewise:
+        drain_C_metal_connecting_folded_tr = sp.Piecewise(
+            (0, num_folded_tr <= 1),
+            (g_tp.wire_local.C_per_um * total_drain_w, True)
+        )
+    else:
+        drain_C_metal_connecting_folded_tr = g_tp.wire_local.C_per_um * total_drain_w
 
     drain_C_area = c_junc_area * total_drain_w * w_folded_tr
     drain_C_sidewall = c_junc_sidewall * (drain_h_for_sidewall + 2 * total_drain_w)
@@ -3019,7 +3036,10 @@ def pmos_to_nmos_sz_ratio(_is_dram=False, _is_wl_tr=False, _is_sleep_tx=False):
 
 def horowitz(inputramptime, tf, vs1, vs2, rise):
     if inputramptime == 0 and vs1 == vs2:
-        return tf * sp.Piecewise((-sp.log(vs1), vs1 < 1), (sp.log(vs1), vs1 >= 1))
+        if g_ip.use_piecewise:
+            return tf * sp.Piecewise((-sp.log(vs1), vs1 < 1), (sp.log(vs1), vs1 >= 1))
+        else:
+            return tf * (-sp.log(vs1))
 
     a = inputramptime / tf
     if rise == RISE:

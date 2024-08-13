@@ -46,12 +46,15 @@ class Decoder(Component):
         #     else:
         #         self.num_in_signals = 2
 
-        self.num_in_signals = sp.Piecewise(
-            (2, sp.And(num_addr_bits_dec < 4, flag_way_select != 0)),  # self.num_in_signals = 2 if num_addr_bits_dec < 4 and flag_way_select
-            (0, sp.And(num_addr_bits_dec < 4, flag_way_select == 0)),  # self.num_in_signals = 0 if num_addr_bits_dec < 4 and not flag_way_select
-            (3, sp.And(num_addr_bits_dec >= 4, flag_way_select != 0)),  # self.num_in_signals = 3 if num_addr_bits_dec >= 4 and flag_way_select
-            (2, True)  # self.num_in_signals = 2 if num_addr_bits_dec >= 4 and not flag_way_select
-        )
+        if g_ip.use_piecewise:
+            self.num_in_signals = sp.Piecewise(
+                (2, sp.And(num_addr_bits_dec < 4, flag_way_select != 0)),  # self.num_in_signals = 2 if num_addr_bits_dec < 4 and flag_way_select
+                (0, sp.And(num_addr_bits_dec < 4, flag_way_select == 0)),  # self.num_in_signals = 0 if num_addr_bits_dec < 4 and not flag_way_select
+                (3, sp.And(num_addr_bits_dec >= 4, flag_way_select != 0)),  # self.num_in_signals = 3 if num_addr_bits_dec >= 4 and flag_way_select
+                (2, True)  # self.num_in_signals = 2 if num_addr_bits_dec >= 4 and not flag_way_select
+            )
+        else:
+            self.num_in_signals = 2
 
         # assert self.cell.h > 0
         # assert self.cell.w > 0

@@ -91,10 +91,13 @@ def compute_gate_area(gate_type, num_inputs, w_pmos, w_nmos, h_gate):
     # )
     gate_h = (w_nmos + w_pmos + g_tp.MIN_GAP_BET_P_AND_N_DIFFS + 2 * g_tp.HPOWERRAIL)
 
-    result = sp.Piecewise(
-         (0, sp.Or(ratio_p_to_n >= 1, ratio_p_to_n <= 0)),
-         (gate_w * gate_h, True )
-    )
+    if g_ip.use_piecewise:
+        result = sp.Piecewise(
+            (0, sp.Or(ratio_p_to_n >= 1, ratio_p_to_n <= 0)),
+            (gate_w * gate_h, True )
+        )
+    else:
+        result = gate_w * gate_h
 
     return result
 
@@ -185,11 +188,15 @@ def compute_tr_width_after_folding(input_width, threshold_folding_width):
         #                     (num_folded_tr + 1) * spacing_poly_to_poly)
         # return total_diff_width
         
-        result = sp.Piecewise(
-            (0, input_width <= 0), 
-            (sp.ceiling(input_width / threshold_folding_width) * g_ip.F_sz_um +
-            (sp.ceiling(input_width / threshold_folding_width) + 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact),
-            True)  
-        )
-
+        if g_ip.use_piecewise:
+            result = sp.Piecewise(
+                (0, input_width <= 0), 
+                (sp.ceiling(input_width / threshold_folding_width) * g_ip.F_sz_um +
+                (sp.ceiling(input_width / threshold_folding_width) + 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact),
+                True)  
+            )
+        else: 
+            result = sp.ceiling(input_width / threshold_folding_width) * g_ip.F_sz_um + \
+                    (sp.ceiling(input_width / threshold_folding_width) + 1) * (g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact)
+            
         return result
