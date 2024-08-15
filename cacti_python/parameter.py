@@ -610,6 +610,19 @@ class InputParameter:
                 elif line.startswith("-verbose"):
                     verbose = line.split("\"")[1]
                     self.verbose = True if "T" in verbose else False
+                elif line.startswith("-rtt_value"):
+                    import time
+                    self.rtt_value = float(line.split()[-1])
+                    print(f"rtt_val is {self.rtt_value}")
+                elif line.startswith("-ron_value"):
+                    import time
+                    self.ron_value = float(line.split()[-1])
+                    print(f"ron_value is {self.ron_value}")
+                elif line.startswith("-tflight_value"):
+                    import time
+                    self.tflight_value = line.split()[-1]  # or convert it as needed
+                    print(f"tflight_value is {self.tflight_value}")
+                    time.sleep(5)
 
         except FileNotFoundError:
             print(f"{in_file} is missing!")

@@ -2,6 +2,9 @@ from typing import List
 import re
 from .parameter import g_ip, InputParameter, symbolic_convex_max
 import sympy as sp
+from .extio import Extio
+from .extio_technology import IOTechParam
+
 
 class PowerComponents:
     def __init__(self, dynamic=0, leakage=0, gate_leakage=0, short_circuit=0, longer_channel_leakage=0):
@@ -227,6 +230,14 @@ class uca_org_t:
         self.tag_array = ResultsMemArray()
         self.data_array = ResultsMemArray()
 
+        self.io_area = 0.0
+        self.io_timing_margin = 0.0
+        self.io_voltage_margin = 0.0
+        self.io_dynamic_power = 0.0
+        self.io_phy_power = 0.0
+        self.io_wakeup_time = 0.0
+        self.io_termination_power = 0.0
+
     def find_delay(self):
         data_arr = self.data_array2
         tag_arr = self.tag_array2
@@ -309,6 +320,16 @@ class uca_org_t:
             del self.data_array2
         if self.tag_array2:
             del self.tag_array2
+
+    def find_IO(self):
+        iot = IOTechParam(g_ip, g_ip.io_type, g_ip.num_mem_dq, g_ip.mem_data_width, g_ip.num_dq, g_ip.dram_dimm, 1, g_ip.bus_freq)
+        testextio = Extio(iot)
+
+        self.io_area = testextio.extio_area()
+        self.io_timing_margin = testextio.extio_eye()
+        self.io_dynamic_power = testextio.extio_power_dynamic()
+        self.io_phy_power = testextio.extio_power_phy()
+        self.io_termination_power = testextio.extio_power_term()
 
 
 class IOOrgT:

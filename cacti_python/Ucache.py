@@ -10,6 +10,9 @@ from .uca import UCA
 from .parameter import _log2
 import sympy as sp
 
+import time
+
+
 BIGNUM = float('inf')
 NTHREADS = 4
 MAXDATAN = 4
@@ -1123,21 +1126,25 @@ def solve_single():
         curr_org = sol
         curr_org.tag_array2 = None
         curr_org.data_array2 = data_arr
-
-        curr_org.find_delay()
-        curr_org.find_energy()
-        # curr_org.find_area()
-        # curr_org.find_cyc()
-
     else:
         curr_org = sol
         curr_org.tag_array2 = tag_arr
         curr_org.data_array2 = data_arr
 
-        curr_org.find_delay()
-        curr_org.find_energy()
-        # curr_org.find_area()
-        # curr_org.find_cyc()
+    curr_org.find_delay()
+    curr_org.find_energy()
+    # curr_org.find_area()
+    # curr_org.find_cyc()
+
+    curr_org.find_IO()
+    print("PRINTING IO")
+    time.sleep(7)
+    print(f"io_area: {curr_org.io_area}")
+    print(f"io_timing_margin: {curr_org.io_timing_margin}")
+    print(f"io_dynamic_power: {curr_org.io_dynamic_power}")
+    print(f"io_phy_power: {curr_org.io_phy_power}")
+    print(f"io_termination_power: {curr_org.io_termination_power}")
+    time.sleep(60)
 
     return curr_org
 
