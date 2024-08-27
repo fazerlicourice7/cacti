@@ -3,6 +3,7 @@ from .const import *
 tech_params = {}
 import sys
 import os
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from hw_symbols import *
@@ -140,10 +141,18 @@ def scan_dat(tech_dict, dat_file, tech_flavor, cell_type, temperature):
             continue
 
         if line.startswith("-I_off_n"):
-            tech_dict["I_off_n"] = scan_five_input_double_temperature(line, "-I_off_n", "F/um", tech_flavor, temperature, print_detail_debug, 0)
+            res = scan_five_input_double_temperature(line, "-I_off_n", "F/um", tech_flavor, temperature, print_detail_debug, 0)
+            if "I_off_n" in tech_dict:
+                tech_dict["I_off_n"] = tech_dict["I_off_n"] if res == -1 else res
+            else:
+                tech_dict["I_off_n"] = res
             continue
         if line.startswith("-I_g_on_n"):
-            tech_dict["I_g_on_n"] = scan_five_input_double_temperature(line, "-I_g_on_n", "F/um", tech_flavor, temperature, print_detail_debug, 0)
+            res = scan_five_input_double_temperature(line, "-I_g_on_n", "F/um", tech_flavor, temperature, print_detail_debug, 0)
+            if "I_g_on_n" in tech_dict:
+                tech_dict["I_g_on_n"] = tech_dict["I_g_on_n"] if res == -1 else res
+            else:
+                tech_dict["I_g_on_n"] = res
             continue
         if line.startswith("-C_ox"):
             tech_dict["C_ox"] = scan_five_input_double(line, "-C_ox", "F/um", tech_flavor, print_detail_debug)
@@ -235,6 +244,7 @@ def scan_five_input_double(line, name, unit_name, flavor, print_output):
 
 def scan_five_input_double_temperature(line, name, unit_name, flavor, temperature, print_output, result):
     match = re.search(f"{name}\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)", line)
+    result = -1
     if match:
         unit = match.group(1)
         thermal_temp = int(match.group(2))

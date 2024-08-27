@@ -153,20 +153,20 @@ class Extio:
             c_line_2T = 1e6 * 2 / (self.io_param.z0 * self.io_param.frequency)
             c_line_3T = 1e6 * 3 / (self.io_param.z0 * self.io_param.frequency)
 
-            if self.io_param.t_flight < 1e3 / (4 * self.io_param.frequency):
-                c_line = 1e3 * self.io_param.t_flight / self.io_param.z0
+            if float(self.io_param.t_flight) < 1e3 / (4 * float(self.io_param.frequency)):
+                c_line = 1e3 * float(self.io_param.t_flight) / float(self.io_param.z0)
 
-            if self.io_param.t_flight_ca < 1e3 / (4 * self.io_param.frequency):
-                c_line_ca = 1e3 * self.io_param.t_flight / self.io_param.z0
+            if float(self.io_param.t_flight_ca) < 1e3 / (4 * float(self.io_param.frequency)):
+                c_line_ca = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            if self.io_param.t_flight_ca < 1e3 / (2 * self.io_param.frequency):
-                c_line_sdr = 1e3 * self.io_param.t_flight / self.io_param.z0
+            if float(self.io_param.t_flight_ca) < 1e3 / (2 * float(self.io_param.frequency)):
+                c_line_sdr = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            if self.io_param.t_flight_ca < 1e3 * 2 / (2 * self.io_param.frequency):
-                c_line_2T = 1e3 * self.io_param.t_flight / self.io_param.z0
+            if float(self.io_param.t_flight_ca) < 1e3 * 2 / (2 * float(self.io_param.frequency)):
+                c_line_2T = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            if self.io_param.t_flight_ca < 1e3 * 3 / (2 * self.io_param.frequency):
-                c_line_3T = 1e3 * self.io_param.t_flight / self.io_param.z0
+            if float(self.io_param.t_flight_ca) < 1e3 * 3 / (2 * float(self.io_param.frequency)):
+                c_line_3T = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
             if g_ip.addr_timing == 1.0:
                 c_line_ca = c_line_sdr

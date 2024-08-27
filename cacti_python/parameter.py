@@ -2320,8 +2320,9 @@ class DynamicParameter:
                 Cbitrow_drain_cap = drain_C_(g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
                 C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
                 self.V_b_sense = (g_tp.dram_cell_Vdd / 2) * g_tp.dram_cell_C / (g_tp.dram_cell_C + C_bl)
-                if self.V_b_sense < VBITSENSEMIN and not (g_ip.is_3d_mem and g_ip.force_cache_config):
-                    return
+                # TODO RELATIONAL
+                # if self.V_b_sense < VBITSENSEMIN and not (g_ip.is_3d_mem and g_ip.force_cache_config):
+                #     return
                 self.dram_refresh_period = 64e-3
             else:
                 Cbitrow_drain_cap = drain_C_(g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
