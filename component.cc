@@ -212,7 +212,7 @@ int Component::logical_effort(
   w_n[i]  = MAX(w_n[i], g_tp.min_w_nmos_);
   w_p[i]  = p_to_n_sz_ratio * w_n[i];
 
-  cout << "The number of gates before is: " << num_gates << endl;
+  // cout << "The number of gates before is: " << num_gates << endl;
 
   if (w_n[i] > max_w_nmos) // && !g_ip->is_3d_mem)
   {
@@ -233,7 +233,7 @@ int Component::logical_effort(
     w_p[i] = p_to_n_sz_ratio * w_n[i];
   }
 
-  cout << "The number of gates after is: " << num_gates << endl;
+  // cout << "The number of gates after is: " << num_gates << endl;
 
   assert(num_gates <= MAX_NUMBER_GATES_STAGE);
   return num_gates;
