@@ -3,26 +3,26 @@ from .parameter import g_ip
 class Extio:
     def __init__(self, io_param):
         self.io_param = io_param
-        self.io_area = 0.0
-        self.io_power_term = 0.0
-        self.power_termination_write = 0.0
-        self.power_termination_read = 0.0
-        self.power_bias = 0.0
-        self.power_clk_bias = 0.0
-        self.phy_power = 0.0
-        self.phy_wtime = 0.0
-        self.phy_static_power = 0.0
-        self.phy_dynamic_power = 0.0
-        self.io_power_dynamic = 0.0
-        self.power_dq_write = 0.0
-        self.power_dqs_write = 0.0
-        self.power_ca_write = 0.0
-        self.power_dq_read = 0.0
-        self.power_dqs_read = 0.0
-        self.power_ca_read = 0.0
-        self.power_clk = 0.0
-        self.io_tmargin = 0.0
-        self.io_vmargin = 0.0
+        self.io_area = 0.0 # don't convert
+        self.io_power_term = 0.0 # don't convert
+        self.power_termination_write = 0.0 # don't convert
+        self.power_termination_read = 0.0 # don't convert
+        self.power_bias = 0.0 # don't convert
+        self.power_clk_bias = 0.0 # don't convert
+        self.phy_power = 0.0 # don't convert
+        self.phy_wtime = 0.0 # don't convert
+        self.phy_static_power = 0.0 # don't convert
+        self.phy_dynamic_power = 0.0 # don't convert
+        self.io_power_dynamic = 0.0 # don't convert
+        self.power_dq_write = 0.0 # don't convert
+        self.power_dqs_write = 0.0 # don't convert
+        self.power_ca_write = 0.0 # don't convert
+        self.power_dq_read = 0.0 # don't convert
+        self.power_dqs_read = 0.0 # don't convert
+        self.power_ca_read = 0.0 # don't convert
+        self.power_clk = 0.0 # don't convert
+        self.io_tmargin = 0.0 # don't convert
+        self.io_vmargin = 0.0 # don't convert
 
     def extio_area(self):
         single_io_area = (self.io_param.ioarea_c +
@@ -31,12 +31,13 @@ class Extio:
                                                       self.io_param.ioarea_k2 * self.io_param.frequency**2 +
                                                       self.io_param.ioarea_k3 * self.io_param.frequency**3))
 
-        if 2 * self.io_param.rtt1_dq_read < self.io_param.r_on:
-            single_io_area = (self.io_param.ioarea_c +
-                              (self.io_param.ioarea_k0 / (2 * self.io_param.rtt1_dq_read)) +
-                              (1 / self.io_param.r_on) * (self.io_param.ioarea_k1 * self.io_param.frequency +
-                                                          self.io_param.ioarea_k2 * self.io_param.frequency**2 +
-                                                          self.io_param.ioarea_k3 * self.io_param.frequency**3))
+        # CHANGE: Relational
+        # if 2 * self.io_param.rtt1_dq_read < self.io_param.r_on:
+        #     single_io_area = (self.io_param.ioarea_c +
+        #                       (self.io_param.ioarea_k0 / (2 * self.io_param.rtt1_dq_read)) +
+        #                       (1 / self.io_param.r_on) * (self.io_param.ioarea_k1 * self.io_param.frequency +
+        #                                                   self.io_param.ioarea_k2 * self.io_param.frequency**2 +
+        #                                                   self.io_param.ioarea_k3 * self.io_param.frequency**3))
 
         self.io_area = (g_ip.num_dq + g_ip.num_dqs + g_ip.num_ca + g_ip.num_clk) * single_io_area
 
@@ -153,27 +154,28 @@ class Extio:
             c_line_2T = 1e6 * 2 / (self.io_param.z0 * self.io_param.frequency)
             c_line_3T = 1e6 * 3 / (self.io_param.z0 * self.io_param.frequency)
 
-            if float(self.io_param.t_flight) < 1e3 / (4 * float(self.io_param.frequency)):
-                c_line = 1e3 * float(self.io_param.t_flight) / float(self.io_param.z0)
+            # TODO CHECK: ask if just set these values
+            # if float(self.io_param.t_flight) < 1e3 / (4 * float(self.io_param.frequency)):
+            #     c_line = 1e3 * float(self.io_param.t_flight) / float(self.io_param.z0)
 
-            if float(self.io_param.t_flight_ca) < 1e3 / (4 * float(self.io_param.frequency)):
-                c_line_ca = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
+            # if float(self.io_param.t_flight_ca) < 1e3 / (4 * float(self.io_param.frequency)):
+            #     c_line_ca = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            if float(self.io_param.t_flight_ca) < 1e3 / (2 * float(self.io_param.frequency)):
-                c_line_sdr = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
+            # if float(self.io_param.t_flight_ca) < 1e3 / (2 * float(self.io_param.frequency)):
+            #     c_line_sdr = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            if float(self.io_param.t_flight_ca) < 1e3 * 2 / (2 * float(self.io_param.frequency)):
-                c_line_2T = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
+            # if float(self.io_param.t_flight_ca) < 1e3 * 2 / (2 * float(self.io_param.frequency)):
+            #     c_line_2T = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            if float(self.io_param.t_flight_ca) < 1e3 * 3 / (2 * float(self.io_param.frequency)):
-                c_line_3T = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
+            # if float(self.io_param.t_flight_ca) < 1e3 * 3 / (2 * float(self.io_param.frequency)):
+            #     c_line_3T = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            if g_ip.addr_timing == 1.0:
-                c_line_ca = c_line_sdr
-            elif g_ip.addr_timing == 2.0:
-                c_line_ca = c_line_2T
-            elif g_ip.addr_timing == 3.0:
-                c_line_ca = c_line_3T
+            # if g_ip.addr_timing == 1.0:
+            #     c_line_ca = c_line_sdr
+            # elif g_ip.addr_timing == 2.0:
+            #     c_line_ca = c_line_2T
+            # elif g_ip.addr_timing == 3.0:
+            #     c_line_ca = c_line_3T
 
             self.power_dq_write = (g_ip.num_dq * g_ip.activity_dq *
                                    (self.io_param.c_tx + c_line) * self.io_param.vdd_io *
@@ -265,12 +267,15 @@ class Extio:
             v_noise_addr = (self.io_param.k_noise_addr_sen * self.io_param.v_sw_addr +
                             self.io_param.v_noise_independent_addr)
 
+            # CHANGE: Min
             if g_ip.iostate == 'READ':
-                self.io_vmargin = min(self.io_param.v_sw_data_read_line / 2 - v_noise_read,
-                                      self.io_param.v_sw_addr / 2 - v_noise_addr)
+                self.io_vmargin = self.io_param.v_sw_data_read_line / 2 - v_noise_read
+                # self.io_vmargin = min(self.io_param.v_sw_data_read_line / 2 - v_noise_read,
+                #                       self.io_param.v_sw_addr / 2 - v_noise_addr)
             elif g_ip.iostate == 'WRITE':
-                self.io_vmargin = min(self.io_param.v_sw_data_write_line / 2 - v_noise_write,
-                                      self.io_param.v_sw_addr / 2 - v_noise_addr)
+                self.io_vmargin = self.io_param.v_sw_data_write_line / 2 - v_noise_write
+                # self.io_vmargin = min(self.io_param.v_sw_data_write_line / 2 - v_noise_write,
+                #                       self.io_param.v_sw_addr / 2 - v_noise_addr)
             else:
                 self.io_vmargin = 0
 
@@ -326,10 +331,13 @@ class Extio:
                 self.io_param.t_jitter_addr_hold_sen - \
                 self.io_param.t_skew_hold + self.io_param.t_cor_margin
 
+        # CHANGE: min
         if g_ip.iostate == 'READ':
-            self.io_tmargin = min(t_margin_read_setup, t_margin_read_hold, t_margin_addr_setup, t_margin_addr_hold)
+            self.io_tmargin = t_margin_read_setup
+            # self.io_tmargin = min(t_margin_read_setup, t_margin_read_hold, t_margin_addr_setup, t_margin_addr_hold)
         elif g_ip.iostate == 'WRITE':
-            self.io_tmargin = min(t_margin_write_setup, t_margin_write_hold, t_margin_addr_setup, t_margin_addr_hold)
+            self.io_tmargin = t_margin_write_setup
+            # self.io_tmargin = min(t_margin_write_setup, t_margin_write_hold, t_margin_addr_setup, t_margin_addr_hold)
         else:
             self.io_tmargin = 0
 
