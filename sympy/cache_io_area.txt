@@ -1,0 +1,1 @@
+117*ioarea_c + 117*ioarea_k0/r_on + 117*(800.0*ioarea_k1 + 640000.0*ioarea_k2 + 512000000.0*ioarea_k3)/r_on
