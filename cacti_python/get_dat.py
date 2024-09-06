@@ -15,7 +15,7 @@ def scan_dat(tech_dict, dat_file, tech_flavor, cell_type, temperature):
         with open(dat_file, "r") as fp:
             lines = fp.readlines()
     except FileNotFoundError:
-        print(f"{dat_file} is missing!")
+        print(f"get_dat: {dat_file} is missing!")
         exit(-1)
 
     for line in lines:

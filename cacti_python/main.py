@@ -32,8 +32,7 @@ def validate(sympy_file, cfg_file, dat_file):
     return
 
 if __name__ == "__main__":
-    cache_cfg = "/Users/dw/Documents/codesign/cacti/cache.cfg"
-    cacti_gen_sympy("sympy_test", cache_cfg)
+    print()
 
 
 
