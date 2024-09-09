@@ -1,1 +1,0 @@
-t_cor_margin - t_ds - t_error_soc - t_jitter_setup*(0.00294117647058824*r_on + 0.00333333333333333*rtt1_dq_write + 0.005*rtt2_dq_write + 0.4) - t_skew_setup + 312.5

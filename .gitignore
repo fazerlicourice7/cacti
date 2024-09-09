@@ -9,5 +9,9 @@ obj_dbg/
 cacti
 *.out
 
+cacti_stdout.log
+
+symbolic_expressions/**
+
 base_cache.cfg
 mem_cache.cfg

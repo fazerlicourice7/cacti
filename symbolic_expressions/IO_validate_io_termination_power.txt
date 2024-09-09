@@ -1,1 +1,0 @@
-1.0*i_bias*vdd_io + 0.000117*i_leak*vdd_io + 22500.0*vdd_io**2*(1/(r_on + (rs1_dq + rtt1_dq_write)*(rs2_dq + rtt2_dq_write)/(rs1_dq + rs2_dq + rtt1_dq_write + rtt2_dq_write)) + 1/rtt2_dq_write + 1/rtt1_dq_write) + 12500.0*vdd_io**2/(2*r_on_ca + 2*rtt_ca) + 1000.0*v_sw_clk*vdd_io/r_diff_term

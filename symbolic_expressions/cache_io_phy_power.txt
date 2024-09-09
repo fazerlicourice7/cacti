@@ -1,1 +1,0 @@
-115.2*phy_clock_tree_d + phy_clock_tree_s + 115.2*phy_datapath_d + phy_datapath_s + 115.2*phy_dcc_d + phy_dcc_s + 115.2*phy_deskew_d + phy_deskew_s + 115.2*phy_leveling_d + phy_leveling_s + 115.2*phy_phase_rotator_d + phy_phase_rotator_s + 115.2*phy_pll_d + phy_pll_s + 115.2*phy_rx_d + phy_rx_s
