@@ -8,3 +8,6 @@ klee-build
 obj_dbg/
 cacti
 *.out
+
+base_cache.cfg
+mem_cache.cfg
