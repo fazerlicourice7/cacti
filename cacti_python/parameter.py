@@ -309,7 +309,7 @@ class InputParameter:
                         self.leakage_power_wt = int(match.group(3))
                         self.cycle_time_wt = int(match.group(4))
                         self.area_wt = int(match.group(5))
-                        print(f"Design weights - Delay: {self.delay_wt}, Dynamic Power: {self.dynamic_power_wt}, Leakage Power: {self.leakage_power_wt}, Cycle Time: {self.cycle_time_wt}, Area: {self.area_wt}")
+                        #print(f"Design weights - Delay: {self.delay_wt}, Dynamic Power: {self.dynamic_power_wt}, Leakage Power: {self.leakage_power_wt}, Cycle Time: {self.cycle_time_wt}, Area: {self.area_wt}")
                 elif line.startswith("-deviate"):
                     match = re.search(r'-deviate \(delay, dynamic power, leakage power, cycle time, area\) (\d+):(\d+):(\d+):(\d+):(\d+)', line)
                     if match:
@@ -318,7 +318,7 @@ class InputParameter:
                         self.leakage_power_dev = int(match.group(3))
                         self.cycle_time_dev = int(match.group(4))
                         self.area_dev = int(match.group(5))
-                        print(f"Deviations - Delay: {self.delay_dev}, Dynamic Power: {self.dynamic_power_dev}, Leakage Power: {self.leakage_power_dev}, Cycle Time: {self.cycle_time_dev}, Area: {self.area_dev}")
+                        #print(f"Deviations - Delay: {self.delay_dev}, Dynamic Power: {self.dynamic_power_dev}, Leakage Power: {self.leakage_power_dev}, Cycle Time: {self.cycle_time_dev}, Area: {self.area_dev}")
                 elif line.startswith("-Optimize"):
                     optimize = line.split("\"")[1]
                     if "ED^2" in optimize:
@@ -335,7 +335,7 @@ class InputParameter:
                         self.leakage_power_wt_nuca = int(match.group(3))
                         self.cycle_time_wt_nuca = int(match.group(4))
                         self.area_wt_nuca = int(match.group(5))
-                        print(f"NUCA Design weights - Delay: {self.delay_wt_nuca}, Dynamic Power: {self.dynamic_power_wt_nuca}, Leakage Power: {self.leakage_power_wt_nuca}, Cycle Time: {self.cycle_time_wt_nuca}, Area: {self.area_wt_nuca}")
+                        #print(f"NUCA Design weights - Delay: {self.delay_wt_nuca}, Dynamic Power: {self.dynamic_power_wt_nuca}, Leakage Power: {self.leakage_power_wt_nuca}, Cycle Time: {self.cycle_time_wt_nuca}, Area: {self.area_wt_nuca}")
                 elif line.startswith("-NUCAdeviate"):
                     match = re.search(r'-NUCAdeviate \(delay, dynamic power, leakage power, cycle time, area\) (\d+):(\d+):(\d+):(\d+):(\d+)', line)
                     if match:
@@ -344,7 +344,7 @@ class InputParameter:
                         self.leakage_power_dev_nuca = int(match.group(3))
                         self.cycle_time_dev_nuca = int(match.group(4))
                         self.area_dev_nuca = int(match.group(5))
-                        print(f"NUCA Deviations - Delay: {self.delay_dev_nuca}, Dynamic Power: {self.dynamic_power_dev_nuca}, Leakage Power: {self.leakage_power_dev_nuca}, Cycle Time: {self.cycle_time_dev_nuca}, Area: {self.area_dev_nuca}")
+                        #print(f"NUCA Deviations - Delay: {self.delay_dev_nuca}, Dynamic Power: {self.dynamic_power_dev_nuca}, Leakage Power: {self.leakage_power_dev_nuca}, Cycle Time: {self.cycle_time_dev_nuca}, Area: {self.area_dev_nuca}")
                 elif line.startswith("-Cache model"):
                     cache_model = line.split("\"")[1]
                     self.nuca = 0 if "UCA" in cache_model else 1
@@ -480,7 +480,7 @@ class InputParameter:
                         raise ValueError("Invalid Input for io state")
                 elif line.startswith("-addr_timing"):
                     self.addr_timing = float(re.search(r'-addr_timing (\d+\.\d+)', line).group(1))
-                    print(f"Address Timing: {self.addr_timing}")
+                    #print(f"Address Timing: {self.addr_timing}")
                 elif line.startswith("-dram ecc"):
                     dram_ecc = line.split("\"")[1]
                     if "NO_ECC" in dram_ecc:
@@ -490,7 +490,7 @@ class InputParameter:
                     elif "CHIP_KILL" in dram_ecc:
                         self.dram_ecc = "CHIP_KILL"
                     else:
-                        print("Invalid Input for dram ecc")
+                        raise ValueError("Invalid Input for dram ecc")
                 elif line.startswith("-dram dimm"):
                     dram_dimm = line.split("\"")[1]
                     if "UDIMM" in dram_dimm:
@@ -500,47 +500,47 @@ class InputParameter:
                     elif "LRDIMM" in dram_dimm:
                         self.dram_dimm = "LRDIMM"
                     else:
-                        print("Invalid Input for dram dimm")
+                        raise ValueError("Invalid Input for dram dimm")
                 elif line.startswith("-bus_bw"):
                     self.bus_bw = float(line.split()[-1])
                 elif line.startswith("-duty_cycle"):
                     self.duty_cycle = float(line.split()[-1])
                 elif line.startswith("-mem_density"):
                     self.mem_density = float(re.search(r'-mem_density (\d+)', line).group(1))
-                    print(self.mem_density)
+                    #print(self.mem_density)
                 elif line.startswith("-activity_dq"):
                     self.activity_dq = float(re.search(r'-activity_dq (\d+\.\d+)', line).group(1))
-                    print(f"Activity DQ: {self.activity_dq}")
+                    #print(f"Activity DQ: {self.activity_dq}")
                 elif line.startswith("-activity_ca"):
                     self.activity_ca = float(re.search(r'-activity_ca (\d+\.\d+)', line).group(1))
-                    print(f"Activity CA: {self.activity_ca}")
+                    #print(f"Activity CA: {self.activity_ca}")
                 elif line.startswith("-bus_freq"):
                     self.bus_freq = float(re.search(r'-bus_freq (\d+)', line).group(1))
-                    print(self.bus_freq)
+                    #print(self.bus_freq)
                 elif line.startswith("-num_dq"):
                     match = re.search(r'-num_dq (\d+)', line)
                     if match:
                         self.num_dq = int(match.group(1))
-                        print(f"Number of DQ pins: {self.num_dq}")
+                        #print(f"Number of DQ pins: {self.num_dq}")
                     if line.startswith("-num_dqs"):
                         match = re.search(r'-num_dqs (\d+)', line)
                         if match:
                             self.num_dqs = int(match.group(1))
-                            print(f"Number of DQS pins: {self.num_dqs}")
+                            #print(f"Number of DQS pins: {self.num_dqs}")
                 elif line.startswith("-num_ca"):
                     self.num_ca = int(re.search(r'-num_ca (\d+)', line).group(1))
-                    print(f"Number of CA pins: {self.num_ca}")
+                    #print(f"Number of CA pins: {self.num_ca}")
                 elif line.startswith("-num_clk"):
                     self.num_clk = int(re.search(r'-num_clk (\d+)', line).group(1))
-                    print(f"Number of CLK pins: {self.num_clk}")
+                    #print(f"Number of CLK pins: {self.num_clk}")
                     if self.num_clk <= 0:
                         raise ValueError("num_clk should be greater than zero!")
                 elif line.startswith("-num_mem_dq"):
                     self.num_mem_dq = int(re.search(r'-num_mem_dq (\d+)', line).group(1))
-                    print(f"Number of Physical Ranks: {self.num_mem_dq}")
+                    #print(f"Number of Physical Ranks: {self.num_mem_dq}")
                 elif line.startswith("-mem_data_width"):
                     self.mem_data_width = int(re.search(r'-mem_data_width (\d+)', line).group(1))
-                    print(f"Width of the Memory Data Bus: {self.mem_data_width}")
+                    #print(f"Width of the Memory Data Bus: {self.mem_data_width}")
                 elif line.startswith("-num_bobs"):
                     self.num_bobs = int(line.split()[-1])
                 elif line.startswith("-capacity"):
