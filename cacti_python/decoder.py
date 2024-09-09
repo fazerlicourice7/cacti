@@ -81,7 +81,7 @@ class Decoder(Component):
             F *= self.C_ld_dec_out / (gate_C(self.w_dec_n[0], 0, self.is_dram, False, self.is_wl_tr) +
                                       gate_C(self.w_dec_p[0], 0, self.is_dram, False, self.is_wl_tr))
             
-            print("Made it to Decoder Logical Effort")
+            # print("Made it to Decoder Logical Effort")
             self.num_gates = logical_effort(
                 self.num_gates_min,
                 gnand2 if self.num_in_signals == 2 else gnand3,
@@ -94,7 +94,7 @@ class Decoder(Component):
                 self.is_wl_tr,
                 g_tp.max_w_nmos_dec
             )
-            print("Made it past Decoder Logical Effort")
+            # print("Made it past Decoder Logical Effort")
 
     def compute_area(self):
         cumulative_area = 0

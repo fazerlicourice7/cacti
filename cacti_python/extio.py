@@ -41,7 +41,7 @@ class Extio:
 
         self.io_area = (g_ip.num_dq + g_ip.num_dqs + g_ip.num_ca + g_ip.num_clk) * single_io_area
 
-        print("IO Area (sq.mm) =", self.io_area)
+        # print("IO Area (sq.mm) =", self.io_area)
         return self.io_area
 
     def extio_power_term(self):
@@ -97,7 +97,7 @@ class Extio:
         else:
             self.io_power_term = 0
 
-        print("IO Termination and Bias Power (mW) =", self.io_power_term)
+        # print("IO Termination and Bias Power (mW) =", self.io_power_term)
         return self.io_power_term
 
     def extio_power_phy(self):
@@ -135,7 +135,7 @@ class Extio:
                           self.io_param.phy_deskew_wtime +
                           self.io_param.phy_vrefgen_wtime)
 
-        print("PHY Power (mW) =", self.phy_power, "PHY Wakeup Time (us) =", self.phy_wtime)
+        # print("PHY Power (mW) =", self.phy_power, "PHY Wakeup Time (us) =", self.phy_wtime)
         return self.phy_power
 
     def extio_power_dynamic(self):
@@ -253,7 +253,7 @@ class Extio:
         else:
             self.io_power_dynamic = 0
 
-        print("IO Dynamic Power (mW) =", self.io_power_dynamic)
+        # print("IO Dynamic Power (mW) =", self.io_power_dynamic)
         return self.io_power_dynamic
 
     def extio_eye(self):
@@ -341,6 +341,6 @@ class Extio:
         else:
             self.io_tmargin = 0
 
-        print("IO Timing Margin (ps) =", self.io_tmargin)
-        print("IO Voltage Margin (V) =", self.io_vmargin)
+        # print("IO Timing Margin (ps) =", self.io_tmargin)
+        # print("IO Voltage Margin (V) =", self.io_vmargin)
         return self.io_tmargin

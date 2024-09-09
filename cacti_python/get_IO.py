@@ -519,14 +519,14 @@ def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, co
             IO_tech_dict['rtt1_dq_read'] = rtt1_rd_lrdimm_ddr3[num_loads - 1][frequency_index(io_type)]
             IO_tech_dict['rtt2_dq_read'] = rtt2_rd_lrdimm_ddr3[num_loads - 1][frequency_index(io_type)]
 
-        print(f'rtt1_dq_read {IO_tech_dict["rtt1_dq_read"]}; {num_loads - 1}; {frequency_index(io_type)}; {connection}')
+        # print(f'rtt1_dq_read {IO_tech_dict["rtt1_dq_read"]}; {num_loads - 1}; {frequency_index(io_type)}; {connection}')
 
         IO_tech_dict['rtt_ca'] = 50
         IO_tech_dict['rs1_dq'] = 15
         IO_tech_dict['rs2_dq'] = 15
         IO_tech_dict['r_stub_ca'] = 0
         IO_tech_dict['r_on'] = g_ip.ron_value
-        print(f"IN DDR3 {g_ip.ron_value}")
+        # print(f"IN DDR3 {g_ip.ron_value}")
         IO_tech_dict['r_on_ca'] = 50
         IO_tech_dict['z0'] = 50
         IO_tech_dict['t_flight'] = g_ip.tflight_value

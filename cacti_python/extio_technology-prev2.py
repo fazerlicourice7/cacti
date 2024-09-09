@@ -339,9 +339,9 @@ class IOTechParam:
         self.num_mem_ca = num_mem_dq * mem_data_width
         self.num_mem_clk = num_mem_dq * (num_dq / mem_data_width) / (g_ip.num_clk / 2)
 
-        print(f"io type {self.io_type}")
-        import time
-        time.sleep(5)
+        # print(f"io type {self.io_type}")
+        # import time
+        # time.sleep(5)
 
         if self.io_type == Mem_IO_type.LPDDR2:
             # Technology Parameters
@@ -626,15 +626,15 @@ class IOTechParam:
                 self.rtt2_dq_read = rtt2_rd_lrdimm_ddr3[self.num_loads - 1][self.frequency_index(self.io_type)]
 
             
-            print(f'rtt1_dq_read {self.rtt1_dq_read}; {self.num_loads - 1}; {self.frequency_index(self.io_type)}; {self.connection}')
-            time.sleep(5)
+            # print(f'rtt1_dq_read {self.rtt1_dq_read}; {self.num_loads - 1}; {self.frequency_index(self.io_type)}; {self.connection}')
+            # time.sleep(5)
 
             self.rtt_ca = 50
             self.rs1_dq = 15
             self.rs2_dq = 15
             self.r_stub_ca = 0
             self.r_on = g_ip.ron_value
-            print(f"IN DDR3 {g_ip.ron_value}")
+            # print(f"IN DDR3 {g_ip.ron_value}")
             self.r_on_ca = 50
             self.z0 = 50
             self.t_flight = g_ip.tflight_value

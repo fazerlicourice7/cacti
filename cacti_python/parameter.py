@@ -613,16 +613,16 @@ class InputParameter:
                 elif line.startswith("-rtt_value"):
                     import time
                     self.rtt_value = float(line.split()[-1])
-                    print(f"rtt_val is {self.rtt_value}")
+                    # print(f"rtt_val is {self.rtt_value}")
                 elif line.startswith("-ron_value"):
                     import time
                     self.ron_value = float(line.split()[-1])
-                    print(f"ron_value is {self.ron_value}")
+                    # print(f"ron_value is {self.ron_value}")
                 elif line.startswith("-tflight_value"):
                     import time
                     self.tflight_value = line.split()[-1]  # or convert it as needed
-                    print(f"tflight_value is {self.tflight_value}")
-                    time.sleep(5)
+                    # print(f"tflight_value is {self.tflight_value}")
+                    # time.sleep(5)
 
         except FileNotFoundError:
             print(f"{in_file} is missing!")
@@ -975,7 +975,7 @@ class TechnologyParameter:
     def init_symbolic():
         return
 
-    def find_upper_and_lower_tech(self, technology, tech_lo, in_file_lo, tech_hi, in_file_hi):
+    def find_upper_and_lower_tech(self, technology, tech_lo, tech_hi):
         if 179 < technology < 181:
             tech_lo = 180
             in_file_lo = "tech_params/180nm.dat"
@@ -1035,8 +1035,8 @@ class TechnologyParameter:
             print("Invalid technology nodes")
             exit(0)
 
-        in_file_lo = "cacti/" + in_file_lo
-        in_file_hi = "cacti/" + in_file_hi
+        in_file_lo = "src/cacti/" + in_file_lo
+        in_file_hi = "src/cacti/" + in_file_hi
         return tech_lo, in_file_lo, tech_hi, in_file_hi
 
     def assign_tsv(self, in_file):
@@ -1084,11 +1084,10 @@ class TechnologyParameter:
         ram_cell_tech_type = g_ip.tag_arr_ram_cell_tech_type if is_tag else g_ip.data_arr_ram_cell_tech_type
         peri_global_tech_type = g_ip.tag_arr_peri_global_tech_type if is_tag else g_ip.data_arr_peri_global_tech_type
         tech_lo, tech_hi = 0, 0
-        in_file_lo, in_file_hi = "", ""
 
         technology *= 1000.0  # in the unit of nm
 
-        tech_lo, in_file_lo, tech_hi, in_file_hi = self.find_upper_and_lower_tech(technology, tech_lo, in_file_lo, tech_hi, in_file_hi)
+        tech_lo, in_file_lo, tech_hi, in_file_hi = self.find_upper_and_lower_tech(technology, tech_lo, tech_hi)
 
         if (tech_lo == 22) and (tech_hi == 22):
             if ram_cell_tech_type == 3:
