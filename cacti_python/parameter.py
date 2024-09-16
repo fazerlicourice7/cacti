@@ -625,6 +625,7 @@ class InputParameter:
                     # time.sleep(5)
 
         except FileNotFoundError:
+            print(os.getcwd())
             print(f"{in_file} is missing!")
             exit(-1)
 
