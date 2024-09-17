@@ -10,6 +10,7 @@ import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from hw_symbols import symbol_table as sympy_var
+from src import CACTI_DIR
 
 def contains_any_symbol(expr):
     # Extract all the symbols from the dictionary
@@ -1036,8 +1037,8 @@ class TechnologyParameter:
             print("Invalid technology nodes")
             exit(0)
 
-        in_file_lo = "src/cacti/" + in_file_lo
-        in_file_hi = "src/cacti/" + in_file_hi
+        in_file_lo = os.path.join(CACTI_DIR, in_file_lo)
+        in_file_hi = os.path.join(CACTI_DIR, in_file_hi)
         return tech_lo, in_file_lo, tech_hi, in_file_hi
 
     def assign_tsv(self, in_file):
