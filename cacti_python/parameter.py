@@ -480,7 +480,7 @@ class InputParameter:
                     else:
                         raise ValueError("Invalid Input for io state")
                 elif line.startswith("-addr_timing"):
-                    self.addr_timing = float(re.search(r'-addr_timing (\d+\.\d+)', line).group(1))
+                    self.addr_timing = float(re.search(r'-addr_timing (\d+(\.\d+)?)', line).group(1))
                     #print(f"Address Timing: {self.addr_timing}")
                 elif line.startswith("-dram ecc"):
                     dram_ecc = line.split("\"")[1]
@@ -545,7 +545,11 @@ class InputParameter:
                 elif line.startswith("-num_bobs"):
                     self.num_bobs = int(line.split()[-1])
                 elif line.startswith("-capacity"):
-                    self.capacity = int(line.split()[-1])
+                    value = line.split()[-1]
+                    if '.' in value:
+                        self.capacity = float(value)
+                    else:
+                        self.capacity = int(value)
                 elif line.startswith("-num_channels_per_bob"):
                     self.num_channels_per_bob = int(line.split()[-1])
                 elif line.startswith("-first metric"):
