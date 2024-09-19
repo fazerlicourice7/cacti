@@ -1,3 +1,6 @@
+**/__pycache__/**
+**/.DS_Store
+
 cacti.bc
 cacti.ll
 klee-build
@@ -6,6 +9,10 @@ obj_dbg/
 cacti
 *.out
 
-# these two are generated from codesign runs
+cacti_stdout.log
+
+symbolic_expressions/**
+
+cfg/*
 base_cache.cfg
 mem_cache.cfg

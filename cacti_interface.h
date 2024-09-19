@@ -333,6 +333,10 @@ class InputParameter
 	bool total_power; // false means just considering I/O Power
 	
 	bool verbose;
+
+  // Added to keep track of repeater spacing and size
+  double repeater_spacing;
+  double repeater_size;
 	
 
 	

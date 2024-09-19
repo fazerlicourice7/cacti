@@ -125,12 +125,12 @@ for chunkName in tech_param_dict:
 
             cell = tech_param_dict[chunkName].iloc[y,x]
             if not(pd.isnull(cell)) and cell[0].isdigit() and input.find("-temp") == -1:
-                print(tech_param_dict[chunkName].iat[y,x])
+                # print(tech_param_dict[chunkName].iat[y,x])
                 if tech_param_dict[chunkName].iat[y,x] == '0':
                     tech_param_dict[chunkName].iat[y,x] = '1'
                 else:
                     tech_param_dict[chunkName].iat[y,x] = float_to_exponential(float(tech_param_dict[chunkName].iat[y,x])*100)
-                print(tech_param_dict[chunkName].iat[y,x])
+                # print(tech_param_dict[chunkName].iat[y,x])
                 
 
                 # print (tech_param_dict[chunkName])

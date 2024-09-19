@@ -1364,37 +1364,6 @@ double PredecBlkDrv::get_rdOp_dynamic_E(int num_act_mats_hor_dir)
 }
 
 
-
-Predec::Predec(
-    PredecBlkDrv * drv1_,
-    PredecBlkDrv * drv2_)
-:blk1(drv1_->blk), blk2(drv2_->blk), drv1(drv1_), drv2(drv2_)
-{
-  driver_power.readOp.leakage = drv1->power_nand2_path.readOp.leakage +
-                                drv1->power_nand3_path.readOp.leakage +
-                                drv2->power_nand2_path.readOp.leakage +
-                                drv2->power_nand3_path.readOp.leakage;
-  block_power.readOp.leakage = blk1->power_nand2_path.readOp.leakage +
-                               blk1->power_nand3_path.readOp.leakage +
-                               blk1->power_L2.readOp.leakage +
-                               blk2->power_nand2_path.readOp.leakage +
-                               blk2->power_nand3_path.readOp.leakage +
-                               blk2->power_L2.readOp.leakage;
-  power.readOp.leakage = driver_power.readOp.leakage + block_power.readOp.leakage;
-
-  driver_power.readOp.gate_leakage = drv1->power_nand2_path.readOp.gate_leakage +
-                                  drv1->power_nand3_path.readOp.gate_leakage +
-                                  drv2->power_nand2_path.readOp.gate_leakage +
-                                  drv2->power_nand3_path.readOp.gate_leakage;
-  block_power.readOp.gate_leakage = blk1->power_nand2_path.readOp.gate_leakage +
-                                 blk1->power_nand3_path.readOp.gate_leakage +
-                                 blk1->power_L2.readOp.gate_leakage +
-                                 blk2->power_nand2_path.readOp.gate_leakage +
-                                 blk2->power_nand3_path.readOp.gate_leakage +
-                                 blk2->power_L2.readOp.gate_leakage;
-  power.readOp.gate_leakage = driver_power.readOp.gate_leakage + block_power.readOp.gate_leakage;
-}
-
 void PredecBlkDrv::leakage_feedback(double temperature)
 {
   double leak_nand2_path = 0;
@@ -1430,6 +1399,38 @@ void PredecBlkDrv::leakage_feedback(double temperature)
     power_nand3_path.readOp.gate_leakage = gate_leak_nand3_path * g_tp.peri_global.Vdd;
   }
 }
+
+
+Predec::Predec(
+    PredecBlkDrv * drv1_,
+    PredecBlkDrv * drv2_)
+:blk1(drv1_->blk), blk2(drv2_->blk), drv1(drv1_), drv2(drv2_)
+{
+  driver_power.readOp.leakage = drv1->power_nand2_path.readOp.leakage +
+                                drv1->power_nand3_path.readOp.leakage +
+                                drv2->power_nand2_path.readOp.leakage +
+                                drv2->power_nand3_path.readOp.leakage;
+  block_power.readOp.leakage = blk1->power_nand2_path.readOp.leakage +
+                               blk1->power_nand3_path.readOp.leakage +
+                               blk1->power_L2.readOp.leakage +
+                               blk2->power_nand2_path.readOp.leakage +
+                               blk2->power_nand3_path.readOp.leakage +
+                               blk2->power_L2.readOp.leakage;
+  power.readOp.leakage = driver_power.readOp.leakage + block_power.readOp.leakage;
+
+  driver_power.readOp.gate_leakage = drv1->power_nand2_path.readOp.gate_leakage +
+                                  drv1->power_nand3_path.readOp.gate_leakage +
+                                  drv2->power_nand2_path.readOp.gate_leakage +
+                                  drv2->power_nand3_path.readOp.gate_leakage;
+  block_power.readOp.gate_leakage = blk1->power_nand2_path.readOp.gate_leakage +
+                                 blk1->power_nand3_path.readOp.gate_leakage +
+                                 blk1->power_L2.readOp.gate_leakage +
+                                 blk2->power_nand2_path.readOp.gate_leakage +
+                                 blk2->power_nand3_path.readOp.gate_leakage +
+                                 blk2->power_L2.readOp.gate_leakage;
+  power.readOp.gate_leakage = driver_power.readOp.gate_leakage + block_power.readOp.gate_leakage;
+}
+
 
 double Predec::compute_delays(double inrisetime)
 {

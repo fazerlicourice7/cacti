@@ -31,6 +31,8 @@
 
 #include "wire.h"
 #include "cmath"
+#include "parameter.h"
+
 // use this constructor to calculate wire stats
 Wire::Wire(
     enum Wire_type wire_model,
@@ -58,6 +60,7 @@ Wire::Wire(
   wire_length      *= 1e6;
   wire_width       *= 1e6;
   wire_spacing     *= 1e6;
+
   assert(wire_length > 0);
   assert(power.readOp.dynamic > 0);
   assert(power.readOp.leakage > 0);
@@ -615,6 +618,14 @@ Wire::init_wire(){
   si = repeater_size;
   sp = repeater_spacing;
   sp *= 1e6; // in microns
+
+  cout << "BOOGA Repeater Spacing: " << sp << endl;
+  cout << "BOOGA Repeater Size: " << si << endl;
+
+  // MODIFIED keep track of repeater metrics
+  g_ip->repeater_spacing = sp;
+  g_ip->repeater_size = si;
+  // end MODIFIED
 
   double i, j, del;
   repeated_wire.push_back(Component());
