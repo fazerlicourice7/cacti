@@ -1229,7 +1229,7 @@ uca_org_t cacti_interface(const string & infile_name)
   g_ip = new InputParameter();
   g_ip->parse_cfg(infile_name);
   if(!g_ip->error_checking())
-	  exit(0);
+	  exit(-1);
  // if (g_ip->print_input_args)
     g_ip->display_ip();
 	
@@ -1547,7 +1547,7 @@ uca_org_t cacti_interface(
 	  g_ip->fine_gran_bank_lvl = false;
 
   if(!g_ip->error_checking())
-	  exit(0);
+	  exit(-1);
 
   init_tech_params(g_ip->F_sz_um, false);
   Wire winit; // Do not delete this line. It initializes wires.
@@ -1739,7 +1739,7 @@ uca_org_t cacti_interface(
   uca_org_t fin_res;
   fin_res.valid = false;
 
-  if (g_ip->error_checking() == false) exit(0);
+  if (g_ip->error_checking() == false) exit(-1);
   if (g_ip->print_input_args)
     g_ip->display_ip();
   init_tech_params(g_ip->F_sz_um, false);
@@ -1927,7 +1927,7 @@ uca_org_t cacti_interface(
 
 
   if(!g_ip->error_checking())
-	  exit(0);
+	  exit(-1);
 
   init_tech_params(g_ip->F_sz_um, false);
   Wire winit; // Do not delete this line. It initializes wires.
