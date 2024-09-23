@@ -89,14 +89,6 @@ class Bank(Component):
         self.num_addr_b_routed_to_mat_for_act = self.num_addr_b_row_dec
         self.num_addr_b_routed_to_mat_for_rd_or_wr = self.num_addr_b_mat - self.num_addr_b_row_dec
 
-    # def __del__(self):
-    #     del self.htree_in_add
-    #     del self.htree_out_data
-    #     del self.htree_in_data
-    #     if self.dp.fully_assoc or self.dp.pure_cam:
-    #         del self.htree_in_search
-    #         del self.htree_out_search
-
     def compute_delays(self, inrisetime):
         return self.mat.compute_delays(inrisetime)
 
