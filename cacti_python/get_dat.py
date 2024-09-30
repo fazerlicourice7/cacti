@@ -16,7 +16,7 @@ def scan_dat(tech_dict, dat_file, tech_flavor, cell_type, temperature):
             lines = fp.readlines()
     except FileNotFoundError:
         print(f"get_dat: {dat_file} is missing!")
-        exit(-1)
+        exit(1)
 
     for line in lines:
         if line.startswith("-Vdd"):

@@ -193,8 +193,8 @@ void DeviceType::assign(const string & in_file, int tech_flavor,  unsigned int t
 	double nmos_effective_resistance_multiplier;
 
 	if(!fp) {
-	cout << in_file << " is missing!\n";
-	exit(-1);
+		cout << in_file << " is missing!\n";
+		exit(1);
 	}
 
 	while(fscanf(fp, "%[^\n]\n", line) != EOF) 
@@ -393,8 +393,8 @@ void InterconnectType::assign(const string & in_file, int projection_type, int t
 	double resistivity;
  
 	if(!fp) {
-	cout << in_file << " is missing!\n";
-	exit(-1);
+		cout << in_file << " is missing!\n";
+		exit(1);
 	}
 
 	bool print = g_ip->print_detail_debug;
@@ -562,8 +562,8 @@ void MemoryType::assign(const string & in_file, int tech_flavor, int cell_type)
 	double vdd_cell,vdd;
 	
 	if(!fp) {
-	cout << in_file << " is missing!\n";
-	exit(-1);
+		cout << in_file << " is missing!\n";
+		exit(1);
 	}
 	while(fscanf(fp, "%[^\n]\n", line) != EOF) 
 	{
@@ -667,7 +667,7 @@ void ScalingFactor::assign(const string & in_file)
 	if(!fp) 
 	{
 		cout << in_file << " is missing!\n";
-		exit(-1);
+		exit(1);
 	}
 
 	while(fscanf(fp, "%[^\n]\n", line) != EOF) 
@@ -793,7 +793,7 @@ void TechnologyParameter::find_upper_and_lower_tech(double technology, int &tech
 	else
 	{
 		cout<<"Invalid technology nodes"<<endl;
-		exit(0);
+		exit(1);
 	}
 }
 
@@ -913,7 +913,7 @@ void TechnologyParameter::init(double technology, bool is_tag)
 		if (ram_cell_tech_type == 3 )
 		{
 		   cout<<"current version does not support eDRAM technologies at 22nm"<<endl;
-		   exit(0);
+		   exit(1);
 		}
 	}
 	
@@ -1642,7 +1642,7 @@ DynamicParameter::init_CAM()
   switch (Ndbl) {
     case (0):
       cout <<  "   Invalid Ndbl \n"<<endl;
-      exit(0);
+      exit(1);
       break;
     case (1):
       num_mats_h_dir = 1;//one subarray per mat
@@ -1803,7 +1803,7 @@ DynamicParameter::init_FA()
   switch (Ndbl) {
     case (0):
       cout <<  "   Invalid Ndbl \n"<<endl;
-      exit(0);
+      exit(1);
       break;
     case (1):
       num_mats_h_dir = 1;//one subarray per mat
@@ -2392,7 +2392,7 @@ DynamicParameter::ECC_adjustment() {
 //		  {
 //			  tagbits = int(ceil((ADDRESS_BITS + EXTRA_TAG_BITS)/8.0)*8);
 ////			  cout<<"Pure CAM needs tag width to be specified"<<endl;
-////			  exit(0);
+////			  exit(1);
 //		  }
 //		  //tagbits = (((tagbits + 3) >> 2) << 2);
 //
@@ -2559,7 +2559,7 @@ DynamicParameter::ECC_adjustment() {
 //	    switch (Ndbl) {
 //	      case (0):
 //	        cout <<  "   Invalid Ndbl \n"<<endl;
-//	        exit(0);
+//	        exit(1);
 //	        break;
 //	      case (1):
 //	    	  num_mats_h_dir = 1;//one subarray per mat

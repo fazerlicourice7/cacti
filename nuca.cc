@@ -58,7 +58,7 @@ Nuca::init_cont()
   cont = fopen("contention.dat", "r");
   if (!cont) {
     cout << "contention.dat file is missing!\n";
-    exit(0);
+    exit(1);
   }
 
   for(int i=0; i<2; i++) {

@@ -150,7 +150,7 @@ void * calc_time_mt_wrapper(void * void_obj)
           break;
         default:
           cerr << "Unknown wire type!\n";
-          exit(0);
+          exit(1);
       }
     }
   }
@@ -669,7 +669,7 @@ void find_optimal_uca(uca_org_t *res, min_values_t * minval, list<uca_org_t> & u
   if (ulist.empty() == true)
   {
     cout << "ERROR: no valid cache organizations found" << endl;
-    exit(0);
+    exit(1);
   }
 
   for (list<uca_org_t>::iterator niter = ulist.begin(); niter != ulist.end(); niter++)
@@ -731,7 +731,7 @@ void find_optimal_uca(uca_org_t *res, min_values_t * minval, list<uca_org_t> & u
   if (min_cost == BIGNUM)
   {
     cout << "ERROR: no cache organizations met optimization criteria" << endl;
-    exit(0);
+    exit(1);
   }
 }
 
@@ -784,7 +784,7 @@ void filter_tag_arr(const min_values_t * min, list<mem_array *> & list)
   if(!res)
   {
     cout << "ERROR: no valid tag organizations found" << endl;
-    exit(0);
+    exit(1);
   }
 
   list.push_back(res);

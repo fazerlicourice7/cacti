@@ -632,7 +632,7 @@ class InputParameter:
         except FileNotFoundError:
             print(os.getcwd())
             print(f"{in_file} is missing!")
-            exit(-1)
+            exit(1)
 
     def error_checking(self): 
         A = 0
@@ -1039,7 +1039,7 @@ class TechnologyParameter:
             in_file_hi = "tech_params/22nm.dat"
         else:
             print("Invalid technology nodes")
-            exit(0)
+            exit(1)
 
         in_file_lo = os.path.join(CACTI_DIR, in_file_lo)
         in_file_hi = os.path.join(CACTI_DIR, in_file_hi)
@@ -1098,7 +1098,7 @@ class TechnologyParameter:
         if (tech_lo == 22) and (tech_hi == 22):
             if ram_cell_tech_type == 3:
                 print("current version does not support eDRAM technologies at 22nm")
-                exit(0)
+                exit(1)
 
         alpha = 1 if tech_lo == tech_hi else (technology - tech_hi) / (tech_lo - tech_hi)
         with open(in_file_lo, "r") as fp:
@@ -2070,7 +2070,7 @@ class MemoryType:
                 lines = fp.readlines()
         except FileNotFoundError:
             print(f"{in_file} is missing!")
-            exit(-1)
+            exit(1)
 
         vdd_cell = 0
         vdd = 0
@@ -2189,7 +2189,7 @@ class ScalingFactor:
                 lines = fp.readlines()
         except FileNotFoundError:
             print(f"{in_file} is missing!")
-            exit(-1)
+            exit(1)
 
         self.logic_scaling_co_eff = sympy_var['logic_scaling_co_eff']
         self.core_tx_density = sympy_var['core_tx_density']
@@ -2480,7 +2480,7 @@ class DynamicParameter:
 
         if self.Ndbl == 0:
             print("   Invalid Ndbl \n")
-            exit(0)
+            exit(1)
         elif self.Ndbl == 1:
             self.num_mats_h_dir = 1
             self.num_mats_v_dir = 1
@@ -2596,7 +2596,7 @@ class DynamicParameter:
 
         if self.Ndbl == 0:
             print("   Invalid Ndbl \n")
-            exit(0)
+            exit(1)
         elif self.Ndbl == 1:
             self.num_mats_h_dir = 1
             self.num_mats_v_dir = 1
