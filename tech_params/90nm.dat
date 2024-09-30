@@ -8,7 +8,7 @@ parameters (unit) hp lstp lop lp-dram comm-dram
 -nmos_effective_resistance_multiplier (-) 1.54 1.92 1.77 1.65 1.62   
 -Vdd (V) 1.2 1.3 0.9 1.2 1.6   
 -Vth (V) 0.23707 0.48203 0.30764 0.4545 1   
--Vdsat (V) 0.128 0.373 0.113 0.3 0.32   
+-Vdsat (V) 0.128 0.373 0.113 0.3 0.32
 -I_on_n (A/um) 0.0010769 0.0005036 0.0003866 0.0003216 0.0010943   
 -I_on_p (A/um) 0.0007126 0.0002351 0.0002097 0.0002033 0.00054715   
          
@@ -37,7 +37,7 @@ parameters (unit) temp hp lstp lop lp-dram comm-dram
 -I_g_on_n (A/um) 100 1.65e-08 3.87e-11 4.31e-08 0 0  
          
 parameters (unit) hp lstp lop lp-dram comm-dram   
--C_ox (F/um^2) 1.79e-14 1.22e-14 1.59e-14 1.22e-14 5.65e-15   
+-C_ox (F/um^2) 1.79e-14 1.22e-14 1.59e-14 1.22e-14 5.65e-15
 -t_ox (um) 0.0012 0.0022 0.0015 0.0022 0.0055   
 -n2p_drv_rt (-) 2.45 2.44 2.54 1.95 2.05   
 -lch_lk_rdc (-) 1 1 1 1 1   

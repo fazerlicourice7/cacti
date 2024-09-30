@@ -583,7 +583,7 @@ def find_optimal_uca(res, minval, ulist):
 
     if min_cost == BIGNUM:
         print("ERROR: no cache organizations met optimization criteria")
-        exit(1))
+        exit(1)
 
 def filter_tag_arr(min_val, mem_list):
     cost = float('inf')
