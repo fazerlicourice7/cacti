@@ -1,5 +1,5 @@
 parameters (unit) hp lstp lop lp-dram comm-dram   
--C_g_ideal (F/um) 6.64e-16 9.15e-16 8.45e-16 1.47e-15 5.08e-16   
+-C_g_ideal (F/um) 6.64e-16 9.15e-16 8.45e-16 1.47e-15 5.08e-16
 -C_fringe (F/um) 8e-17 8e-17 8e-17 8e-17 8e-17   
 -C_junc (F/um^2) 1e-15 1e-15 1e-15 1e-15 1e-15   
 -C_junc_sw (F/um^2) 2.5e-16 2.5e-16 2.5e-16 2.5e-16 2.5e-16   

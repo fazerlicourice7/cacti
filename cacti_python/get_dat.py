@@ -220,8 +220,6 @@ def scan_dat(tech_dict, dat_file, tech_flavor, cell_type, temperature):
             tech_dict["core_tx_density"] = scan_single_input_double(line, "-core_tx_density", "F/um", print_detail_debug)
             continue
 
-
-
 def scan_single_input_double(line, name, unit_name, print_output):
     match = re.search(f"{name}\s+([^\s]+)\s+([^\s]+)", line)
     if match:
