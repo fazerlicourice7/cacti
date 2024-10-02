@@ -79,7 +79,7 @@ InputParameter::parse_cfg(const string & in_file)
 
   if(!fp) {
     cout << in_file << " is missing!\n";
-    exit(-1);
+    exit(1);
   }
 
   while(fscanf(fp, "%[^\n]\n", line) != EOF) {
@@ -307,7 +307,7 @@ InputParameter::parse_cfg(const string & in_file)
       }
       else {
         cout << "ERROR: Invalid access mode!\n";
-        exit(0);
+        exit(1);
       }
       continue;
     }
@@ -332,7 +332,7 @@ InputParameter::parse_cfg(const string & in_file)
       }
       else {
         cout << "ERROR: Invalid type!\n";
-        exit(0);
+        exit(1);
       }
       continue;
     }
@@ -351,7 +351,7 @@ InputParameter::parse_cfg(const string & in_file)
       }
       else {
         cout << "ERROR: Invalid type!\n";
-        exit(0);
+        exit(1);
       }
       continue;
     }
@@ -376,7 +376,7 @@ InputParameter::parse_cfg(const string & in_file)
       }
       else {
         cout << "ERROR: Invalid type!\n";
-        exit(0);
+        exit(1);
       }
       continue;
     }
@@ -395,7 +395,7 @@ InputParameter::parse_cfg(const string & in_file)
       }
       else {
         cout << "ERROR: Invalid type!\n";
-        exit(0);
+        exit(1);
       }
       continue;
     }
@@ -544,7 +544,7 @@ InputParameter::parse_cfg(const string & in_file)
       }
       else {
         cout << "Unknown wire type!\n";
-        exit(0);
+        exit(1);
       }
       continue;
     }
@@ -1229,7 +1229,7 @@ uca_org_t cacti_interface(const string & infile_name)
   g_ip = new InputParameter();
   g_ip->parse_cfg(infile_name);
   if(!g_ip->error_checking())
-	  exit(0);
+	  exit(1);
  // if (g_ip->print_input_args)
     g_ip->display_ip();
 	
@@ -1547,7 +1547,7 @@ uca_org_t cacti_interface(
 	  g_ip->fine_gran_bank_lvl = false;
 
   if(!g_ip->error_checking())
-	  exit(0);
+	  exit(1);
 
   init_tech_params(g_ip->F_sz_um, false);
   Wire winit; // Do not delete this line. It initializes wires.
@@ -1694,7 +1694,7 @@ uca_org_t cacti_interface(
       break;
     default:
       cout << "Unknown wire type!\n";
-      exit(0);
+      exit(1);
   }
 
   g_ip->delay_wt_nuca = nuca_obj_func_delay;
@@ -1739,7 +1739,7 @@ uca_org_t cacti_interface(
   uca_org_t fin_res;
   fin_res.valid = false;
 
-  if (g_ip->error_checking() == false) exit(0);
+  if (g_ip->error_checking() == false) exit(-1);
   if (g_ip->print_input_args)
     g_ip->display_ip();
   init_tech_params(g_ip->F_sz_um, false);
@@ -1927,7 +1927,7 @@ uca_org_t cacti_interface(
 
 
   if(!g_ip->error_checking())
-	  exit(0);
+	  exit(1);
 
   init_tech_params(g_ip->F_sz_um, false);
   Wire winit; // Do not delete this line. It initializes wires.
@@ -2967,7 +2967,7 @@ void output_UCA(uca_org_t *fr)
       break;
     default:
       cout << "ERROR - Unknown wire type " << (int) fr->data_array2->wt <<endl;
-      exit(0);
+      exit(1);
   }
 
   if (!(g_ip->pure_ram|| g_ip->pure_cam || g_ip->fully_assoc)) {
@@ -2992,7 +2992,7 @@ void output_UCA(uca_org_t *fr)
         break;
       default:
         cout << "ERROR - Unknown wire type " << (int) fr->tag_array2->wt <<endl;
-        exit(-1);
+        exit(1);
     }
   }
 	} //end if(!g_ip->is_3d_mem)

@@ -44,7 +44,7 @@ class Wire(Component):
         self.repeater_size = 0 
 
         if Wire.initialized != 1:
-            print("Initializing Wire")
+            # print("Initializing Wire")
             self.__init_wire_simple(w_s, s_s, wp, resistivity, dt)
 
         self.calculate_wire_stats()

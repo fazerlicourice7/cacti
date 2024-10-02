@@ -16,7 +16,7 @@ def scan_dat(tech_dict, dat_file, tech_flavor, cell_type, temperature):
             lines = fp.readlines()
     except FileNotFoundError:
         print(f"get_dat: {dat_file} is missing!")
-        exit(-1)
+        exit(1)
 
     for line in lines:
         if line.startswith("-Vdd"):
@@ -219,8 +219,6 @@ def scan_dat(tech_dict, dat_file, tech_flavor, cell_type, temperature):
         if line.startswith("-core_tx_density"):
             tech_dict["core_tx_density"] = scan_single_input_double(line, "-core_tx_density", "F/um", print_detail_debug)
             continue
-
-
 
 def scan_single_input_double(line, name, unit_name, print_output):
     match = re.search(f"{name}\s+([^\s]+)\s+([^\s]+)", line)

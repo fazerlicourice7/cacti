@@ -552,7 +552,7 @@ def find_optimal_uca(res, minval, ulist):
 
     if not ulist:
         print("ERROR: no valid cache organizations found")
-        exit(0)
+        exit(1)
 
     for niter in ulist:
         if g_ip.ed == 1:
@@ -583,7 +583,7 @@ def find_optimal_uca(res, minval, ulist):
 
     if min_cost == BIGNUM:
         print("ERROR: no cache organizations met optimization criteria")
-        exit(0)
+        exit(1)
 
 def filter_tag_arr(min_val, mem_list):
     cost = float('inf')
@@ -624,7 +624,7 @@ def filter_tag_arr(min_val, mem_list):
 
     if not res:
         print("ERROR: no valid tag organizations found")
-        exit(0)
+        exit(1)
 
     mem_list.append(res)
 

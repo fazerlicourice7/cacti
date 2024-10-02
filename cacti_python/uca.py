@@ -396,7 +396,7 @@ class UCA(Component):
                 # temp = symbolic_convex_max(max1, max2)
                 temp = self.bank.mat.b_mux_predec.delay
 
-            print ("UCA completed... please wait for expression to write.")
+            # print ("UCA completed... please wait for expression to write.")
             g_ip.rpters_in_htree = True
             if g_ip.rpters_in_htree == False:
                 temp = symbolic_convex_max(temp, self.bank.htree_in_add.max_unpipelined_link_delay)

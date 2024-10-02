@@ -51,7 +51,7 @@ class Nuca(Component):
                                     cont_stats[i][j][k][l][m] = parts[m]
         except FileNotFoundError:
             print("contention.dat file is missing!")
-            exit(0)
+            exit(1)
         self.cont_stats = cont_stats
 
     def print_cont_stats(self):
