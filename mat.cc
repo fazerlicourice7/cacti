@@ -32,7 +32,9 @@
 
 
 #include "mat.h"
+#include "logger.h"
 #include <assert.h>
+#include <stdio.h>
 
 
 Mat::Mat(const DynamicParameter & dyn_p)
@@ -545,6 +547,8 @@ double Mat::compute_delays(double inrisetime)
 	int k;
 	double rd, C_intrinsic, C_ld, tf, R_bl_precharge,r_b_metal, R_bl, C_bl;
 	double outrisetime_search, outrisetime, row_dec_outrisetime;
+
+  log_message("IN MAT");
 	// delay calculation for tags of fully associative cache
 	if (is_fa || pure_cam)
 	{
@@ -571,6 +575,8 @@ double Mat::compute_delays(double inrisetime)
 
 
 			outrisetime_search = compute_bitline_delay(outrisetime_search);
+      printf("outrisetime_search: %f\n", outrisetime_search);
+      log_double("outrisetime_search", outrisetime_search);
 			outrisetime_search = compute_sa_delay(outrisetime_search);
 		}
 			outrisetime_search = compute_subarray_out_drv(outrisetime_search);
@@ -590,6 +596,7 @@ double Mat::compute_delays(double inrisetime)
 			sa_mux_lev_1_dec->compute_delays(outrisetime);
 
 			outrisetime = sa_mux_lev_2_predec->compute_delays(inrisetime);
+      log_double("outrisetime", outrisetime);
 			sa_mux_lev_2_dec->compute_delays(outrisetime);
 
 			if (pure_cam)
@@ -634,6 +641,7 @@ double Mat::compute_delays(double inrisetime)
 
   outrisetime = r_predec->compute_delays(inrisetime);
   row_dec_outrisetime = row_dec->compute_delays(outrisetime);
+  log_double("outrisetime", outrisetime);
 
   outrisetime = b_mux_predec->compute_delays(inrisetime);
   bit_mux_dec->compute_delays(outrisetime);

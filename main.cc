@@ -43,13 +43,14 @@
 #include <iostream>
 
 #include "Ucache.h"
+#include "logger.h"
 
 using namespace std;
 
 
 int main(int argc,char *argv[])
 {
-
+	init_log_file("cacti.log");
   uca_org_t result;
   if (argc != 53 && argc != 55 && argc !=64)
   {
@@ -264,7 +265,7 @@ int main(int argc,char *argv[])
 //  delete result.data_array2;
 //  if (result.tag_array2!=NULL)
 //	  delete result.tag_array2;
-
+	close_log_file();
   return 0;
 }
 

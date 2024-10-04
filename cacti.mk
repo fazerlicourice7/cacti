@@ -27,7 +27,7 @@ CC  = gcc-13 -m64
 SRCS  = area.cc bank.cc mat.cc main.cc Ucache.cc io.cc technology.cc basic_circuit.cc parameter.cc \
 		decoder.cc component.cc uca.cc subarray.cc wire.cc htree2.cc extio.cc extio_technology.cc \
 		cacti_interface.cc router.cc nuca.cc crossbar.cc arbiter.cc powergating.cc TSV.cc memorybus.cc \
-		memcad.cc memcad_parameters.cc
+		memcad.cc memcad_parameters.cc logger.cc
 		
 
 OBJS = $(patsubst %.cc,obj_$(TAG)/%.o,$(SRCS))
