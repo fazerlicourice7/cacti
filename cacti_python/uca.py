@@ -319,17 +319,17 @@ class UCA(Component):
             
             # OPTION 2: USING symbolic... takes a while
             # print("before uca compute delay max")
-            # self.delay_before_subarray_output_driver = symbolic_convex_max(max_delay_before_row_decoder + delay_inside_mat, 
-            #                                                                (delay_array_to_mat + self.bank.mat.b_mux_predec.delay + 
-            #                                                                self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa))
-            # tmp_max = symbolic_convex_max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder)
-            # self.delay_before_subarray_output_driver = symbolic_convex_max(self.delay_before_subarray_output_driver, tmp_max)
+            self.delay_before_subarray_output_driver = symbolic_convex_max(max_delay_before_row_decoder + delay_inside_mat, 
+                                                                           (delay_array_to_mat + self.bank.mat.b_mux_predec.delay + 
+                                                                           self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa))
+            tmp_max = symbolic_convex_max(self.delay_array_to_sa_mux_lev_1_decoder, self.delay_array_to_sa_mux_lev_2_decoder)
+            self.delay_before_subarray_output_driver = symbolic_convex_max(self.delay_before_subarray_output_driver, tmp_max)
 
             # OPTION 3: just select 1 - will decrease accuracy
             # a
             # self.delay_before_subarray_output_driver = max_delay_before_row_decoder + delay_inside_mat
             # b
-            self.delay_before_subarray_output_driver = delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa
+            # self.delay_before_subarray_output_driver = delay_array_to_mat + self.bank.mat.b_mux_predec.delay + self.bank.mat.bit_mux_dec.delay + self.bank.mat.delay_sa
             # c
             # self.delay_before_subarray_output_driver = self.delay_array_to_sa_mux_lev_1_decoder
             # d
