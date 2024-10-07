@@ -1,6 +1,10 @@
 import math
 from typing import List
 from threading import Thread
+import time
+
+import sympy as sp
+
 from .cacti_interface import *
 from .cacti_interface import MemArray
 from .nuca import NucaOrgT
@@ -8,9 +12,6 @@ from .parameter import g_ip, g_tp
 from .parameter import *
 from .uca import UCA
 from .parameter import _log2
-import sympy as sp
-
-import time
 
 
 BIGNUM = float('inf')
@@ -840,7 +841,6 @@ def update(fin_res):
 ##### SINGLE SOLVE
 
 
-
 def calculate_time_single(
     is_tag,
     pure_ram,
@@ -1095,7 +1095,6 @@ def calculate_time_single(
     return ptr_array
 
 
-
 def solve_single():
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
@@ -1131,6 +1130,7 @@ def solve_single():
         curr_org.tag_array2 = tag_arr
         curr_org.data_array2 = data_arr
 
+    # curr_org is of type uca_org_t
     curr_org.find_delay()
     curr_org.find_energy()
     # curr_org.find_area()
@@ -1147,4 +1147,3 @@ def solve_single():
     # time.sleep(60)
 
     return curr_org
-

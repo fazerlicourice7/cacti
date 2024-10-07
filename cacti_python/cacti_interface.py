@@ -1,7 +1,9 @@
 from typing import List
 import re
-from .parameter import g_ip, InputParameter, symbolic_convex_max
+
 import sympy as sp
+
+from .parameter import g_ip, InputParameter, symbolic_convex_max
 from .extio import Extio
 from .extio_technology import IOTechParam
 
