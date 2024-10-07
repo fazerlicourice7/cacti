@@ -164,8 +164,8 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
             w_item = 0
 
         # CHANGE: Max - can ignore to reduce expression length
-        # w_n[i] = symbolic_convex_max(w_item, g_tp.min_w_nmos_)
-        w_n[i] = w_item
+        w_n[i] = symbolic_convex_max(w_item, g_tp.min_w_nmos_)
+        # w_n[i] = w_item
 
         w_p[i] = p_to_n_sz_ratio * w_n[i]
 

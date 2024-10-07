@@ -1135,7 +1135,8 @@ class Predec(Component):
         delay3 = self.drv2.delay_nand2_path + self.blk2.delay_nand2_path
         delay4 = self.drv2.delay_nand3_path + self.blk2.delay_nand3_path
         
-        max_delay = delay2  # picked an option to reduce expression size
+        max_delay = symbolic_convex_max(symbolic_convex_max(delay1, delay2), symbolic_convex_max(delay3, delay4))
+        # delay2  # picked an option to reduce expression size
 
         ret_val[0] = max_delay
         ret_val[1] = input_pair1[0]

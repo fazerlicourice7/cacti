@@ -118,7 +118,7 @@ class Htree2(Component):
         tr_size = gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0) / (2 * s_eff * gate_C(self.min_w_pmos, 0))
 
         # CHANGE: MAX - avoiding max to decrease expression size
-        # size = symbolic_convex_max(1, size)
+        size = symbolic_convex_max(1, size)
 
         res_nor = 2 * tr_R_on(size * self.min_w_pmos, PCH, 1)
         res_ptrans = tr_R_on(tr_size * self.min_w_nmos, NCH, 1)
