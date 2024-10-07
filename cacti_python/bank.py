@@ -1,7 +1,8 @@
+import sympy as sp
+
 from .htree import Htree2
-from .parameter import g_ip
-from .parameter import _log2
-from .parameter import *
+from . import parameter
+# from .parameter import g_ip
 from .area import Area
 from .mat import Mat
 import enum
@@ -15,7 +16,7 @@ class HtreeType(enum.Enum):
     Search_out_htree = 5
 
 class Bank(Component):
-    def __init__(self, dyn_p):
+    def __init__(self, dyn_p, g_ip):
         super().__init__()
         self.dp = dyn_p
         self.mat = Mat(self.dp)
@@ -55,32 +56,32 @@ class Bank(Component):
 
             self.htree_in_add = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                        total_addrbits, datainbits, 0, dataoutbits, 0,
-                                       self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Add_htree)
+                                       self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Add_htree)
             self.htree_in_data = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                         total_addrbits, datainbits, 0, dataoutbits, 0,
-                                        self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Data_in_htree)
+                                        self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Data_in_htree)
             self.htree_out_data = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                          total_addrbits, datainbits, 0, dataoutbits, 0,
-                                         self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Data_out_htree)
+                                         self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Data_out_htree)
 
             self.area = Area()
             self.area.w, self.area.h = self.htree_in_data.area.w, self.htree_in_data.area.h
         else:
             self.htree_in_add = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                        total_addrbits, datainbits, searchinbits, dataoutbits, searchoutbits,
-                                       self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Add_htree)
+                                       self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Add_htree)
             self.htree_in_data = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                         total_addrbits, datainbits, searchinbits, dataoutbits, searchoutbits,
-                                        self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Data_in_htree)
+                                        self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Data_in_htree)
             self.htree_out_data = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                          total_addrbits, datainbits, searchinbits, dataoutbits, searchoutbits,
-                                         self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Data_out_htree)
+                                         self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Data_out_htree)
             self.htree_in_search = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                           total_addrbits, datainbits, searchinbits, dataoutbits, searchoutbits,
-                                          self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Data_in_htree, True, True)
+                                          self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Data_in_htree, True, True)
             self.htree_out_search = Htree2(self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                            total_addrbits, datainbits, searchinbits, dataoutbits, searchoutbits,
-                                           self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, Data_out_htree, True)
+                                           self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Data_out_htree, True)
 
             self.area = Area()
             self.area.w, self.area.h = self.htree_in_data.area.w, self.htree_in_data.area.h

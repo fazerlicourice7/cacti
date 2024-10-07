@@ -2,11 +2,11 @@ import math
 import re
 import sys
 import os
-from .const import *
-from .area import Area
 import sympy as sp
 import time
 
+from .const import *
+from .area import Area
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from hw_symbols import symbol_table as sympy_var
@@ -172,7 +172,6 @@ class InputParameter:
 
         self.repeater_spacing = 0.0
         self.repeater_size = 0.0
-        
 
     def parse_cfg(self, in_file):
         try:
@@ -3013,8 +3012,6 @@ def drain_C_(width, nchannel, stack, next_arg_thresh_folding_width_or_height_cel
 
     return drain_C_area + drain_C_sidewall + drain_C_wrt_gate + drain_C_metal_connecting_folded_tr
 
-
-
 def tr_R_on(width, nchannel, stack, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
     if _is_dram and _is_sram:
         dt = g_tp.dram_acc  # DRAM cell access transistor
@@ -3068,7 +3065,6 @@ def horowitz(inputramptime, tf, vs1, vs2, rise):
         b = 0.4
         td = tf * sp.sqrt(sp.log(1.0 - vs1) ** 2 + 2 * a * b * vs1) + tf * (sp.log(1.0 - vs1) - sp.log(1.0 - vs2))
     return td
-
 
 def cmos_Ileak(nWidth, pWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:

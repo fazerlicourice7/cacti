@@ -842,6 +842,7 @@ def update(fin_res):
 
 
 def calculate_time_single(
+    g_ip,
     is_tag,
     pure_ram,
     pure_cam,
@@ -862,7 +863,7 @@ def calculate_time_single(
 
     # if not dyn_p.is_valid:
     #     return False
-    uca = UCA(dyn_p)
+    uca = UCA(dyn_p, g_ip)
 
     if flag_results_populate:
         # For the final solution, populate the ptr_results data structure -- TODO: copy only necessary variables
@@ -1117,7 +1118,7 @@ def solve_single():
     is_tag = False
     g_tp.init(g_ip.F_sz_um, is_tag)
 
-    calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
+    calculate_time_single(g_ip, is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
                                 g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
                                 data_arr, 0, None, None, wr, g_ip.is_main_mem)
     

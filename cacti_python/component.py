@@ -1,10 +1,14 @@
 import math
 from math import ceil, log, pow
 import sys
+
+import sympy as sp
+
+from .area import Area
 from .const import *
+from . import parameter
 from .parameter import g_tp
 from .parameter import g_ip
-from .parameter import *
 from .cacti_interface import PowerDef
 
 
@@ -82,7 +86,7 @@ def compute_gate_area(gate_type, num_inputs, w_pmos, w_nmos, h_gate):
         print(f"Unknown gate type: {gate_type}")
         sys.exit(1)
 
-    gate_w = symbolic_convex_max(total_ndiff_w, total_pdiff_w)
+    gate_w = parameter.symbolic_convex_max(total_ndiff_w, total_pdiff_w)
  
     # Change: Relational - set to one option to reduce expression size
     # gate_h = sp.Piecewise(
@@ -139,10 +143,10 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
         f = 1
     C_in = C_load / f
 
-    w_n[i] = (1.0 / (1.0 + p_to_n_sz_ratio)) * C_in / gate_C(1, 0, is_dram_, False, is_wl_tr_)
+    w_n[i] = (1.0 / (1.0 + p_to_n_sz_ratio)) * C_in / parameter.gate_C(1, 0, is_dram_, False, is_wl_tr_)
 
     # CHANGE: Max - can ignore to reduce expression length
-    w_n[i] = symbolic_convex_max(w_n[i], g_tp.min_w_nmos_)
+    w_n[i] = parameter.symbolic_convex_max(w_n[i], g_tp.min_w_nmos_)
 
     w_p[i] = p_to_n_sz_ratio * w_n[i]
 
@@ -164,7 +168,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
             w_item = 0
 
         # CHANGE: Max - can ignore to reduce expression length
-        w_n[i] = symbolic_convex_max(w_item, g_tp.min_w_nmos_)
+        w_n[i] = parameter.symbolic_convex_max(w_item, g_tp.min_w_nmos_)
         # w_n[i] = w_item
 
         w_p[i] = p_to_n_sz_ratio * w_n[i]
