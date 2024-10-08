@@ -173,7 +173,8 @@ class InputParameter:
         self.repeater_spacing = 0.0
         self.repeater_size = 0.0
         
-
+    # fix, issues when called more than once
+    #
     def parse_cfg(self, in_file):
         try:
             with open(in_file, "r") as fp:
