@@ -3,8 +3,8 @@ import sys
 from .const import *
 from .decoder import *
 from .parameter import g_tp
-from .parameter import g_ip
-from .parameter import *
+# from .parameter import g_ip
+from . import parameter
 from .const import *
 from .component import compute_gate_area
 from .component import *
@@ -13,8 +13,9 @@ from .area import *
 
 
 class SleepTx(Component):
-    def __init__(self, perf_with_sleep_tx, active_Isat, is_footer, c_circuit_wakeup, V_delta, num_sleep_tx, cell):
+    def __init__(self, g_ip, perf_with_sleep_tx, active_Isat, is_footer, c_circuit_wakeup, V_delta, num_sleep_tx, cell):
         super().__init__()
+        self.g_ip = g_ip
         self.perf_with_sleep_tx = perf_with_sleep_tx
         self.active_Isat = active_Isat
         self.is_footer = is_footer
@@ -32,10 +33,10 @@ class SleepTx(Component):
         self.c_ox = g_tp.sleep_tx.C_ox
 
         p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(False, False, True)
-        self.width = active_Isat / (perf_with_sleep_tx * self.mobility * self.c_ox * (self.vdd - self.vt_circuit) * (self.vdd - self.vt_sleep_tx)) * g_ip.F_sz_um
+        self.width = active_Isat / (perf_with_sleep_tx * self.mobility * self.c_ox * (self.vdd - self.vt_circuit) * (self.vdd - self.vt_sleep_tx)) * self.g_ip.F_sz_um
         self.width /= num_sleep_tx
 
-        raw_area = compute_gate_area(INV, 1, self.width, p_to_n_sz_ratio * self.width, self.cell.w * 2) / 2
+        raw_area = compute_gate_area(self.g_ip, INV, 1, self.width, p_to_n_sz_ratio * self.width, self.cell.w * 2) / 2
         raw_width = self.cell.w
         raw_height = raw_area / self.cell.w
         self.area = Area()

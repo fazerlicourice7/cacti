@@ -9,12 +9,13 @@ from .powergating import *
 import sympy as sp
 
 
-# Note: This code relies on several other classes and functions (e.g., Subarray, Decoder, Driver, PredecBlk, PredecBlkDrv, Predec, Wire, Sleep_tx, gate_C, drain_C_, tr_R_on, horowitz, g_tp, g_ip) 
+# Note: This code relies on several other classes and functions (e.g., Subarray, Decoder, Driver, PredecBlk, PredecBlkDrv, Predec, Wire, Sleep_tx, gate_C, drain_C_, tr_R_on, horowitz, g_tp, g_ip)
 # that are not included here. Ensure these dependencies are defined elsewhere in your codebase.
 class Mat(Component):
-    def __init__(self, dyn_p):
+    def __init__(self, dyn_p, g_ip):
         super().__init__()
         self.dp = dyn_p
+        self.g_ip = g_ip
 
         # Initialize attributes
         self.power_subarray_out_drv = PowerDef()
@@ -102,10 +103,10 @@ class Mat(Component):
             self.EWP = self.dp.num_wr_ports
             self.SCHP = self.dp.num_search_ports
         else:
-            self.RWP = g_ip.num_rw_ports
-            self.ERP = g_ip.num_rd_ports
-            self.EWP = g_ip.num_wr_ports
-            self.SCHP = g_ip.num_search_ports
+            self.RWP = self.g_ip.num_rw_ports
+            self.ERP = self.g_ip.num_rd_ports
+            self.EWP = self.g_ip.num_wr_ports
+            self.SCHP = self.g_ip.num_search_ports
 
         if not self.is_fa and not self.pure_cam:
             number_sa_subarray = self.subarray.num_cols / self.deg_bl_muxing
@@ -145,13 +146,13 @@ class Mat(Component):
             R_wire_bit_mux_dec_out /= 2.0
             R_wire_sa_mux_dec_out /= 2.0
 
-        self.row_dec = Decoder(num_dec_signals, False, self.subarray.C_wl, R_wire_wl_drv_out, False, self.is_dram, True, self.cam_cell if self.camFlag else self.cell)
+        self.row_dec = Decoder(self.g_ip, num_dec_signals, False, self.subarray.C_wl, R_wire_wl_drv_out, False, self.is_dram, True, self.cam_cell if self.camFlag else self.cell)
         self.row_dec.nodes_DSTN = self.subarray.num_rows
 
-        self.bit_mux_dec = Decoder(self.deg_bl_muxing, False, C_ld_bit_mux_dec_out, R_wire_bit_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
- 
-        self.sa_mux_lev_1_dec = Decoder(self.dp.deg_senseamp_muxing_non_associativity, self.dp.number_way_select_signals_mat, C_ld_sa_mux_lev_1_dec_out, R_wire_sa_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
-        self.sa_mux_lev_2_dec = Decoder(self.dp.Ndsam_lev_2, False, C_ld_sa_mux_lev_2_dec_out, R_wire_sa_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
+        self.bit_mux_dec = Decoder(self.g_ip, self.deg_bl_muxing, False, C_ld_bit_mux_dec_out, R_wire_bit_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
+
+        self.sa_mux_lev_1_dec = Decoder(self.g_ip, self.dp.deg_senseamp_muxing_non_associativity, self.dp.number_way_select_signals_mat, C_ld_sa_mux_lev_1_dec_out, R_wire_sa_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
+        self.sa_mux_lev_2_dec = Decoder(self.g_ip, self.dp.Ndsam_lev_2, False, C_ld_sa_mux_lev_2_dec_out, R_wire_sa_mux_dec_out, False, self.is_dram, False, self.cam_cell if self.camFlag else self.cell)
 
         if not self.is_fa and not self.pure_cam:
             C_wire_predec_blk_out = self.num_subarrays_per_row * self.subarray.num_rows * g_tp.wire_inside_mat.C_per_um * self.cell.h
@@ -163,53 +164,65 @@ class Mat(Component):
         if self.is_fa or self.pure_cam:
             num_dec_signals += int(math.log2(self.num_subarrays_per_mat))
 
-        self.r_predec_blk1 = PredecBlk(num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, True)
-        self.r_predec_blk2 = PredecBlk(num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, False)
-        self.b_mux_predec_blk1 = PredecBlk(self.deg_bl_muxing, self.bit_mux_dec, 0, 0, 1, self.is_dram, True)
-        self.b_mux_predec_blk2 = PredecBlk(self.deg_bl_muxing, self.bit_mux_dec, 0, 0, 1, self.is_dram, False)
-        self.sa_mux_lev_1_predec_blk1 = PredecBlk(dyn_p.deg_senseamp_muxing_non_associativity, self.sa_mux_lev_1_dec, 0, 0, 1, self.is_dram, True)
-        self.sa_mux_lev_1_predec_blk2 = PredecBlk(dyn_p.deg_senseamp_muxing_non_associativity, self.sa_mux_lev_1_dec, 0, 0, 1, self.is_dram, False)
-        self.sa_mux_lev_2_predec_blk1 = PredecBlk(self.dp.Ndsam_lev_2, self.sa_mux_lev_2_dec, 0, 0, 1, self.is_dram, True)
-        self.sa_mux_lev_2_predec_blk2 = PredecBlk(self.dp.Ndsam_lev_2, self.sa_mux_lev_2_dec, 0, 0, 1, self.is_dram, False)
-        self.dummy_way_sel_predec_blk1 = PredecBlk(1, self.sa_mux_lev_1_dec, 0, 0, 0, self.is_dram, True)
-        self.dummy_way_sel_predec_blk2 = PredecBlk(1, self.sa_mux_lev_1_dec, 0, 0, 0, self.is_dram, False)
+        self.r_predec_blk1 = PredecBlk(self.g_ip, num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, True)
+        self.r_predec_blk2 = PredecBlk(self.g_ip, num_dec_signals, self.row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out, self.num_subarrays_per_mat, self.is_dram, False)
+        self.b_mux_predec_blk1 = PredecBlk(self.g_ip, self.deg_bl_muxing, self.bit_mux_dec, 0, 0, 1, self.is_dram, True)
+        self.b_mux_predec_blk2 = PredecBlk(self.g_ip, self.deg_bl_muxing, self.bit_mux_dec, 0, 0, 1, self.is_dram, False)
+        self.sa_mux_lev_1_predec_blk1 = PredecBlk(self.g_ip, dyn_p.deg_senseamp_muxing_non_associativity, self.sa_mux_lev_1_dec, 0, 0, 1, self.is_dram, True)
+        self.sa_mux_lev_1_predec_blk2 = PredecBlk(self.g_ip, dyn_p.deg_senseamp_muxing_non_associativity, self.sa_mux_lev_1_dec, 0, 0, 1, self.is_dram, False)
+        self.sa_mux_lev_2_predec_blk1 = PredecBlk(self.g_ip, self.dp.Ndsam_lev_2, self.sa_mux_lev_2_dec, 0, 0, 1, self.is_dram, True)
+        self.sa_mux_lev_2_predec_blk2 = PredecBlk(self.g_ip, self.dp.Ndsam_lev_2, self.sa_mux_lev_2_dec, 0, 0, 1, self.is_dram, False)
+        self.dummy_way_sel_predec_blk1 = PredecBlk(self.g_ip, 1, self.sa_mux_lev_1_dec, 0, 0, 0, self.is_dram, True)
+        self.dummy_way_sel_predec_blk2 = PredecBlk(self.g_ip, 1, self.sa_mux_lev_1_dec, 0, 0, 0, self.is_dram, False)
 
-        self.r_predec_blk_drv1 = PredecBlkDrv(0, self.r_predec_blk1, self.is_dram)
-        self.r_predec_blk_drv2 = PredecBlkDrv(0, self.r_predec_blk2, self.is_dram)
-        self.b_mux_predec_blk_drv1 = PredecBlkDrv(0, self.b_mux_predec_blk1, self.is_dram)
-        self.b_mux_predec_blk_drv2 = PredecBlkDrv(0, self.b_mux_predec_blk2, self.is_dram)
-        self.sa_mux_lev_1_predec_blk_drv1 = PredecBlkDrv(0, self.sa_mux_lev_1_predec_blk1, self.is_dram)
-        self.sa_mux_lev_1_predec_blk_drv2 = PredecBlkDrv(0, self.sa_mux_lev_1_predec_blk2, self.is_dram)
-        self.sa_mux_lev_2_predec_blk_drv1 = PredecBlkDrv(0, self.sa_mux_lev_2_predec_blk1, self.is_dram)
-        self.sa_mux_lev_2_predec_blk_drv2 = PredecBlkDrv(0, self.sa_mux_lev_2_predec_blk2, self.is_dram)
-        self.way_sel_drv1 = PredecBlkDrv(dyn_p.number_way_select_signals_mat, self.dummy_way_sel_predec_blk1, self.is_dram)
-        self.dummy_way_sel_predec_blk_drv2 = PredecBlkDrv(1, self.dummy_way_sel_predec_blk2, self.is_dram)
+        self.r_predec_blk_drv1 = PredecBlkDrv(self.g_ip, 0, self.r_predec_blk1, self.is_dram)
+        self.r_predec_blk_drv2 = PredecBlkDrv(self.g_ip, 0, self.r_predec_blk2, self.is_dram)
+        self.b_mux_predec_blk_drv1 = PredecBlkDrv(self.g_ip, 0, self.b_mux_predec_blk1, self.is_dram)
+        self.b_mux_predec_blk_drv2 = PredecBlkDrv(self.g_ip, 0, self.b_mux_predec_blk2, self.is_dram)
+        self.sa_mux_lev_1_predec_blk_drv1 = PredecBlkDrv(self.g_ip, 0, self.sa_mux_lev_1_predec_blk1, self.is_dram)
+        self.sa_mux_lev_1_predec_blk_drv2 = PredecBlkDrv(self.g_ip, 0, self.sa_mux_lev_1_predec_blk2, self.is_dram)
+        self.sa_mux_lev_2_predec_blk_drv1 = PredecBlkDrv(self.g_ip, 0, self.sa_mux_lev_2_predec_blk1, self.is_dram)
+        self.sa_mux_lev_2_predec_blk_drv2 = PredecBlkDrv(self.g_ip, 0, self.sa_mux_lev_2_predec_blk2, self.is_dram)
+        self.way_sel_drv1 = PredecBlkDrv(self.g_ip, dyn_p.number_way_select_signals_mat, self.dummy_way_sel_predec_blk1, self.is_dram)
+        self.dummy_way_sel_predec_blk_drv2 = PredecBlkDrv(self.g_ip, 1, self.dummy_way_sel_predec_blk2, self.is_dram)
 
         self.r_predec = Predec(self.r_predec_blk_drv1, self.r_predec_blk_drv2)
         self.b_mux_predec = Predec(self.b_mux_predec_blk_drv1, self.b_mux_predec_blk_drv2)
         self.sa_mux_lev_1_predec = Predec(self.sa_mux_lev_1_predec_blk_drv1, self.sa_mux_lev_1_predec_blk_drv2)
         self.sa_mux_lev_2_predec = Predec(self.sa_mux_lev_2_predec_blk_drv1, self.sa_mux_lev_2_predec_blk_drv2)
 
-        self.subarray_out_wire = Wire(self.dp.wtype, self.subarray.area.w if g_ip.cl_vertical else self.subarray.area.h)
+        self.subarray_out_wire = Wire(self.g_ip, self.dp.wtype, self.subarray.area.w if self.g_ip.cl_vertical else self.subarray.area.h)
 
         # def __init__(self, wire_model, length, nsense=1, width_scaling=1, spacing_scaling=1, wire_placement=outside_mat, resistivity=CU_RESISTIVITY, dt=g_tp.peri_global):
 
         if self.is_fa or self.pure_cam:
-            driver_c_gate_load = self.subarray.num_cols_fa_cam * gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
+            driver_c_gate_load = self.subarray.num_cols_fa_cam * parameter.gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
             driver_c_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * g_tp.wire_outside_mat.C_per_um
             driver_r_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * g_tp.wire_outside_mat.R_per_um
-            self.cam_bl_precharge_eq_drv = Driver(driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
+            self.cam_bl_precharge_eq_drv = Driver(
+                self.g_ip,
+                driver_c_gate_load,
+                driver_c_wire_load,
+                driver_r_wire_load,
+                self.is_dram,
+            )
 
             if not self.pure_cam:
-                driver_c_gate_load = self.subarray.num_cols_fa_ram * gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
+                driver_c_gate_load = self.subarray.num_cols_fa_ram * parameter.gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
                 driver_c_wire_load = self.subarray.num_cols_fa_ram * self.cell.w * g_tp.wire_outside_mat.C_per_um
                 driver_r_wire_load = self.subarray.num_cols_fa_ram * self.cell.w * g_tp.wire_outside_mat.R_per_um
-                self.bl_precharge_eq_drv = Driver(driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
+                self.bl_precharge_eq_drv = Driver(self.g_ip, driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
         else:
-            driver_c_gate_load = self.subarray.num_cols * gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
+            driver_c_gate_load = self.subarray.num_cols * parameter.gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
             driver_c_wire_load = self.subarray.num_cols * self.cell.w * g_tp.wire_outside_mat.C_per_um
             driver_r_wire_load = self.subarray.num_cols * self.cell.w * g_tp.wire_outside_mat.R_per_um
-            self.bl_precharge_eq_drv = Driver(driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
+            self.bl_precharge_eq_drv = Driver(
+                self.g_ip,
+                driver_c_gate_load,
+                driver_c_wire_load,
+                driver_r_wire_load,
+                self.is_dram,
+            )
 
         area_row_decoder = self.row_dec.area.get_area() * self.subarray.num_rows * (self.RWP + self.ERP + self.EWP)
         w_row_decoder = area_row_decoder / self.subarray.area.get_h()
@@ -228,18 +241,18 @@ class Mat(Component):
             h_comparators *= (self.RWP + self.ERP)
 
         is_footer = False
-        Isat_subarray = 2 * simplified_nmos_Isat(g_tp.sram.cell_nmos_w, self.is_dram, True) #only one wordline active in a subarray 2 means two inverters in an SRAM cell
+        Isat_subarray = 2 * parameter.simplified_nmos_Isat(g_tp.sram.cell_nmos_w, self.is_dram, True) #only one wordline active in a subarray 2 means two inverters in an SRAM cell
         detalV_array = 0 #, deltaV_wl, deltaV_floatingBL
         c_wakeup_array = 0
 
-        if not (self.is_fa or self.pure_cam) and g_ip.power_gating:
-            c_wakeup_array = drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, self.cell.h, self.is_dram, True)
-            c_wakeup_array += 2 * drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, self.cell.h, self.is_dram, True) + \
-                              drain_C_(g_tp.sram.cell_nmos_w, NCH, 1, 1, self.cell.h, self.is_dram, True)
+        if not (self.is_fa or self.pure_cam) and self.g_ip.power_gating:
+            c_wakeup_array = parameter.drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, self.cell.h, self.is_dram, True)
+            c_wakeup_array += 2 * parameter.drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, self.cell.h, self.is_dram, True) + \
+                              parameter.drain_C_(g_tp.sram.cell_nmos_w, NCH, 1, 1, self.cell.h, self.is_dram, True)
             c_wakeup_array *= self.subarray.num_rows
             detalV_array = g_tp.sram_cell.Vdd - g_tp.sram_cell.Vcc_min
 
-            self.sram_sleep_tx = SleepTx(g_ip.perfloss, Isat_subarray, is_footer, c_wakeup_array, detalV_array, 1, self.cell)
+            self.sram_sleep_tx = SleepTx(self.g_ip.perfloss, Isat_subarray, is_footer, c_wakeup_array, detalV_array, 1, self.cell)
             self.subarray.area.set_h(self.subarray.area.h + self.sram_sleep_tx.area.h)
 
         branch_effort_predec_blk1_out = sp.Pow(2, self.r_predec_blk2.number_input_addr_bits)
@@ -258,7 +271,7 @@ class Mat(Component):
         if self.dp.Ndsam_lev_2 > 1:
             h_senseamp_mux_dec_out_wires += self.dp.Ndsam_lev_2 * g_tp.wire_inside_mat.pitch * (self.RWP + self.ERP)
 
-        if not g_ip.ver_htree_wires_over_array:
+        if not self.g_ip.ver_htree_wires_over_array:
             h_addr_datain_wires = (self.dp.number_addr_bits_mat + self.dp.number_way_select_signals_mat + (self.dp.num_di_b_mat + self.dp.num_do_b_mat) / self.num_subarrays_per_row) * g_tp.wire_inside_mat.pitch * (self.RWP + self.ERP + self.EWP)
 
             if self.is_fa or self.pure_cam:
@@ -279,7 +292,7 @@ class Mat(Component):
         self.area.w = self.num_subarrays_per_row * self.subarray.area.get_w() + w_non_cell_area
         self.area.w = (self.area.h * self.area.w + area_mat_center_circuitry) / self.area.h
 
-        if g_ip.is_3d_mem:
+        if self.g_ip.is_3d_mem:
             h_non_cell_area = h_bit_mux_sense_amp_precharge_sa_mux_write_driver_write_mux + h_subarray_out_drv
             self.area.h = self.subarray.area.h + h_non_cell_area
             self.area.w = self.subarray.area.w
@@ -329,7 +342,6 @@ class Mat(Component):
             outrisetime = self.sa_mux_lev_2_predec.compute_delays(inrisetime)
             self.sa_mux_lev_2_dec.compute_delays(outrisetime)
 
-
             if self.pure_cam:
                 outrisetime = self.compute_bitline_delay(row_dec_outrisetime)
                 outrisetime = self.compute_sa_delay(outrisetime)
@@ -370,7 +382,7 @@ class Mat(Component):
         outrisetime = self.sa_mux_lev_2_predec.compute_delays(inrisetime)
         self.sa_mux_lev_2_dec.compute_delays(outrisetime)
 
-        if g_ip.is_3d_mem:
+        if self.g_ip.is_3d_mem:
             row_dec_outrisetime = inrisetime
 
         outrisetime = self.compute_bitline_delay(row_dec_outrisetime)
@@ -388,27 +400,27 @@ class Mat(Component):
             self.delay_wl_reset = symbolic_convex_max(self.r_predec.blk1.delay, self.r_predec.blk2.delay)
 
         return outrisetime
-    
+
     def compute_bit_mux_sa_precharge_sa_mux_wr_drv_wr_mux_h(self):
-        height = compute_tr_width_after_folding(g_tp.w_pmos_bl_precharge, self.cam_cell.w if self.camFlag else self.cell.w / (2 * (self.RWP + self.ERP + self.SCHP))) + \
-                 compute_tr_width_after_folding(g_tp.w_pmos_bl_eq, self.cam_cell.w if self.camFlag else self.cell.w / (self.RWP + self.ERP + self.SCHP))
+        height = compute_tr_width_after_folding(self.g_ip, g_tp.w_pmos_bl_precharge, self.cam_cell.w if self.camFlag else self.cell.w / (2 * (self.RWP + self.ERP + self.SCHP))) + \
+                 compute_tr_width_after_folding(self.g_ip, g_tp.w_pmos_bl_eq, self.cam_cell.w if self.camFlag else self.cell.w / (self.RWP + self.ERP + self.SCHP))
 
         if self.deg_bl_muxing > 1:
-            height += compute_tr_width_after_folding(g_tp.w_nmos_b_mux, self.cell.w / (2 * (self.RWP + self.ERP)))
+            height += compute_tr_width_after_folding(self.g_ip, g_tp.w_nmos_b_mux, self.cell.w / (2 * (self.RWP + self.ERP)))
 
-        height += height_sense_amplifier(self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP))
+        height += height_sense_amplifier(self.g_ip, self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP))
 
         if self.dp.Ndsam_lev_1 > 1:
-            height += compute_tr_width_after_folding(g_tp.w_nmos_sa_mux, self.cell.w * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP))
+            height += compute_tr_width_after_folding(self.g_ip, g_tp.w_nmos_sa_mux, self.cell.w * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP))
 
         if self.dp.Ndsam_lev_2 > 1:
-            height += compute_tr_width_after_folding(g_tp.w_nmos_sa_mux, self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP))
-            height += 2 * compute_tr_width_after_folding(pmos_to_nmos_sz_ratio(self.is_dram) * g_tp.min_w_nmos_, self.cell.w * self.dp.Ndsam_lev_2 / (self.RWP + self.ERP))
-            height += 2 * compute_tr_width_after_folding(g_tp.min_w_nmos_, self.cell.w * self.dp.Ndsam_lev_2 / (self.RWP + self.ERP))
+            height += compute_tr_width_after_folding(self.g_ip, g_tp.w_nmos_sa_mux, self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP))
+            height += 2 * compute_tr_width_after_folding(self.g_ip, pmos_to_nmos_sz_ratio(self.is_dram) * g_tp.min_w_nmos_, self.cell.w * self.dp.Ndsam_lev_2 / (self.RWP + self.ERP))
+            height += 2 * compute_tr_width_after_folding(self.g_ip, g_tp.min_w_nmos_, self.cell.w * self.dp.Ndsam_lev_2 / (self.RWP + self.ERP))
 
-        if g_ip.is_3d_mem:
+        if self.g_ip.is_3d_mem:
             width_write_driver_write_mux = self.width_write_driver_or_write_mux()
-            height_write_driver_write_mux = compute_tr_width_after_folding(2 * width_write_driver_write_mux, self.cell.w)
+            height_write_driver_write_mux = compute_tr_width_after_folding(self.g_ip, 2 * width_write_driver_write_mux, self.cell.w)
             height += height_write_driver_write_mux
 
         return height
@@ -449,25 +461,25 @@ class Mat(Component):
         linear_scaling = False
 
         if linear_scaling:
-            Wfaprechp = 12.5 * g_ip.F_sz_um
-            Wdummyn = 12.5 * g_ip.F_sz_um
-            Wdummyinvn = 75 * g_ip.F_sz_um
-            Wdummyinvp = 100 * g_ip.F_sz_um
-            Waddrnandn = 62.5 * g_ip.F_sz_um
-            Waddrnandp = 62.5 * g_ip.F_sz_um
-            Wfanorn = 6.25 * g_ip.F_sz_um
-            Wfanorp = 12.5 * g_ip.F_sz_um
+            Wfaprechp = 12.5 * self.g_ip.F_sz_um
+            Wdummyn = 12.5 * self.g_ip.F_sz_um
+            Wdummyinvn = 75 * self.g_ip.F_sz_um
+            Wdummyinvp = 100 * self.g_ip.F_sz_um
+            Waddrnandn = 62.5 * self.g_ip.F_sz_um
+            Waddrnandp = 62.5 * self.g_ip.F_sz_um
+            Wfanorn = 6.25 * self.g_ip.F_sz_um
+            Wfanorp = 12.5 * self.g_ip.F_sz_um
             W_hit_miss_n = Wdummyn
             W_hit_miss_p = g_tp.min_w_nmos_ * p_to_n_sizing_r
         else:
             Wfaprechp = g_tp.w_pmos_bl_precharge
             Wdummyn = g_tp.cam.cell_nmos_w
-            Wdummyinvn = 75 * g_ip.F_sz_um
-            Wdummyinvp = 100 * g_ip.F_sz_um
-            Waddrnandn = 62.5 * g_ip.F_sz_um
-            Waddrnandp = 62.5 * g_ip.F_sz_um
-            Wfanorn = 6.25 * g_ip.F_sz_um
-            Wfanorp = 12.5 * g_ip.F_sz_um
+            Wdummyinvn = 75 * self.g_ip.F_sz_um
+            Wdummyinvp = 100 * self.g_ip.F_sz_um
+            Waddrnandn = 62.5 * self.g_ip.F_sz_um
+            Waddrnandp = 62.5 * self.g_ip.F_sz_um
+            Wfanorn = 6.25 * self.g_ip.F_sz_um
+            Wfanorp = 12.5 * self.g_ip.F_sz_um
             W_hit_miss_n = Wdummyn
             W_hit_miss_p = g_tp.min_w_nmos_ * p_to_n_sizing_r
 
@@ -477,12 +489,18 @@ class Mat(Component):
         driver_c_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * g_tp.wire_outside_mat.C_per_um
         driver_r_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * g_tp.wire_outside_mat.R_per_um
 
-        self.sl_precharge_eq_drv = Driver(driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
+        self.sl_precharge_eq_drv = Driver(self.g_ip, driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
 
         driver_c_gate_load = (self.subarray.num_rows + 1) * gate_C(Wdummyn, 0, self.is_dram, False, False)
         driver_c_wire_load = (self.subarray.num_rows + 1) * c_searchline_metal
         driver_r_wire_load = (self.subarray.num_rows + 1) * r_searchline_metal
-        self.sl_data_drv = Driver(driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
+        self.sl_data_drv = Driver(
+            self.g_ip,
+            driver_c_gate_load,
+            driver_c_wire_load,
+            driver_r_wire_load,
+            self.is_dram,
+        )
 
         self.sl_precharge_eq_drv.compute_delay(0)
         R_bl_precharge = tr_R_on(g_tp.w_pmos_bl_precharge, PCH, 1, self.is_dram, False, False)
@@ -498,7 +516,7 @@ class Mat(Component):
         driver_c_wire_load = (self.subarray.num_rows + 1) * c_searchline_metal
         driver_r_wire_load = (self.subarray.num_rows + 1) * r_searchline_metal
 
-        self.ml_precharge_drv = Driver(driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
+        self.ml_precharge_drv = Driver(self.g_ip, driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
         self.ml_precharge_drv.compute_delay(0)
 
         rd = tr_R_on(Wdummyn, NCH, 2, self.is_dram)
@@ -545,7 +563,7 @@ class Mat(Component):
         driver_c_wire_load = self.subarray.C_wl_ram
         driver_r_wire_load = self.subarray.R_wl_ram
 
-        self.ml_to_ram_wl_drv = Driver(driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
+        self.ml_to_ram_wl_drv = Driver(self.g_ip, driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
 
         rd = tr_R_on(Wfanorn, NCH, 1, self.is_dram)
         c_intrinsic = 2 * drain_C_(Wfanorn, NCH, 1, 1, g_tp.cell_h_def, self.is_dram) + drain_C_(Wfanorp, NCH, 1, 1, g_tp.cell_h_def, self.is_dram)
@@ -633,9 +651,9 @@ class Mat(Component):
         width_write_driver_nmos = R_to_w(target_R_write_driver_and_mux, NCH, self.is_dram)
 
         return width_write_driver_nmos
-    
+
     def compute_comparators_height(self, tagbits, number_ways_in_mat, subarray_mem_cell_area_width):
-        nand2_area = compute_gate_area(NAND, 2, 0, g_tp.w_comp_n, g_tp.cell_h_def)
+        nand2_area = compute_gate_area(self.g_ip, NAND, 2, 0, g_tp.w_comp_n, g_tp.cell_h_def)
         cumulative_area = nand2_area * number_ways_in_mat * tagbits / 4
         return cumulative_area / subarray_mem_cell_area_width
 
@@ -677,9 +695,9 @@ class Mat(Component):
             Iport_erp = cmos_Isub_leakage(g_tp.sram.cell_a_w, 0, 2, nmos, False, True)
             Icell = cmos_Isub_leakage(g_tp.sram.cell_nmos_w, g_tp.sram.cell_pmos_w, 1, inv, False, True) * 2
 
-            leak_power_cc_inverters_sram_cell = Icell * (g_ip.array_power_gated and g_tp.sram_cell.Vcc_min or g_tp.sram_cell.Vdd)
-            leak_power_acc_tr_RW_or_WR_port_sram_cell = Iport * (g_ip.bitline_floating and g_tp.sram.Vbitfloating or g_tp.sram_cell.Vdd)
-            leak_power_RD_port_sram_cell = Iport_erp * (g_ip.bitline_floating and g_tp.sram.Vbitfloating or g_tp.sram_cell.Vdd)
+            leak_power_cc_inverters_sram_cell = Icell * (self.g_ip.array_power_gated and g_tp.sram_cell.Vcc_min or g_tp.sram_cell.Vdd)
+            leak_power_acc_tr_RW_or_WR_port_sram_cell = Iport * (self.g_ip.bitline_floating and g_tp.sram.Vbitfloating or g_tp.sram_cell.Vdd)
+            leak_power_RD_port_sram_cell = Iport_erp * (self.g_ip.bitline_floating and g_tp.sram.Vbitfloating or g_tp.sram_cell.Vdd)
 
             Ig_port_erp = cmos_Ig_leakage(g_tp.sram.cell_a_w, 0, 1, nmos, False, True)
             Ig_cell = cmos_Ig_leakage(g_tp.sram.cell_nmos_w, g_tp.sram.cell_pmos_w, 1, inv, False, True)
@@ -698,7 +716,7 @@ class Mat(Component):
 
         if self.is_dram:
             fraction = self.dp.V_b_sense / ((g_tp.dram_cell_Vdd / 2) * g_tp.dram_cell_C / (g_tp.dram_cell_C + C_bl))
-            tstep = fraction * r_dev * (g_ip.is_3d_mem and 1 or 2.3) * \
+            tstep = fraction * r_dev * (self.g_ip.is_3d_mem and 1 or 2.3) * \
                 (g_tp.dram_cell_C * (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux)) / \
                 (g_tp.dram_cell_C + (C_bl + 2 * C_drain_sense_amp_iso + C_sense_amp_latch + C_drain_sense_amp_mux))
             self.delay_writeback = tstep
@@ -749,7 +767,6 @@ class Mat(Component):
         # self.delay_bitline = sp.Piecewise((delay_bitline_if_true, condition),
         #                             (delay_bitline_if_false, not condition))
 
-
         is_fa = bool(self.dp.fully_assoc)
 
         if not self.dp.is_tag or not is_fa:
@@ -764,7 +781,7 @@ class Mat(Component):
         outrisetime = 0
 
         return outrisetime
-    
+
     def compute_sa_delay(self, inrisetime):
         # Bitline circuitry leakage.
         Iiso = simplified_pmos_leakage(g_tp.w_iso, self.is_dram)
@@ -847,7 +864,7 @@ class Mat(Component):
         return inrisetime
 
     def compute_comparator_delay(self, inrisetime):
-        A = g_ip.tag_assoc
+        A = self.g_ip.tag_assoc
         tagbits_ = self.dp.tagbits // 4  # Assuming there are 4 quarter comparators. input tagbits is already a multiple of 4.
 
         # First Inverter
@@ -924,25 +941,25 @@ class Mat(Component):
         self.power_comparator.readOp.gate_leakage = gatelkgCurrent * g_tp.peri_global.Vdd
 
         return Tcomparatorni / (1.0 - VTHMUXNAND)
-    
+
     def compute_power_energy(self):
         # For cam and FA, power.readOp is the plain read power, power.searchOp is the associative search related power
         # When search all subarrays and all mats are fully active
         # When plain read/write only one subarray in a single mat is active.
 
         # Add energy consumed in predecoder drivers. This unit is shared by all subarrays in a mat.
-        if g_ip.is_3d_mem:
-            if g_ip.print_detail_debug:
+        if self.g_ip.is_3d_mem:
+            if self.g_ip.print_detail_debug:
                 print(f"mat.cc: subarray.num_cols = {self.subarray.num_cols}")
 
             self.power_bl_precharge_eq_drv.readOp.dynamic = self.bl_precharge_eq_drv.power.readOp.dynamic
             self.power_sa.readOp.dynamic *= self.subarray.num_cols
             self.power_bitline.readOp.dynamic *= self.subarray.num_cols
             self.power_subarray_out_drv.readOp.dynamic = (
-                self.power_subarray_out_drv.readOp.dynamic * g_ip.io_width * g_ip.burst_depth
+                self.power_subarray_out_drv.readOp.dynamic * self.g_ip.io_width * self.g_ip.burst_depth
             )
 
-            if g_ip.print_detail_debug:
+            if self.g_ip.print_detail_debug:
                 print(f"mat.cc: power_bl_precharge_eq_drv.readOp.dynamic = {self.power_bl_precharge_eq_drv.readOp.dynamic * 1e9} nJ")
                 print(f"mat.cc: power_sa.readOp.dynamic = {self.power_sa.readOp.dynamic * 1e9} nJ")
                 print(f"mat.cc: power_bitline.readOp.dynamic = {self.power_bitline.readOp.dynamic * 1e9} nJ")
@@ -1152,7 +1169,7 @@ class Mat(Component):
             self.power_sa_mux_lev_1_decoders.readOp.leakage = self.sa_mux_lev_1_dec.power.readOp.leakage * self.dp.Ndsam_lev_1
             self.power_sa_mux_lev_2_decoders.readOp.leakage = self.sa_mux_lev_2_dec.power.readOp.leakage * self.dp.Ndsam_lev_2
 
-            if not g_ip.wl_power_gated:
+            if not self.g_ip.wl_power_gated:
                 self.power.readOp.leakage += (
                     self.r_predec.power.readOp.leakage +
                     self.b_mux_predec.power.readOp.leakage +
@@ -1206,7 +1223,7 @@ class Mat(Component):
             self.power_comparator.readOp.gate_leakage *= self.num_do_b_mat * (self.RWP + self.ERP)
             self.power.readOp.gate_leakage += self.power_comparator.readOp.gate_leakage
 
-            if g_ip.power_gating:
+            if self.g_ip.power_gating:
                 self.array_sleep_tx_area = self.sram_sleep_tx.area.get_area() * self.subarray.num_cols * self.num_subarrays_per_mat * self.dp.num_mats
                 self.array_wakeup_e.readOp.dynamic = self.sram_sleep_tx.wakeup_power.readOp.dynamic * self.num_subarrays_per_mat * self.subarray.num_cols * self.dp.num_act_mats_hor_dir
                 self.array_wakeup_t = self.sram_sleep_tx.wakeup_delay
@@ -1356,7 +1373,3 @@ class Mat(Component):
             self.power_cam_all_active.searchOp.gate_leakage *= self.num_subarrays_per_mat
 
             self.power.readOp.gate_leakage += self.power_cam_all_active.searchOp.gate_leakage
-    
-    
-
-

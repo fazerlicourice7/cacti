@@ -49,23 +49,48 @@ class UCA(Component):
             if self.g_ip.fast_access and not self.dp.is_tag:
                 self.num_do_b_bank *= self.g_ip.data_assoc
 
-            self.htree_in_add = Htree2(self.g_ip.wt, self.bank.area.w, self.bank.area.h,
+            self.htree_in_add = Htree2(self.g_ip, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
                                        self.num_addr_b_bank, self.num_di_b_bank, 0, self.num_do_b_bank, 0,
                                        num_banks_ver_dir * 2, num_banks_hor_dir * 2, Add_htree, True)
-            self.htree_in_data = Htree2(self.g_ip.wt, self.bank.area.w, self.bank.area.h,
+            self.htree_in_data = Htree2(self.g_ip, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
                                         self.num_addr_b_bank, self.num_di_b_bank, 0, self.num_do_b_bank, 0,
                                         num_banks_ver_dir * 2, num_banks_hor_dir * 2, Data_in_htree, True)
-            self.htree_out_data = Htree2(self.g_ip.wt, self.bank.area.w, self.bank.area.h,
+            self.htree_out_data = Htree2(self.g_ip, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
                                          self.num_addr_b_bank, self.num_di_b_bank, 0, self.num_do_b_bank, 0,
                                          num_banks_ver_dir * 2, num_banks_hor_dir * 2, Data_out_htree, True)
         else:
-            self.htree_in_add = Htree2(self.g_ip.wt, self.bank.area.w, self.bank.area.h,
-                                       self.num_addr_b_bank, self.num_di_b_bank, self.num_si_b_bank, self.num_do_b_bank, self.num_so_b_bank,
-                                       num_banks_ver_dir * 2, num_banks_hor_dir * 2, parameter.Add_htree, True)
-            self.htree_in_data = Htree2(self.g_ip.wt, self.bank.area.w, self.bank.area.h,
-                                        self.num_addr_b_bank, self.num_di_b_bank, self.num_si_b_bank, self.num_do_b_bank, self.num_so_b_bank,
-                                        num_banks_ver_dir * 2, num_banks_hor_dir * 2, parameter.Data_in_htree, True)
+            self.htree_in_add = Htree2(
+                self.g_ip,
+                self.g_ip.wt,
+                self.bank.area.w,
+                self.bank.area.h,
+                self.num_addr_b_bank,
+                self.num_di_b_bank,
+                self.num_si_b_bank,
+                self.num_do_b_bank,
+                self.num_so_b_bank,
+                num_banks_ver_dir * 2,
+                num_banks_hor_dir * 2,
+                parameter.Add_htree,
+                True,
+            )
+            self.htree_in_data = Htree2(
+                self.g_ip,
+                self.g_ip.wt,
+                self.bank.area.w,
+                self.bank.area.h,
+                self.num_addr_b_bank,
+                self.num_di_b_bank,
+                self.num_si_b_bank,
+                self.num_do_b_bank,
+                self.num_so_b_bank,
+                num_banks_ver_dir * 2,
+                num_banks_hor_dir * 2,
+                parameter.Data_in_htree,
+                True,
+            )
             self.htree_out_data = Htree2(
+                self.g_ip,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,
@@ -80,6 +105,7 @@ class UCA(Component):
                 True,
             )
             self.htree_in_search = Htree2(
+                self.g_ip,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,
@@ -94,6 +120,7 @@ class UCA(Component):
                 True,
             )
             self.htree_out_search = Htree2(
+                self.g_ip,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,
@@ -117,15 +144,51 @@ class UCA(Component):
             print(f"uca.cc: self.g_ip->is_3d_mem = {self.g_ip.is_3d_mem}")
 
         if self.g_ip.is_3d_mem:
-            self.membus_RAS = Memorybus(self.g_ip.wt, self.bank.mat.area.w, self.bank.mat.area.h, self.bank.mat.subarray.area.w, self.bank.mat.subarray.area.h,
-                                        math.log2(self.dp.num_r_subarray * self.dp.Ndbl), math.log2(self.dp.num_c_subarray * self.dp.Ndwl),
-                                        self.g_ip.burst_depth * self.g_ip.io_width, self.dp.Ndbl, self.dp.Ndwl, Row_add_path, self.dp)
-            self.membus_CAS = Memorybus(self.g_ip.wt, self.bank.mat.area.w, self.bank.mat.area.h, self.bank.mat.subarray.area.w, self.bank.mat.subarray.area.h,
-                                        math.log2(self.dp.num_r_subarray * self.dp.Ndbl), math.log2(self.dp.num_c_subarray * self.dp.Ndwl),
-                                        self.g_ip.burst_depth * self.g_ip.io_width, self.dp.Ndbl, self.dp.Ndwl, Col_add_path, self.dp)
-            self.membus_data = Memorybus(self.g_ip.wt, self.bank.mat.area.w, self.bank.mat.area.h, self.bank.mat.subarray.area.w, self.bank.mat.subarray.area.h,
-                                         math.log2(self.dp.num_r_subarray * self.dp.Ndbl), math.log2(self.dp.num_c_subarray * self.dp.Ndwl),
-                                         self.g_ip.burst_depth * self.g_ip.io_width, self.dp.Ndbl, self.dp.Ndwl, Data_path, self.dp)
+            self.membus_RAS = Memorybus(
+                self.g_ip,
+                self.g_ip.wt,
+                self.bank.mat.area.w,
+                self.bank.mat.area.h,
+                self.bank.mat.subarray.area.w,
+                self.bank.mat.subarray.area.h,
+                math.log2(self.dp.num_r_subarray * self.dp.Ndbl),
+                math.log2(self.dp.num_c_subarray * self.dp.Ndwl),
+                self.g_ip.burst_depth * self.g_ip.io_width,
+                self.dp.Ndbl,
+                self.dp.Ndwl,
+                Row_add_path,
+                self.dp,
+            )
+            self.membus_CAS = Memorybus(
+                self.g_ip,
+                self.g_ip.wt,
+                self.bank.mat.area.w,
+                self.bank.mat.area.h,
+                self.bank.mat.subarray.area.w,
+                self.bank.mat.subarray.area.h,
+                math.log2(self.dp.num_r_subarray * self.dp.Ndbl),
+                math.log2(self.dp.num_c_subarray * self.dp.Ndwl),
+                self.g_ip.burst_depth * self.g_ip.io_width,
+                self.dp.Ndbl,
+                self.dp.Ndwl,
+                Col_add_path,
+                self.dp,
+            )
+            self.membus_data = Memorybus(
+                self.g_ip,
+                self.g_ip.wt,
+                self.bank.mat.area.w,
+                self.bank.mat.area.h,
+                self.bank.mat.subarray.area.w,
+                self.bank.mat.subarray.area.h,
+                math.log2(self.dp.num_r_subarray * self.dp.Ndbl),
+                math.log2(self.dp.num_c_subarray * self.dp.Ndwl),
+                self.g_ip.burst_depth * self.g_ip.io_width,
+                self.dp.Ndbl,
+                self.dp.Ndwl,
+                Data_path,
+                self.dp,
+            )
             self.area.h = self.membus_RAS.area.h
             self.area.w = self.membus_RAS.area.w
 

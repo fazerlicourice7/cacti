@@ -1,12 +1,13 @@
 import math
 from .component import *
 from .parameter import g_tp
-from .parameter import *
+from . import parameter
 from .const import MAX_NUMBER_GATES_STAGE
 
 
 class TSV(Component):
-    def __init__(self, tsv_type, dt=None):
+    def __init__(self, g_ip, tsv_type, dt=None):
+        self.g_ip = g_ip
         if dt is None:
             dt = g_tp.peri_global
         self.deviceType = dt
@@ -47,12 +48,12 @@ class TSV(Component):
         p_to_n_sz_ratio = self.deviceType.n_to_p_eff_curr_drv_ratio
         self.C_load_TSV = self.cap + gate_C(g_tp.min_w_nmos_ + self.min_w_pmos, 0)
 
-        if g_ip.print_detail_debug:
+        if self.g_ip.print_detail_debug:
             print(f"The input cap of 1st buffer: {gate_C(self.w_TSV_n[0] + self.w_TSV_p[0], 0) * 1e15} fF")
         
         F = self.C_load_TSV / gate_C(self.w_TSV_n[0] + self.w_TSV_p[0], 0)
 
-        if g_ip.print_detail_debug:
+        if self.g_ip.print_detail_debug:
             print(f"F is {F}")
         
         self.num_gates = logical_effort(
@@ -72,8 +73,8 @@ class TSV(Component):
         self.Buffer_area.h = g_tp.cell_h_def
 
         for i in range(self.num_gates):
-            cumulative_area += compute_gate_area(INV, 1, self.w_TSV_p[i], self.w_TSV_n[i], self.Buffer_area.h)
-            if g_ip.print_detail_debug:
+            cumulative_area += compute_gate_area(self.g_ip, INV, 1, self.w_TSV_p[i], self.w_TSV_n[i], self.Buffer_area.h)
+            if self.g_ip.print_detail_debug:
                 print(f"\n\tArea up to the {i+1} stages is: {cumulative_area} um2")
             cumulative_curr += cmos_Isub_leakage(self.w_TSV_n[i], self.w_TSV_p[i], 1, inv, self.is_dram)
             cumulative_curr_Ig += cmos_Ig_leakage(self.w_TSV_n[i], self.w_TSV_p[i], 1, inv, self.is_dram)

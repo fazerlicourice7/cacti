@@ -4,7 +4,6 @@ from cacti_interface import uca_org_t
 from Ucache import *
 from parameter import sympy_var
 
-from mat import Mat
 from bank import Bank
 import pickle
 

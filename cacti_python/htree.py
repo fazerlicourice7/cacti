@@ -8,7 +8,6 @@ from .component import Component
 from .const import *
 from . import parameter
 from .parameter import g_tp, _log2
-# from .component import *
 from .wire import Wire
 
 class HtreeType(enum.Enum):
@@ -30,8 +29,9 @@ class DeviceType:
         self.Vdd = Vdd
 
 class Htree2(Component):
-    def __init__(self, wire_model, mat_w, mat_h, a_bits, d_inbits, search_data_in, d_outbits, search_data_out, bl, wl, htree_type, uca_tree_=False, search_tree_=False, dt=None):
+    def __init__(self, g_ip, wire_model, mat_w, mat_h, a_bits, d_inbits, search_data_in, d_outbits, search_data_out, bl, wl, htree_type, uca_tree_=False, search_tree_=False, dt=None):
         super().__init__()
+        self.g_ip = g_ip
         if dt is None:
             dt = g_tp.peri_global
         self.in_rise_time = 0
@@ -85,7 +85,7 @@ class Htree2(Component):
         # assert self.power.readOp.leakage >= 0
 
     def input_nand(self, s1, s2, l_eff):
-        w1 = Wire(self.wt, l_eff)
+        w1 = Wire(self.g_ip, self.wt, l_eff)
         pton_size = self.deviceType.n_to_p_eff_curr_drv_ratio
         nsize = s1 * (1 + pton_size) / (2 + pton_size)
 
@@ -118,7 +118,7 @@ class Htree2(Component):
         ) * self.deviceType.Vdd
 
     def output_buffer(self, s1, s2, l_eff):
-        w1 = Wire(self.wt, l_eff)
+        w1 = Wire(self.g_ip, self.wt, l_eff)
         pton_size = self.deviceType.n_to_p_eff_curr_drv_ratio
         size = s1 * (1 + pton_size) / (2 + pton_size + 1 + 2 * pton_size)
 
@@ -305,17 +305,17 @@ class Htree2(Component):
                 del wtemp3
 
             if h > v:
-                wtemp1 = Wire(self.wt, len_)  # hor
-                wtemp2 = Wire(self.wt, len_ / 2)  # ver
+                wtemp1 = Wire(self.g_ip, self.wt, len_)  # hor
+                wtemp2 = Wire(self.g_ip, self.wt, len_ / 2)  # ver
                 len_temp = len_
                 len_ /= 2
                 wtemp3 = None
                 h -= 1
                 option = 0
             elif v > 0 and h > 0:
-                wtemp1 = Wire(self.wt, len_)  # hor
-                wtemp2 = Wire(self.wt, ht)  # ver
-                wtemp3 = Wire(self.wt, len_ / 2)  # next hor
+                wtemp1 = Wire(self.g_ip, self.wt, len_)  # hor
+                wtemp2 = Wire(self.g_ip, self.wt, ht)  # ver
+                wtemp3 = Wire(self.g_ip, self.wt, len_ / 2)  # next hor
                 len_temp = len_
                 ht_temp = ht
                 len_ /= 2
@@ -325,8 +325,8 @@ class Htree2(Component):
                 option = 1
             else:
                 assert h == 0
-                wtemp1 = Wire(self.wt, ht)  # ver
-                wtemp2 = Wire(self.wt, ht / 2)  # hor
+                wtemp1 = Wire(self.g_ip, self.wt, ht)  # ver
+                wtemp2 = Wire(self.g_ip, self.wt, ht / 2)  # hor
                 ht_temp = ht
                 ht /= 2
                 wtemp3 = None
@@ -497,8 +497,8 @@ class Htree2(Component):
 
             if h > v:
                 # the iteration considers only one horizontal link
-                wtemp1 = Wire(self.wt, len)  # hor
-                wtemp2 = Wire(self.wt, len / 2)  # ver
+                wtemp1 = Wire(self.g_ip, self.wt, len)  # hor
+                wtemp2 = Wire(self.g_ip, self.wt, len / 2)  # ver
                 len_temp = len
                 len /= 2
                 wtemp3 = None
@@ -506,9 +506,9 @@ class Htree2(Component):
                 option = 0
             elif v > 0 and h > 0:
                 # considers one horizontal link and one vertical link
-                wtemp1 = Wire(self.wt, len)  # hor
-                wtemp2 = Wire(self.wt, ht)  # ver
-                wtemp3 = Wire(self.wt, len / 2)  # next hor
+                wtemp1 = Wire(self.g_ip, self.wt, len)  # hor
+                wtemp2 = Wire(self.g_ip, self.wt, ht)  # ver
+                wtemp3 = Wire(self.g_ip, self.wt, len / 2)  # next hor
                 len_temp = len
                 ht_temp = ht
                 len /= 2
@@ -519,8 +519,8 @@ class Htree2(Component):
             else:
                 # considers only one vertical link
                 assert h == 0
-                wtemp1 = Wire(self.wt, ht)  # hor
-                wtemp2 = Wire(self.wt, ht / 2)  # ver
+                wtemp1 = Wire(self.g_ip, self.wt, ht)  # hor
+                wtemp2 = Wire(self.g_ip, self.wt, ht / 2)  # ver
                 ht_temp = ht
                 ht /= 2
                 wtemp3 = None
