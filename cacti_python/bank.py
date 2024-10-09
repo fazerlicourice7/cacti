@@ -15,11 +15,12 @@ class HtreeType(enum.Enum):
     Search_out_htree = 5
 
 class Bank(Component):
-    def __init__(self, dyn_p, g_ip):
+    def __init__(self, dyn_p, g_ip, g_tp):
         super().__init__()
         self.dp = dyn_p
         self.g_ip = g_ip
-        self.mat = Mat(self.dp, self.g_ip)
+        self.g_tp = g_tp
+        self.mat = Mat(self.dp, self.g_ip, self.g_tp)
         self.num_addr_b_mat = dyn_p.number_addr_bits_mat
         self.num_mats_hor_dir = dyn_p.num_mats_h_dir
         self.num_mats_ver_dir = dyn_p.num_mats_v_dir
@@ -56,6 +57,7 @@ class Bank(Component):
 
             self.htree_in_add = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.dp.wtype,
                 self.mat.area.w,
                 self.mat.area.h,
@@ -70,6 +72,7 @@ class Bank(Component):
             )
             self.htree_in_data = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.dp.wtype,
                 self.mat.area.w,
                 self.mat.area.h,
@@ -84,6 +87,7 @@ class Bank(Component):
             )
             self.htree_out_data = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.dp.wtype,
                 self.mat.area.w,
                 self.mat.area.h,
@@ -100,11 +104,12 @@ class Bank(Component):
             self.area = Area()
             self.area.w, self.area.h = self.htree_in_data.area.w, self.htree_in_data.area.h
         else:
-            self.htree_in_add = Htree2(self.g_ip, self.dp.wtype, self.mat.area.w, self.mat.area.h,
+            self.htree_in_add = Htree2(self.g_ip, self.g_tp, self.dp.wtype, self.mat.area.w, self.mat.area.h,
                                        total_addrbits, datainbits, searchinbits, dataoutbits, searchoutbits,
                                        self.num_mats_ver_dir * 2, self.num_mats_hor_dir * 2, parameter.Add_htree)
             self.htree_in_data = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.dp.wtype,
                 self.mat.area.w,
                 self.mat.area.h,
@@ -119,6 +124,7 @@ class Bank(Component):
             )
             self.htree_out_data = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.dp.wtype,
                 self.mat.area.w,
                 self.mat.area.h,
@@ -133,6 +139,7 @@ class Bank(Component):
             )
             self.htree_in_search = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.dp.wtype,
                 self.mat.area.w,
                 self.mat.area.h,
@@ -149,6 +156,7 @@ class Bank(Component):
             )
             self.htree_out_search = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.dp.wtype,
                 self.mat.area.w,
                 self.mat.area.h,

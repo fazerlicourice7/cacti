@@ -13,11 +13,12 @@ from .tsv import TSV
 
 # used to have component?
 class UCA(Component):
-    def __init__(self, dyn_p, g_ip):
+    def __init__(self, dyn_p, g_ip, g_tp):
         super().__init__()
         self.dp = dyn_p
         self.g_ip = g_ip
-        self.bank = Bank(self.dp, self.g_ip)
+        self.g_tp = g_tp
+        self.bank = Bank(self.dp, self.g_ip, self.g_tp)
         self.nbanks = self.g_ip.nbanks
         self.refresh_power = 0
 
@@ -49,18 +50,19 @@ class UCA(Component):
             if self.g_ip.fast_access and not self.dp.is_tag:
                 self.num_do_b_bank *= self.g_ip.data_assoc
 
-            self.htree_in_add = Htree2(self.g_ip, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
+            self.htree_in_add = Htree2(self.g_ip, self.g_tp, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
                                        self.num_addr_b_bank, self.num_di_b_bank, 0, self.num_do_b_bank, 0,
                                        num_banks_ver_dir * 2, num_banks_hor_dir * 2, Add_htree, True)
-            self.htree_in_data = Htree2(self.g_ip, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
+            self.htree_in_data = Htree2(self.g_ip, self.g_tp, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
                                         self.num_addr_b_bank, self.num_di_b_bank, 0, self.num_do_b_bank, 0,
                                         num_banks_ver_dir * 2, num_banks_hor_dir * 2, Data_in_htree, True)
-            self.htree_out_data = Htree2(self.g_ip, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
+            self.htree_out_data = Htree2(self.g_ip, self.g_tp, self.g_ip.wt, self.bank.area.w, self.bank.area.h,
                                          self.num_addr_b_bank, self.num_di_b_bank, 0, self.num_do_b_bank, 0,
                                          num_banks_ver_dir * 2, num_banks_hor_dir * 2, Data_out_htree, True)
         else:
             self.htree_in_add = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,
@@ -76,6 +78,7 @@ class UCA(Component):
             )
             self.htree_in_data = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,
@@ -91,6 +94,7 @@ class UCA(Component):
             )
             self.htree_out_data = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,
@@ -106,6 +110,7 @@ class UCA(Component):
             )
             self.htree_in_search = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,
@@ -121,6 +126,7 @@ class UCA(Component):
             )
             self.htree_out_search = Htree2(
                 self.g_ip,
+                self.g_tp,
                 self.g_ip.wt,
                 self.bank.area.w,
                 self.bank.area.h,

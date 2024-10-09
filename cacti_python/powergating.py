@@ -3,7 +3,6 @@ import sys
 from .const import *
 from .decoder import *
 from .parameter import g_tp
-# from .parameter import g_ip
 from . import parameter
 from .const import *
 from .component import compute_gate_area

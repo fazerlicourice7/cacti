@@ -8,7 +8,6 @@ from .area import Area
 from .const import *
 from . import parameter
 from .parameter import g_tp
-# from .parameter import g_ip
 from .cacti_interface import PowerDef
 
 # Assuming g_ip and g_tp are global configurations provided elsewhere in the code
@@ -22,7 +21,7 @@ class Component:
         self.delay = 0
         self.cycle_time = 0
 
-def compute_diffusion_width(g_ip, num_stacked_in, num_folded_tr):
+def compute_diffusion_width(g_ip, g_tp, num_stacked_in, num_folded_tr):
     w_poly = g_ip.F_sz_um
     spacing_poly_to_poly = g_tp.w_poly_contact + 2 * g_tp.spacing_poly_to_contact
 
@@ -51,7 +50,7 @@ def compute_diffusion_width(g_ip, num_stacked_in, num_folded_tr):
 
     return total_diff_w
 
-def compute_gate_area(g_ip, gate_type, num_inputs, w_pmos, w_nmos, h_gate):
+def compute_gate_area(g_ip, g_tp, gate_type, num_inputs, w_pmos, w_nmos, h_gate):
     # Relational
     if w_pmos <= 0.0 or w_nmos <= 0.0:
         return 0.0
@@ -73,14 +72,14 @@ def compute_gate_area(g_ip, gate_type, num_inputs, w_pmos, w_nmos, h_gate):
     num_folded_nmos = sp.ceiling(w_nmos / w_folded_nmos)
 
     if gate_type == "INV" or gate_type == "inv":
-        total_ndiff_w = compute_diffusion_width(g_ip, 1, num_folded_nmos)
-        total_pdiff_w = compute_diffusion_width(g_ip, 1, num_folded_pmos)
+        total_ndiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_folded_nmos)
+        total_pdiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_folded_pmos)
     elif gate_type == "NOR" or gate_type == "nor":
-        total_ndiff_w = compute_diffusion_width(g_ip, 1, num_inputs * num_folded_nmos)
-        total_pdiff_w = compute_diffusion_width(g_ip, num_inputs, num_folded_pmos)
+        total_ndiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_inputs * num_folded_nmos)
+        total_pdiff_w = compute_diffusion_width(g_ip, g_tp, num_inputs, num_folded_pmos)
     elif gate_type == "NAND" or gate_type == "nand":
-        total_ndiff_w = compute_diffusion_width(g_ip, num_inputs, num_folded_nmos)
-        total_pdiff_w = compute_diffusion_width(g_ip, 1, num_inputs * num_folded_pmos)
+        total_ndiff_w = compute_diffusion_width(g_ip, g_tp, num_inputs, num_folded_nmos)
+        total_pdiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_inputs * num_folded_pmos)
     else:
         print(f"Unknown gate type: {gate_type}")
         sys.exit(1)
@@ -104,7 +103,7 @@ def compute_gate_area(g_ip, gate_type, num_inputs, w_pmos, w_nmos, h_gate):
 
     return result
 
-def compute_tr_width_after_folding(g_ip, input_width, threshold_folding_width):
+def compute_tr_width_after_folding(g_ip, g_tp, input_width, threshold_folding_width):
     if input_width <= 0:
         return 0
 
@@ -116,18 +115,18 @@ def compute_tr_width_after_folding(g_ip, input_width, threshold_folding_width):
 
     return total_diff_width
 
-def height_sense_amplifier(g_ip, pitch_sense_amp):
-    h_pmos_tr = (compute_tr_width_after_folding(g_ip, g_tp.w_sense_p, pitch_sense_amp) * 2 +
-                  compute_tr_width_after_folding(g_ip, g_tp.w_iso, pitch_sense_amp) +
+def height_sense_amplifier(g_ip, g_tp, pitch_sense_amp):
+    h_pmos_tr = (compute_tr_width_after_folding(g_ip, g_tp, g_tp.w_sense_p, pitch_sense_amp) * 2 +
+                  compute_tr_width_after_folding(g_ip, g_tp, g_tp.w_iso, pitch_sense_amp) +
                   2 * g_tp.MIN_GAP_BET_SAME_TYPE_DIFFS)
 
-    h_nmos_tr = (compute_tr_width_after_folding(g_ip, g_tp.w_sense_n, pitch_sense_amp) * 2 +
-                  compute_tr_width_after_folding(g_ip, g_tp.w_sense_en, pitch_sense_amp) +
+    h_nmos_tr = (compute_tr_width_after_folding(g_ip, g_tp, g_tp.w_sense_n, pitch_sense_amp) * 2 +
+                  compute_tr_width_after_folding(g_ip, g_tp, g_tp.w_sense_en, pitch_sense_amp) +
                   2 * g_tp.MIN_GAP_BET_SAME_TYPE_DIFFS)
 
     return h_pmos_tr + h_nmos_tr + g_tp.MIN_GAP_BET_P_AND_N_DIFFS
 
-def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dram_, is_wl_tr_, max_w_nmos):
+def logical_effort(g_tp, num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dram_, is_wl_tr_, max_w_nmos):
     # num_gates = sp.log(F) / sp.log(fopt)
     # if(F == 0):
     #     num_gates = 4
@@ -174,7 +173,7 @@ def logical_effort(num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dr
     assert num_gates <= MAX_NUMBER_GATES_STAGE
     return num_gates
 
-def compute_tr_width_after_folding(g_ip, input_width, threshold_folding_width):
+def compute_tr_width_after_folding(g_ip, g_tp, input_width, threshold_folding_width):
         # CHANGE: RELATIONAL: this function either returns 0 or result
 
         if isinstance(input_width, (int, float)):
