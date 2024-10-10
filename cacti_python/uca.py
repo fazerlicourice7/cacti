@@ -9,6 +9,7 @@ from .component import Component
 from .htree import Htree2
 from .memorybus import Memorybus
 from . import parameter
+from .parameter import Add_htree, Data_in_htree, Data_out_htree
 from .tsv import TSV
 
 # used to have component?

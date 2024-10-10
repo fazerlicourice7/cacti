@@ -1,11 +1,12 @@
+import enum
+
 import sympy as sp
 
-from .htree import Htree2
-from . import parameter
 from .area import Area
-from .mat import Mat
-import enum
 from .component import Component
+from .htree import Htree2
+from .mat import Mat
+from . import parameter
 
 class HtreeType(enum.Enum):
     Add_htree = 1

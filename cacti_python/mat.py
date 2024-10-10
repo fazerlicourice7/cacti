@@ -1,6 +1,8 @@
 import sympy as sp
 
 from .cacti_interface import PowerDef
+from .component import Component, compute_tr_width_after_folding, height_sense_amplifier
+from .const import *
 from .decoder import Decoder, Predec, PredecBlk, PredecBlkDrv, Driver
 from . import parameter
 from .parameter import (
@@ -16,11 +18,9 @@ from .parameter import (
     simplified_pmos_leakage,
     simplified_nmos_leakage,
 )
-from .const import *
-from .component import Component, compute_tr_width_after_folding, height_sense_amplifier
-from .wire import Wire
-from .subarray import Subarray
 from . import powergating
+from .subarray import Subarray
+from .wire import Wire
 
 
 # Note: This code relies on several other classes and functions (e.g., Subarray, Decoder, Driver, PredecBlk, PredecBlkDrv, Predec, Wire, Sleep_tx, gate_C, drain_C_, tr_R_on, horowitz, self.g_tp, g_ip)
@@ -58,7 +58,7 @@ class Mat(Component):
         self.delay_fa_ram_wl = 0
         self.delay_hit_miss_reset = 0
         self.delay_hit_miss = 0
-        self.subarray = Subarray(self.dp, self.dp.fully_assoc)
+        self.subarray = Subarray(self.g_ip, self.g_tp, self.dp, self.dp.fully_assoc)
         self.power_bitline = PowerDef()
         self.power_searchline = PowerDef()
         self.power_matchline = PowerDef()

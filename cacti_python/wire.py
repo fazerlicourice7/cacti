@@ -2,11 +2,11 @@ import math
 
 import sympy as sp
 
+from .cacti_interface import PowerDef
+from .component import Component, compute_gate_area
+from .const import *
 from . import decoder
 from . import parameter
-from .const import *
-from .component import Component, compute_gate_area
-from .cacti_interface import PowerDef
 
 class Wire(Component):
     global_ = Component()

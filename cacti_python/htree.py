@@ -4,8 +4,8 @@ import time
 
 import sympy as sp
 
-from .component import Component
 from .const import *
+from .component import Component
 from . import parameter
 from .parameter import _log2
 from .wire import Wire

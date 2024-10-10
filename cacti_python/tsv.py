@@ -1,13 +1,14 @@
 import math
-from .component import *
-from .parameter import g_tp
+
+from .component import Component
 from . import parameter
 from .const import MAX_NUMBER_GATES_STAGE
 
 
 class TSV(Component):
-    def __init__(self, g_ip, tsv_type, dt=None):
+    def __init__(self, g_ip, g_tp, tsv_type, dt=None):
         self.g_ip = g_ip
+        self.g_tp = g_tp
         if dt is None:
             dt = g_tp.peri_global
         self.deviceType = dt
@@ -46,7 +47,7 @@ class TSV(Component):
 
     def compute_buffer_stage(self):
         p_to_n_sz_ratio = self.deviceType.n_to_p_eff_curr_drv_ratio
-        self.C_load_TSV = self.cap + gate_C(g_tp.min_w_nmos_ + self.min_w_pmos, 0)
+        self.C_load_TSV = self.cap + gate_C(self.g_tp.min_w_nmos_ + self.min_w_pmos, 0)
 
         if self.g_ip.print_detail_debug:
             print(f"The input cap of 1st buffer: {gate_C(self.w_TSV_n[0] + self.w_TSV_p[0], 0) * 1e15} fF")
@@ -57,11 +58,12 @@ class TSV(Component):
             print(f"F is {F}")
         
         self.num_gates = logical_effort(
+            self.g_tp,
             self.num_gates_min, 1, F,
             self.w_TSV_n, self.w_TSV_p,
             self.C_load_TSV, p_to_n_sz_ratio,
             self.is_dram, self.is_wl_tr,
-            g_tp.max_w_nmos_
+            self.g_tp.max_w_nmos_
         )
 
     def compute_area(self):
@@ -70,7 +72,7 @@ class TSV(Component):
         cumulative_curr = 0
         cumulative_curr_Ig = 0
         self.Buffer_area = Area()
-        self.Buffer_area.h = g_tp.cell_h_def
+        self.Buffer_area.h = self.g_tp.cell_h_def
 
         for i in range(self.num_gates):
             cumulative_area += compute_gate_area(self.g_ip, INV, 1, self.w_TSV_p[i], self.w_TSV_n[i], self.Buffer_area.h)
@@ -96,11 +98,11 @@ class TSV(Component):
 
     def compute_delay(self):
         rd = tr_R_on(self.w_TSV_n[0], NCH, 1, self.is_dram, False, self.is_wl_tr)
-        c_load = gate_C(self.w_TSV_n[1] + self.w_TSV_p[1], 0.0, self.is_dram, False, self.is_wl_tr)
-        c_intrinsic = drain_C_(self.w_TSV_p[0], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
-                      drain_C_(self.w_TSV_n[0], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
+        c_load = parameter.gate_C(self.w_TSV_n[1] + self.w_TSV_p[1], 0.0, self.is_dram, False, self.is_wl_tr)
+        c_intrinsic = parameter.drain_C_(self.w_TSV_p[0], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
+                      parameter.drain_C_(self.w_TSV_n[0], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         tf = rd * (c_intrinsic + c_load)
-        self.delay = horowitz(0, tf, 0.5, 0.5, RISE)
+        self.delay = parameter.horowitz(0, tf, 0.5, 0.5, RISE)
         inrisetime = self.delay / (1.0 - 0.5)
 
         Vdd = self.deviceType.Vdd
@@ -108,22 +110,22 @@ class TSV(Component):
 
         for i in range(1, self.num_gates - 1):
             rd = tr_R_on(self.w_TSV_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
-            c_load = gate_C(self.w_TSV_p[i + 1] + self.w_TSV_n[i + 1], 0.0, self.is_dram, False, self.is_wl_tr)
-            c_intrinsic = drain_C_(self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
-                          drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
+            c_load = parameter.gate_C(self.w_TSV_p[i + 1] + self.w_TSV_n[i + 1], 0.0, self.is_dram, False, self.is_wl_tr)
+            c_intrinsic = parameter.drain_C_(self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
+                          parameter.drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
             tf = rd * (c_intrinsic + c_load)
-            self.delay += horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+            self.delay += parameter.horowitz(inrisetime, tf, 0.5, 0.5, RISE)
             inrisetime = self.delay / (1.0 - 0.5)
             self.power.readOp.dynamic += (c_load + c_intrinsic) * Vdd * Vdd
 
         i = self.num_gates - 1
         c_load = self.C_load_TSV
         rd = tr_R_on(self.w_TSV_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
-        c_intrinsic = drain_C_(self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
-                      drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
+        c_intrinsic = parameter.drain_C_(self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
+                      parameter.drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         R_TSV_out = self.res
         tf = rd * (c_intrinsic + c_load) + R_TSV_out * c_load / 2
-        self.delay += horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+        self.delay += parameter.horowitz(inrisetime, tf, 0.5, 0.5, RISE)
         self.power.readOp.dynamic += (c_load + c_intrinsic) * Vdd * Vdd
 
     def print_TSV(self):

@@ -1,14 +1,10 @@
 import math
 import sys
-from .const import *
-from .decoder import *
-from . import parameter
-from .const import *
-from .component import compute_gate_area
-from .component import *
-from .cacti_interface import *
-from .area import *
 
+from .area import Area
+from .cacti_interface import PowerDef
+from .component import Component, compute_gate_area
+from .const import *
 
 class SleepTx(Component):
     def __init__(self, g_ip, g_tp, perf_with_sleep_tx, active_Isat, is_footer, c_circuit_wakeup, V_delta, num_sleep_tx, cell):
@@ -35,7 +31,7 @@ class SleepTx(Component):
         self.width = active_Isat / (perf_with_sleep_tx * self.mobility * self.c_ox * (self.vdd - self.vt_circuit) * (self.vdd - self.vt_sleep_tx)) * self.g_ip.F_sz_um
         self.width /= num_sleep_tx
 
-        raw_area = compute_gate_area(self.g_ip, INV, 1, self.width, p_to_n_sz_ratio * self.width, self.cell.w * 2) / 2
+        raw_area = compute_gate_area(self.g_ip, self.g_tp, INV, 1, self.width, p_to_n_sz_ratio * self.width, self.cell.w * 2) / 2
         raw_width = self.cell.w
         raw_height = raw_area / self.cell.w
         self.area = Area()
