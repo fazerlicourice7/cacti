@@ -1,16 +1,22 @@
 import math
 from typing import List
 from threading import Thread
-from .cacti_interface import *
-from .cacti_interface import MemArray
-from .nuca import NucaOrgT
-from .parameter import g_ip, g_tp
-from .parameter import *
-from .uca import UCA
-from .parameter import _log2
+import time
+
 import sympy as sp
 
-import time
+from . import cacti_interface
+from .cacti_interface import MemArray, uca_org_t, PowerDef
+from .nuca import NucaOrgT
+from .parameter import (
+    DynamicParameter,
+    _log2,
+    symbolic_convex_max,
+    InputParameter,
+    TechnologyParameter,
+)
+from . import parameter
+from .uca import UCA
 
 
 BIGNUM = float('inf')
@@ -628,22 +634,6 @@ def filter_tag_arr(min_val, mem_list):
 
     mem_list.append(res)
 
-# def filter_data_arr(curr_list):
-#     if not curr_list:
-#         print("ERROR: no valid data array organizations found")
-#         exit(1)
-
-#     iter_list = list(curr_list)
-
-#     for m in iter_list:
-#         if m is None:
-#             exit(1)
-
-#         if (((m.access_time - m.arr_min.min_delay) / m.arr_min.min_delay > 0.5) and
-#             ((m.power.readOp.dynamic - m.arr_min.min_dyn) / m.arr_min.min_dyn > 0.5)):
-#             del m
-#             curr_list.remove(m)
-
 def filter_data_arr(curr_list):
     if not curr_list:
         print("ERROR: no valid data array organizations found")
@@ -666,7 +656,7 @@ def filter_data_arr(curr_list):
 import threading
 from functools import cmp_to_key
 
-def solve(fin_res):
+def solve(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 
@@ -675,7 +665,7 @@ def solve(fin_res):
 
     tag_arr = []
     data_arr = []
-    sol_list = [uca_org_t()]
+    sol_list = [uca_org_t(g_ip)]
 
     fin_res.tag_array.access_time = 0
     fin_res.tag_array.Ndwl = 0
@@ -765,7 +755,7 @@ def solve(fin_res):
 
             cache_min.update_min_values_from_uca(curr_org)
 
-            sol_list.append(uca_org_t())
+            sol_list.append(uca_org_t(g_ip))
     else:
         while tag_arr:
             arr_temp = tag_arr.pop()
@@ -781,7 +771,7 @@ def solve(fin_res):
 
                 cache_min.update_min_values_from_uca(curr_org)
 
-                sol_list.append(uca_org_t())
+                sol_list.append(uca_org_t(g_ip))
 
     sol_list.pop()
 
@@ -803,7 +793,8 @@ def solve(fin_res):
     del d_min
     del t_min
 
-def update(fin_res):
+def update(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
+    
     if fin_res.tag_array2:
         g_tp.init(g_ip.F_sz_um, True)
         tag_arr_dyn_p = DynamicParameter(
@@ -840,8 +831,9 @@ def update(fin_res):
 ##### SINGLE SOLVE
 
 
-
 def calculate_time_single(
+    g_ip,
+    g_tp,
     is_tag,
     pure_ram,
     pure_cam,
@@ -862,7 +854,7 @@ def calculate_time_single(
 
     # if not dyn_p.is_valid:
     #     return False
-    uca = UCA(dyn_p)
+    uca = UCA(dyn_p, g_ip, g_tp)
 
     if flag_results_populate:
         # For the final solution, populate the ptr_results data structure -- TODO: copy only necessary variables
@@ -1095,8 +1087,7 @@ def calculate_time_single(
     return ptr_array
 
 
-
-def solve_single():
+def solve_single(g_ip: InputParameter, g_tp: TechnologyParameter):
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 
@@ -1105,7 +1096,7 @@ def solve_single():
 
     tag_arr = MemArray()
     data_arr = MemArray()
-    sol = uca_org_t()
+    sol = uca_org_t(g_ip)
 
     if not (pure_ram or pure_cam or g_ip.fully_assoc):
         is_tag = True
@@ -1118,7 +1109,7 @@ def solve_single():
     is_tag = False
     g_tp.init(g_ip.F_sz_um, is_tag)
 
-    calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
+    calculate_time_single(g_ip, g_tp, is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
                                 g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
                                 data_arr, 0, None, None, wr, g_ip.is_main_mem)
     
@@ -1131,6 +1122,7 @@ def solve_single():
         curr_org.tag_array2 = tag_arr
         curr_org.data_array2 = data_arr
 
+    # curr_org is of type uca_org_t
     curr_org.find_delay()
     curr_org.find_energy()
     # curr_org.find_area()
@@ -1147,4 +1139,3 @@ def solve_single():
     # time.sleep(60)
 
     return curr_org
-

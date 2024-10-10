@@ -1,15 +1,17 @@
-from .parameter import g_tp
-from .decoder import *
-from .component import *
-from .memorybus import *
-from .wire import *
-from .const import *
 import sympy as sp
 
+from .const import *
+from .parameter import symbolic_convex_max
+from .decoder import Driver, Decoder, Predec, PredecBlk, PredecBlkDrv
+from .component import Component
+from .wire import Wire
+
 class Memorybus(Component):
-    def __init__(self, wire_model, mat_w, mat_h, subarray_w_, subarray_h_,
+    def __init__(self, g_ip, g_tp, wire_model, mat_w, mat_h, subarray_w_, subarray_h_,
                  _row_add_bits, _col_add_bits, _data_bits, _ndbl, _ndwl,
-                 membus_type_, dp_, dt=g_tp.peri_global):
+                 membus_type_, dp_, dt=None):
+        self.g_ip = g_ip
+        self.g_tp = g_tp
         self.dp = dp_
         self.in_rise_time = 0
         self.out_rise_time = 0
@@ -23,7 +25,7 @@ class Memorybus(Component):
         self.ndbl = _ndbl
         self.ndwl = _ndwl
         self.wt = wire_model
-        self.deviceType = dt
+        self.deviceType = dt if dt is not None else g_tp.peri_global
 
         if g_ip.print_detail_debug:
             print("memorybus.cc: membus_type =", membus_type_)
@@ -113,15 +115,15 @@ class Memorybus(Component):
         self.subarray_width = self.mat_width
 
         if g_ip.partition_gran == 0:
-            self.height_bank = self.subarray_height * self.ndbl + (self.col_add_bits + self.row_add_bits) * g_tp.wire_outside_mat.pitch / 2 + self.data_bits * g_tp.wire_outside_mat.pitch
-            self.length_bank = self.subarray_width * self.ndwl + (self.col_add_bits + self.row_add_bits) * g_tp.wire_outside_mat.pitch / 2 + self.data_bits * g_tp.wire_outside_mat.pitch
-            self.area_address_bus = (self.row_add_bits + self.col_add_bits) * g_tp.wire_outside_mat.pitch * sp.sqrt(self.length_bank * self.height_bank)
-            self.area_data_bus = self.data_bits * g_tp.wire_outside_mat.pitch * sp.sqrt(self.length_bank * self.height_bank)
+            self.height_bank = self.subarray_height * self.ndbl + (self.col_add_bits + self.row_add_bits) * self.g_tp.wire_outside_mat.pitch / 2 + self.data_bits * self.g_tp.wire_outside_mat.pitch
+            self.length_bank = self.subarray_width * self.ndwl + (self.col_add_bits + self.row_add_bits) * self.g_tp.wire_outside_mat.pitch / 2 + self.data_bits * self.g_tp.wire_outside_mat.pitch
+            self.area_address_bus = (self.row_add_bits + self.col_add_bits) * self.g_tp.wire_outside_mat.pitch * sp.sqrt(self.length_bank * self.height_bank)
+            self.area_data_bus = self.data_bits * self.g_tp.wire_outside_mat.pitch * sp.sqrt(self.length_bank * self.height_bank)
         elif g_ip.partition_gran == 1:
             self.height_bank = self.subarray_height * self.ndbl
             self.length_bank = self.subarray_width * self.ndwl
             self.area_address_bus = 0
-            self.area_data_bus = self.data_bits * g_tp.wire_outside_mat.pitch * sp.sqrt(self.length_bank * self.height_bank)
+            self.area_data_bus = self.data_bits * self.g_tp.wire_outside_mat.pitch * sp.sqrt(self.length_bank * self.height_bank)
         elif g_ip.partition_gran == 2:
             self.height_bank = self.subarray_height * self.ndbl
             self.length_bank = self.subarray_width * self.ndwl
@@ -130,7 +132,7 @@ class Memorybus(Component):
 
         if g_ip.print_detail_debug:
             print(f"memorybus.cc: N subarrays per mat = {self.dp.num_subarrays / self.dp.num_mats}")
-            print(f"memorybus.cc: g_tp.wire_local.pitch = {g_tp.wire_local.pitch / 1e3} mm")
+            print(f"memorybus.cc: g_tp.wire_local.pitch = {self.g_tp.wire_local.pitch / 1e3} mm")
             print(f"memorybus.cc: subarray_width = {self.subarray_width / 1e3} mm")
             print(f"memorybus.cc: subarray_height = {self.subarray_height / 1e3} mm")
             print(f"memorybus.cc: mat_height = {self.mat_height / 1e3} mm")
@@ -151,24 +153,34 @@ class Memorybus(Component):
         if g_ip.print_detail_debug:
             print(f"memorybus.cc: center_stripe wire length = {center_stripe_length} um")
 
-        self.center_stripe = Wire(self.wt, center_stripe_length)
-        self.area_bus = 2.0 * center_stripe_length * (self.row_add_bits + self.col_add_bits + self.data_bits) * g_tp.wire_outside_mat.pitch / g_ip.nbanks
+        self.center_stripe = Wire(self.g_ip, self.wt, center_stripe_length)
+        self.area_bus = 2.0 * center_stripe_length * (self.row_add_bits + self.col_add_bits + self.data_bits) * self.g_tp.wire_outside_mat.pitch / g_ip.nbanks
 
         if self.membus_type == MemorybusType.Row_add_path:
             num_lwl_per_gwl = 4
-            self.global_WL = Wire(self.wt, self.length_bank, 1, 1, 1, 'inside_mat', CU_RESISTIVITY, g_tp.peri_global)
+            self.global_WL = Wire(
+                self.g_ip,
+                self.wt,
+                self.length_bank,
+                1,
+                1,
+                1,
+                "inside_mat",
+                CU_RESISTIVITY,
+                self.g_tp.peri_global,
+            )
             self.num_lwl_drv = self.ndwl
 
             if self.semi_repeated_global_line:
-                self.C_GWL = num_lwl_per_gwl * gate_C(g_tp.min_w_nmos + self.min_w_pmos, 0) + g_tp.wire_inside_mat.C_per_um * (self.subarray_width + g_tp.wire_local.pitch)
-                self.R_GWL = g_tp.wire_inside_mat.R_per_um * (self.subarray_width + g_tp.wire_local.pitch)
+                self.C_GWL = num_lwl_per_gwl * gate_C(self.g_tp.min_w_nmos + self.min_w_pmos, 0) + self.g_tp.wire_inside_mat.C_per_um * (self.subarray_width + self.g_tp.wire_local.pitch)
+                self.R_GWL = self.g_tp.wire_inside_mat.R_per_um * (self.subarray_width + self.g_tp.wire_local.pitch)
             else:
-                self.C_GWL = self.num_lwl_drv * num_lwl_per_gwl * gate_C(g_tp.min_w_nmos + self.min_w_pmos, 0) + g_tp.wire_inside_mat.C_per_um * self.length_bank
-                self.R_GWL = self.length_bank * g_tp.wire_inside_mat.R_per_um
+                self.C_GWL = self.num_lwl_drv * num_lwl_per_gwl * gate_C(self.g_tp.min_w_nmos + self.min_w_pmos, 0) + self.g_tp.wire_inside_mat.C_per_um * self.length_bank
+                self.R_GWL = self.length_bank * self.g_tp.wire_inside_mat.R_per_um
 
-            self.lwl_driver_c_gate_load = self.dp.num_c_subarray * gate_C_pass(g_tp.dram.cell_a_w, g_tp.dram.b_w, True, True)
-            self.lwl_driver_c_wire_load = self.dp.num_c_subarray * g_tp.dram.b_w * g_tp.wire_local.C_per_um
-            self.lwl_driver_r_wire_load = self.dp.num_c_subarray * g_tp.dram.b_w * g_tp.wire_local.R_per_um
+            self.lwl_driver_c_gate_load = self.dp.num_c_subarray * gate_C_pass(self.g_tp.dram.cell_a_w, self.g_tp.dram.b_w, True, True)
+            self.lwl_driver_c_wire_load = self.dp.num_c_subarray * self.g_tp.dram.b_w * self.g_tp.wire_local.C_per_um
+            self.lwl_driver_r_wire_load = self.dp.num_c_subarray * self.g_tp.dram.b_w * self.g_tp.wire_local.R_per_um
             self.C_LWL = self.lwl_driver_c_gate_load + self.lwl_driver_c_wire_load
 
             self.lwl_drv = Driver(self.lwl_driver_c_gate_load, self.lwl_driver_c_wire_load, self.lwl_driver_r_wire_load, self.is_dram)
@@ -178,50 +190,80 @@ class Memorybus(Component):
                 C_ld_dec_out = self.C_GWL
                 R_wire_dec_out = self.R_GWL
             else:
-                C_ld_dec_out = gate_C(g_tp.min_w_nmos + self.min_w_pmos, 0)
+                C_ld_dec_out = gate_C(self.g_tp.min_w_nmos + self.min_w_pmos, 0)
                 R_wire_dec_out = 0
 
             bank_bus_length = num_banks_ver_dir * 0.5 * symbolic_convex_max(self.length_bank, self.height_bank)
-            self.bank_bus = Wire(self.wt, bank_bus_length)
+            self.bank_bus = Wire(self.g_ip, self.wt, bank_bus_length)
 
         elif self.membus_type == MemorybusType.Col_add_path:
-            self.column_sel = Wire(self.wt, sp.sqrt(self.length_bank * self.height_bank), 1, 1, 1, 'outside_mat', CU_RESISTIVITY, g_tp.peri_global)
+            self.column_sel = Wire(
+                self.g_ip,
+                self.wt,
+                sp.sqrt(self.length_bank * self.height_bank),
+                1,
+                1,
+                1,
+                "outside_mat",
+                CU_RESISTIVITY,
+                self.g_tp.peri_global,
+            )
 
             if self.semi_repeated_global_line:
-                self.C_colsel = g_tp.wire_inside_mat.C_per_um * (self.subarray_height + g_tp.wire_local.pitch)
-                self.R_colsel = g_tp.wire_inside_mat.R_per_um * (self.subarray_height + g_tp.wire_local.pitch)
+                self.C_colsel = self.g_tp.wire_inside_mat.C_per_um * (self.subarray_height + self.g_tp.wire_local.pitch)
+                self.R_colsel = self.g_tp.wire_inside_mat.R_per_um * (self.subarray_height + self.g_tp.wire_local.pitch)
             else:
-                self.C_colsel = self.column_sel.repeater_size * gate_C(g_tp.min_w_nmos + self.min_w_pmos, 0) + (self.column_sel.repeater_spacing if self.column_sel.repeater_spacing < self.height_bank else self.height_bank) * g_tp.wire_outside_mat.C_per_um
-                self.R_colsel = (self.column_sel.repeater_spacing if self.column_sel.repeater_spacing < self.height_bank else self.height_bank) * g_tp.wire_outside_mat.R_per_um
+                self.C_colsel = self.column_sel.repeater_size * gate_C(self.g_tp.min_w_nmos + self.min_w_pmos, 0) + (self.column_sel.repeater_spacing if self.column_sel.repeater_spacing < self.height_bank else self.height_bank) * self.g_tp.wire_outside_mat.C_per_um
+                self.R_colsel = (self.column_sel.repeater_spacing if self.column_sel.repeater_spacing < self.height_bank else self.height_bank) * self.g_tp.wire_outside_mat.R_per_um
 
             if not g_ip.fine_gran_bank_lvl:
                 C_ld_dec_out = self.C_colsel
                 R_wire_dec_out = self.R_colsel
             else:
-                C_ld_dec_out = gate_C(g_tp.min_w_nmos + self.min_w_pmos, 0)
+                C_ld_dec_out = gate_C(self.g_tp.min_w_nmos + self.min_w_pmos, 0)
                 R_wire_dec_out = 0
 
             bank_bus_length = num_banks_ver_dir * 0.5 * symbolic_convex_max(self.length_bank, self.height_bank)
-            self.bank_bus = Wire(self.wt, bank_bus_length)
+            self.bank_bus = Wire(self.g_ip, self.wt, bank_bus_length)
 
         elif self.membus_type == MemorybusType.Data_path:
-            self.local_data = Wire(self.wt, self.subarray_width, 1, 1, 1, 'inside_mat', CU_RESISTIVITY, g_tp.peri_global)
-            self.global_data = Wire(self.wt, sp.sqrt(self.length_bank * self.height_bank), 1, 1, 1, 'outside_mat', CU_RESISTIVITY, g_tp.peri_global)
+            self.local_data = Wire(
+                self.g_ip,
+                self.wt,
+                self.subarray_width,
+                1,
+                1,
+                1,
+                "inside_mat",
+                CU_RESISTIVITY,
+                self.g_tp.peri_global,
+            )
+            self.global_data = Wire(
+                self.g_ip,
+                self.wt,
+                sp.sqrt(self.length_bank * self.height_bank),
+                1,
+                1,
+                1,
+                "outside_mat",
+                CU_RESISTIVITY,
+                self.g_tp.peri_global,
+            )
 
             if self.semi_repeated_global_line:
-                self.C_global_data = g_tp.wire_inside_mat.C_per_um * (self.subarray_height + g_tp.wire_local.pitch)
-                self.R_global_data = g_tp.wire_inside_mat.R_per_um * (self.subarray_height + g_tp.wire_local.pitch)
+                self.C_global_data = self.g_tp.wire_inside_mat.C_per_um * (self.subarray_height + self.g_tp.wire_local.pitch)
+                self.R_global_data = self.g_tp.wire_inside_mat.R_per_um * (self.subarray_height + self.g_tp.wire_local.pitch)
             else:
-                self.C_global_data = g_tp.wire_inside_mat.C_per_um * self.height_bank / 2
-                self.R_global_data = g_tp.wire_inside_mat.R_per_um * self.height_bank / 2
+                self.C_global_data = self.g_tp.wire_inside_mat.C_per_um * self.height_bank / 2
+                self.R_global_data = self.g_tp.wire_inside_mat.R_per_um * self.height_bank / 2
 
             self.global_data_drv = Driver(0, self.C_global_data, self.R_global_data, self.is_dram)
             self.global_data_drv.compute_delay(0)
             self.global_data_drv.compute_area()
 
-            local_data_c_gate_load = self.dp.num_c_subarray * drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cell.w, self.is_dram)
-            local_data_c_wire_load = self.dp.num_c_subarray * g_tp.dram.b_w * g_tp.wire_inside_mat.C_per_um
-            local_data_r_wire_load = self.dp.num_c_subarray * g_tp.dram.b_w * g_tp.wire_inside_mat.R_per_um
+            local_data_c_gate_load = self.dp.num_c_subarray * drain_C_(self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cell.w, self.is_dram)
+            local_data_c_wire_load = self.dp.num_c_subarray * self.g_tp.dram.b_w * self.g_tp.wire_inside_mat.C_per_um
+            local_data_r_wire_load = self.dp.num_c_subarray * self.g_tp.dram.b_w * self.g_tp.wire_inside_mat.R_per_um
             local_data_r_gate_load = 0
 
             tf = (local_data_c_gate_load + local_data_c_wire_load) * (local_data_r_wire_load + local_data_r_gate_load)
@@ -236,17 +278,27 @@ class Memorybus(Component):
             self.local_data_drv.compute_area()
 
             bank_bus_length = num_banks_ver_dir * 0.5 * symbolic_convex_max(self.length_bank, self.height_bank)
-            self.bank_bus = Wire(self.wt, bank_bus_length)
+            self.bank_bus = Wire(self.g_ip, self.wt, bank_bus_length)
             if g_ip.print_detail_debug:
                 print(f"memorybus.cc: bank_bus_length = {bank_bus_length}")
 
-            self.out_seg = Wire(self.wt, 0.25 * num_banks_hor_dir * (self.length_bank + (self.row_add_bits + self.col_add_bits + self.data_bits) * g_tp.wire_outside_mat.pitch))
+            self.out_seg = Wire(
+                self.g_ip,
+                self.wt,
+                0.25
+                * num_banks_hor_dir
+                * (
+                    self.length_bank
+                    + (self.row_add_bits + self.col_add_bits + self.data_bits)
+                    * self.g_tp.wire_outside_mat.pitch
+                ),
+            )
             self.area_IOSA = (875 + 500) * g_ip.F_sz_um * g_ip.F_sz_um * self.data_bits
             self.area_data_drv = self.local_data_drv.area.get_area() * self.data_bits
             if self.ndbl > 16:
                 self.area_IOSA *= self.ndbl / 16.0
                 self.area_data_drv *= self.ndbl / 16.0
-            self.area_local_dataline = self.data_bits * self.subarray_width * g_tp.wire_local.pitch * self.ndbl
+            self.area_local_dataline = self.data_bits * self.subarray_width * self.g_tp.wire_local.pitch * self.ndbl
 
         if self.membus_type in [MemorybusType.Row_add_path, MemorybusType.Col_add_path]:
             if g_ip.print_detail_debug:
@@ -318,14 +370,14 @@ class Memorybus(Component):
                 print(f"memorybus.cc: add_predec_blk1->area = {add_predec_blk1.area.get_area() / 1e6} mm2")
                 print(f"memorybus.cc: add_predec_blk2->area = {add_predec_blk2.area.get_area() / 1e6} mm2")
                 print(f"memorybus.cc: total add_dec->area = {self.num_dec_signals * self.add_dec.area.get_area() / 1e6} mm2")
-                print(f"wire bus width for one bank = {g_tp.wire_outside_mat.pitch * (self.add_bits + self.add_bits + self.data_bits)}")
+                print(f"wire bus width for one bank = {self.g_tp.wire_outside_mat.pitch * (self.add_bits + self.add_bits + self.data_bits)}")
 
             self.area.h = (self.height_bank + self.area_bank_horizontal_peripheral_circuitry / self.length_bank) * num_banks_ver_dir
             self.area.w = (self.length_bank + self.area_bank_vertical_peripheral_circuitry / self.height_bank) * num_banks_hor_dir
 
             if g_ip.partition_gran == 0:
-                self.area.h += g_tp.wire_outside_mat.pitch * (self.add_bits + self.add_bits + self.data_bits)
-                self.area.w += g_tp.wire_outside_mat.pitch * (self.add_bits + self.add_bits + self.data_bits)
+                self.area.h += self.g_tp.wire_outside_mat.pitch * (self.add_bits + self.add_bits + self.data_bits)
+                self.area.w += self.g_tp.wire_outside_mat.pitch * (self.add_bits + self.add_bits + self.data_bits)
 
             if g_ip.print_detail_debug:
                 print(f"memorybus.cc: circuit height = {self.area_bank_horizontal_peripheral_circuitry / self.length_bank / 1e3} mm")
@@ -405,7 +457,7 @@ class Memorybus(Component):
         self.out_rise_time = self.delay / (1.0 - 0.5)
 
         return self.out_rise_time
-  
+
     def compute_power_energy(self):
         coeff1 = [float(self.add_bits)] * 4
         coeff2 = [float(self.data_bits)] * 4
@@ -457,4 +509,3 @@ class Memorybus(Component):
 
         else:
             raise AssertionError("Invalid membus_type")
-

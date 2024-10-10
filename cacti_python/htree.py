@@ -1,9 +1,14 @@
 import math
 import enum
-from .parameter import g_tp, _log2
-from .component import *
-from .wire import Wire
 import time
+
+import sympy as sp
+
+from .const import *
+from .component import Component
+from . import parameter
+from .parameter import _log2
+from .wire import Wire
 
 class HtreeType(enum.Enum):
     Add_htree = 1
@@ -24,8 +29,10 @@ class DeviceType:
         self.Vdd = Vdd
 
 class Htree2(Component):
-    def __init__(self, wire_model, mat_w, mat_h, a_bits, d_inbits, search_data_in, d_outbits, search_data_out, bl, wl, htree_type, uca_tree_=False, search_tree_=False, dt=None):
+    def __init__(self, g_ip, g_tp, wire_model, mat_w, mat_h, a_bits, d_inbits, search_data_in, d_outbits, search_data_out, bl, wl, htree_type, uca_tree_=False, search_tree_=False, dt=None):
         super().__init__()
+        self.g_ip = g_ip
+        self.g_tp = g_tp
         if dt is None:
             dt = g_tp.peri_global
         self.in_rise_time = 0
@@ -79,132 +86,148 @@ class Htree2(Component):
         # assert self.power.readOp.leakage >= 0
 
     def input_nand(self, s1, s2, l_eff):
-        w1 = Wire(self.wt, l_eff)
+        w1 = Wire(self.g_ip, self.g_tp, self.wt, l_eff)
         pton_size = self.deviceType.n_to_p_eff_curr_drv_ratio
         nsize = s1 * (1 + pton_size) / (2 + pton_size)
 
         # CHANGE: LENGTH max ignored, otherwise, expression will be too long
         # nsize = symbolic_convex_max(1, nsize)
 
-        tc = 2 * tr_R_on(nsize * self.min_w_nmos, NCH, 1) * (
-            drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) * 2 +
-            2 * gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+        tc = 2 * parameter.tr_R_on(nsize * self.min_w_nmos, NCH, 1) * (
+            parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) * 2 +
+            2 * parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         )
-        self.delay += horowitz(w1.out_rise_time, tc,
+        self.delay += parameter.horowitz(w1.out_rise_time, tc,
                                self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE)
         self.power.readOp.dynamic += 0.5 * (
-            2 * drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            2 * gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * parameter.drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            2 * drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            2 * gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * parameter.drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.wire_bw
-        self.power.readOp.leakage += (self.wire_bw * cmos_Isub_leakage(nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand)) * self.deviceType.Vdd
-        self.power.readOp.gate_leakage += (self.wire_bw * cmos_Ig_leakage(nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand)) * self.deviceType.Vdd
+        self.power.readOp.leakage += (self.wire_bw * parameter.cmos_Isub_leakage(nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand)) * self.deviceType.Vdd
+        self.power.readOp.gate_leakage += (
+            self.wire_bw
+            * parameter.cmos_Ig_leakage(
+                nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand
+            )
+        ) * self.deviceType.Vdd
 
     def output_buffer(self, s1, s2, l_eff):
-        w1 = Wire(self.wt, l_eff)
+        w1 = Wire(self.g_ip, self.g_tp, self.wt, l_eff)
         pton_size = self.deviceType.n_to_p_eff_curr_drv_ratio
         size = s1 * (1 + pton_size) / (2 + pton_size + 1 + 2 * pton_size)
-        
-        s_eff = (gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0) + w1.wire_cap(l_eff * 1e-6, True)) / gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+
+        s_eff = (
+            parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+            + w1.wire_cap(l_eff * 1e-6, True)
+        ) / parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         if s_eff == sp.zoo:
             s_eff = 1
 
-        tr_size = gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0) / (2 * s_eff * gate_C(self.min_w_pmos, 0))
+        tr_size = parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0) / (
+            2 * s_eff * parameter.gate_C(self.min_w_pmos, 0)
+        )
 
         # CHANGE: MAX - avoiding max to decrease expression size
-        # size = symbolic_convex_max(1, size)
+        size = parameter.symbolic_convex_max(1, size)
 
-        res_nor = 2 * tr_R_on(size * self.min_w_pmos, PCH, 1)
-        res_ptrans = tr_R_on(tr_size * self.min_w_nmos, NCH, 1)
+        res_nor = 2 * parameter.tr_R_on(size * self.min_w_pmos, PCH, 1)
+        res_ptrans = parameter.tr_R_on(tr_size * self.min_w_nmos, NCH, 1)
         cap_nand_out = (
-            drain_C_(size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            2 * drain_C_(size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            gate_C(tr_size * self.min_w_pmos, 0)
+            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.gate_C(tr_size * self.min_w_pmos, 0)
         )
         cap_ptrans_out = (
-            2 * (drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) + drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def)) +
-            gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
+            parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         )
 
         tc = res_nor * cap_nand_out + (res_nor + res_ptrans) * cap_ptrans_out
 
-        self.delay += horowitz(
+        self.delay += parameter.horowitz(
             w1.out_rise_time, tc,
             self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE
         )
 
         # NAND
         self.power.readOp.dynamic += 0.5 * (
-            2 * drain_C_(size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            drain_C_(size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            gate_C(tr_size * self.min_w_pmos, 0)
+            2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.gate_C(tr_size * self.min_w_pmos, 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            2 * drain_C_(size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            drain_C_(size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            gate_C(tr_size * self.min_w_pmos, 0)
+            2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.gate_C(tr_size * self.min_w_pmos, 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # NOT
         self.power.readOp.dynamic += 0.5 * (
-            drain_C_(size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            drain_C_(size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            gate_C(size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.gate_C(size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            drain_C_(size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            drain_C_(size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            gate_C(size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.gate_C(size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # NOR
         self.power.readOp.dynamic += 0.5 * (
-            drain_C_(size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            2 * drain_C_(size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            gate_C(tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.gate_C(tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            drain_C_(size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
-            2 * drain_C_(size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
-            gate_C(tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.gate_C(tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # Output transistor
         self.power.readOp.dynamic += 0.5 * (
-            2 * (drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) + drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def)) +
-            gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
+            parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            2 * (drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) + drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, g_tp.cell_h_def)) +
-            gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
+            parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         if self.uca_tree:
-            self.power.readOp.leakage += cmos_Isub_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
 
-            self.power.readOp.gate_leakage += cmos_Ig_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.gate_leakage += cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.gate_leakage += cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
         else:
-            self.power.readOp.leakage += cmos_Isub_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
 
-            self.power.readOp.gate_leakage += cmos_Ig_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.gate_leakage += cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.gate_leakage += cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += (
+                parameter.cmos_Ig_leakage(
+                    self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor
+                )
+                * self.deviceType.Vdd
+                * self.wire_bw
+            )
 
     def in_htree(self):
         # temp var
@@ -222,48 +245,47 @@ class Htree2(Component):
         h = max(int(_log2(self.ndwl / 2)), 1) # horizontal nodes
         v = max(int(_log2(self.ndbl / 2)), 1)  # vertical nodes
 
-
         if self.uca_tree:
             ht_temp = (self.mat_height * self.ndbl / 2 +
                        ((self.add_bits + self.data_in_bits + self.data_out_bits +
-                         (self.search_data_in_bits + self.search_data_out_bits)) * g_tp.wire_outside_mat.pitch *
+                         (self.search_data_in_bits + self.search_data_out_bits)) * self.g_tp.wire_outside_mat.pitch *
                         2 * (1 - pow(0.5, h)))) / 2
             len_temp = (self.mat_width * self.ndwl / 2 +
                         ((self.add_bits + self.data_in_bits + self.data_out_bits +
-                          (self.search_data_in_bits + self.search_data_out_bits)) * g_tp.wire_outside_mat.pitch *
+                          (self.search_data_in_bits + self.search_data_out_bits)) * self.g_tp.wire_outside_mat.pitch *
                          2 * (1 - pow(0.5, v)))) / 2
         else:
             if self.ndwl == self.ndbl:
                 ht_temp = ((self.mat_height * self.ndbl / 2) +
                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) *
-                            (self.ndbl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                           ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)) / 2
+                            (self.ndbl / 2 - 1) * self.g_tp.wire_outside_mat.pitch) +
+                           ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * h)) / 2
                 len_temp = (self.mat_width * self.ndwl / 2 +
                             ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) *
-                             (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                            ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
+                             (self.ndwl / 2 - 1) * self.g_tp.wire_outside_mat.pitch) +
+                            ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * v)) / 2
 
             elif self.ndwl > self.ndbl:
                 excess_part = (_log2(self.ndwl / 2) - _log2(self.ndbl / 2))
                 ht_temp = ((self.mat_height * self.ndbl / 2) +
                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) *
-                            ((self.ndbl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-                           (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch *
+                            ((self.ndbl / 2 - 1) + excess_part) * self.g_tp.wire_outside_mat.pitch) +
+                           (self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch *
                            (2 * (1 - pow(0.5, h - v)) + pow(0.5, v - h) * v)) / 2
                 len_temp = (self.mat_width * self.ndwl / 2 +
                             ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) *
-                             (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                            ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
+                             (self.ndwl / 2 - 1) * self.g_tp.wire_outside_mat.pitch) +
+                            ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * v)) / 2
             else:
                 excess_part = (_log2(self.ndbl / 2) - _log2(self.ndwl / 2))
                 ht_temp = ((self.mat_height * self.ndbl / 2) +
                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) *
-                            ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-                           ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)) / 2
+                            ((self.ndwl / 2 - 1) + excess_part) * self.g_tp.wire_outside_mat.pitch) +
+                           ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * h)) / 2
                 len_temp = (self.mat_width * self.ndwl / 2 +
                             ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) *
-                             ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-                            (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch *
+                             ((self.ndwl / 2 - 1) + excess_part) * self.g_tp.wire_outside_mat.pitch) +
+                            (self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch *
                             (h + 2 * (1 - pow(0.5, v - h)))) / 2
 
         self.area.h = ht_temp * 2
@@ -284,17 +306,17 @@ class Htree2(Component):
                 del wtemp3
 
             if h > v:
-                wtemp1 = Wire(self.wt, len_)  # hor
-                wtemp2 = Wire(self.wt, len_ / 2)  # ver
+                wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, len_)  # hor
+                wtemp2 = Wire(self.g_ip, self.g_tp, self.wt, len_ / 2)  # ver
                 len_temp = len_
                 len_ /= 2
                 wtemp3 = None
                 h -= 1
                 option = 0
             elif v > 0 and h > 0:
-                wtemp1 = Wire(self.wt, len_)  # hor
-                wtemp2 = Wire(self.wt, ht)  # ver
-                wtemp3 = Wire(self.wt, len_ / 2)  # next hor
+                wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, len_)  # hor
+                wtemp2 = Wire(self.g_ip, self.g_tp, self.wt, ht)  # ver
+                wtemp3 = Wire(self.g_ip, self.g_tp, self.wt, len_ / 2)  # next hor
                 len_temp = len_
                 ht_temp = ht
                 len_ /= 2
@@ -304,8 +326,8 @@ class Htree2(Component):
                 option = 1
             else:
                 assert h == 0
-                wtemp1 = Wire(self.wt, ht)  # ver
-                wtemp2 = Wire(self.wt, ht / 2)  # hor
+                wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, ht)  # ver
+                wtemp2 = Wire(self.g_ip, self.g_tp, self.wt, ht / 2)  # hor
                 ht_temp = ht
                 ht /= 2
                 wtemp3 = None
@@ -346,7 +368,7 @@ class Htree2(Component):
                 # )
 
                 l_eff = wtemp1.repeater_spacing
-                
+
                 # Change: Relational set to one value, otherwise, expression will be too long
                 # if ht_temp > wtemp2.repeater_spacing:
                 #     s2 = wtemp2.repeater_size
@@ -408,7 +430,6 @@ class Htree2(Component):
         if wtemp3:
             del wtemp3
 
-    
     def out_htree(self):
         # temp var
         s1, s2, s3 = 0, 0, 0
@@ -425,38 +446,38 @@ class Htree2(Component):
 
         if self.uca_tree:
             ht_temp = (self.mat_height * self.ndbl / 2 +
-                       ((self.add_bits + self.data_in_bits + self.data_out_bits + (self.search_data_in_bits + self.search_data_out_bits)) * g_tp.wire_outside_mat.pitch *
+                       ((self.add_bits + self.data_in_bits + self.data_out_bits + (self.search_data_in_bits + self.search_data_out_bits)) * self.g_tp.wire_outside_mat.pitch *
                         2 * (1 - pow(0.5, h)))) / 2
             len_temp = (self.mat_width * self.ndwl / 2 +
-                        ((self.add_bits + self.data_in_bits + self.data_out_bits + (self.search_data_in_bits + self.search_data_out_bits)) * g_tp.wire_outside_mat.pitch *
+                        ((self.add_bits + self.data_in_bits + self.data_out_bits + (self.search_data_in_bits + self.search_data_out_bits)) * self.g_tp.wire_outside_mat.pitch *
                          2 * (1 - pow(0.5, v)))) / 2
         else:
             if self.ndwl == self.ndbl:
                 ht_temp = ((self.mat_height * self.ndbl / 2) +
-                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndbl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                           ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)
+                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndbl / 2 - 1) * self.g_tp.wire_outside_mat.pitch) +
+                           ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * h)
                            ) / 2
                 len_temp = (self.mat_width * self.ndwl / 2 +
-                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                            ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
+                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * self.g_tp.wire_outside_mat.pitch) +
+                            ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * v)) / 2
             elif self.ndwl > self.ndbl:
                 excess_part = (_log2(self.ndwl / 2) - _log2(self.ndbl / 2))
                 ht_temp = ((self.mat_height * self.ndbl / 2) +
-                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndbl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-                           (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch *
+                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndbl / 2 - 1) + excess_part) * self.g_tp.wire_outside_mat.pitch) +
+                           (self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch *
                            (2 * (1 - pow(0.5, h - v)) + pow(0.5, v - h) * v)) / 2
                 len_temp = (self.mat_width * self.ndwl / 2 +
-                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * g_tp.wire_outside_mat.pitch) +
-                            ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * v)) / 2
+                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * (self.ndwl / 2 - 1) * self.g_tp.wire_outside_mat.pitch) +
+                            ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * v)) / 2
             else:
                 excess_part = (_log2(self.ndbl / 2) - _log2(self.ndwl / 2))
                 ht_temp = ((self.mat_height * self.ndbl / 2) +
-                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-                           ((self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * h)
+                           ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * self.g_tp.wire_outside_mat.pitch) +
+                           ((self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * h)
                            ) / 2
                 len_temp = (self.mat_width * self.ndwl / 2 +
-                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * g_tp.wire_outside_mat.pitch) +
-                            (self.data_in_bits + self.data_out_bits) * g_tp.wire_outside_mat.pitch * (h + 2 * (1 - pow(0.5, v - h)))) / 2
+                            ((self.add_bits + (self.search_data_in_bits + self.search_data_out_bits)) * ((self.ndwl / 2 - 1) + excess_part) * self.g_tp.wire_outside_mat.pitch) +
+                            (self.data_in_bits + self.data_out_bits) * self.g_tp.wire_outside_mat.pitch * (h + 2 * (1 - pow(0.5, v - h)))) / 2
 
         self.area.h = ht_temp * 2
         self.area.w = len_temp * 2
@@ -477,8 +498,8 @@ class Htree2(Component):
 
             if h > v:
                 # the iteration considers only one horizontal link
-                wtemp1 = Wire(self.wt, len)  # hor
-                wtemp2 = Wire(self.wt, len / 2)  # ver
+                wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, len)  # hor
+                wtemp2 = Wire(self.g_ip, self.g_tp, self.wt, len / 2)  # ver
                 len_temp = len
                 len /= 2
                 wtemp3 = None
@@ -486,9 +507,9 @@ class Htree2(Component):
                 option = 0
             elif v > 0 and h > 0:
                 # considers one horizontal link and one vertical link
-                wtemp1 = Wire(self.wt, len)  # hor
-                wtemp2 = Wire(self.wt, ht)  # ver
-                wtemp3 = Wire(self.wt, len / 2)  # next hor
+                wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, len)  # hor
+                wtemp2 = Wire(self.g_ip, self.g_tp, self.wt, ht)  # ver
+                wtemp3 = Wire(self.g_ip, self.g_tp, self.wt, len / 2)  # next hor
                 len_temp = len
                 ht_temp = ht
                 len /= 2
@@ -499,8 +520,8 @@ class Htree2(Component):
             else:
                 # considers only one vertical link
                 assert h == 0
-                wtemp1 = Wire(self.wt, ht)  # hor
-                wtemp2 = Wire(self.wt, ht / 2)  # ver
+                wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, ht)  # hor
+                wtemp2 = Wire(self.g_ip, self.g_tp, self.wt, ht / 2)  # ver
                 ht_temp = ht
                 ht /= 2
                 wtemp3 = None
