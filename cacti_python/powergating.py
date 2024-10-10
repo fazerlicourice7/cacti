@@ -2,7 +2,6 @@ import math
 import sys
 from .const import *
 from .decoder import *
-from .parameter import g_tp
 from . import parameter
 from .const import *
 from .component import compute_gate_area
@@ -12,9 +11,10 @@ from .area import *
 
 
 class SleepTx(Component):
-    def __init__(self, g_ip, perf_with_sleep_tx, active_Isat, is_footer, c_circuit_wakeup, V_delta, num_sleep_tx, cell):
+    def __init__(self, g_ip, g_tp, perf_with_sleep_tx, active_Isat, is_footer, c_circuit_wakeup, V_delta, num_sleep_tx, cell):
         super().__init__()
         self.g_ip = g_ip
+        self.g_tp = g_tp
         self.perf_with_sleep_tx = perf_with_sleep_tx
         self.active_Isat = active_Isat
         self.is_footer = is_footer
@@ -51,12 +51,12 @@ class SleepTx(Component):
             self.c_intrinsic_sleep = drain_C_(self.width, NCH, 1, 1, self.area.h, False, False, False, self.is_sleep_tx)
             self.wakeup_delay = (self.c_circuit_wakeup + self.c_intrinsic_sleep) * self.V_delta / (simplified_nmos_Isat(self.width, False, False, False, self.is_sleep_tx) / Ilinear_to_Isat_ratio)
             self.wakeup_power = PowerDef()
-            self.wakeup_power.readOp.dynamic = (self.c_circuit_wakeup + self.c_intrinsic_sleep) * g_tp.sram_cell.Vdd * self.V_delta
+            self.wakeup_power.readOp.dynamic = (self.c_circuit_wakeup + self.c_intrinsic_sleep) * self.g_tp.sram_cell.Vdd * self.V_delta
         else:
             self.c_intrinsic_sleep = drain_C_(self.width * p_to_n_sz_ratio, PCH, 1, 1, self.area.h, False, False, False, self.is_sleep_tx)
             self.wakeup_delay = (self.c_circuit_wakeup + self.c_intrinsic_sleep) * self.V_delta / (simplified_pmos_Isat(self.width, False, False, False, self.is_sleep_tx) / Ilinear_to_Isat_ratio)
             self.wakeup_power = PowerDef()
-            self.wakeup_power.readOp.dynamic = (self.c_circuit_wakeup + self.c_intrinsic_sleep) * g_tp.sram_cell.Vdd * self.V_delta
+            self.wakeup_power.readOp.dynamic = (self.c_circuit_wakeup + self.c_intrinsic_sleep) * self.g_tp.sram_cell.Vdd * self.V_delta
 
         return self.wakeup_delay
 

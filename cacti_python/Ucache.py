@@ -8,7 +8,7 @@ import sympy as sp
 from . import cacti_interface
 from .cacti_interface import MemArray, uca_org_t, PowerDef
 from .nuca import NucaOrgT
-from .parameter import g_tp, DynamicParameter, symbolic_convex_max, InputParameter
+from .parameter import DynamicParameter, symbolic_convex_max, InputParameter, TechnologyParameter
 from . import parameter
 from .uca import UCA
 from .parameter import _log2
@@ -629,22 +629,6 @@ def filter_tag_arr(min_val, mem_list):
 
     mem_list.append(res)
 
-# def filter_data_arr(curr_list):
-#     if not curr_list:
-#         print("ERROR: no valid data array organizations found")
-#         exit(1)
-
-#     iter_list = list(curr_list)
-
-#     for m in iter_list:
-#         if m is None:
-#             exit(1)
-
-#         if (((m.access_time - m.arr_min.min_delay) / m.arr_min.min_delay > 0.5) and
-#             ((m.power.readOp.dynamic - m.arr_min.min_dyn) / m.arr_min.min_dyn > 0.5)):
-#             del m
-#             curr_list.remove(m)
-
 def filter_data_arr(curr_list):
     if not curr_list:
         print("ERROR: no valid data array organizations found")
@@ -667,7 +651,7 @@ def filter_data_arr(curr_list):
 import threading
 from functools import cmp_to_key
 
-def solve(fin_res):
+def solve(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 
@@ -804,7 +788,8 @@ def solve(fin_res):
     del d_min
     del t_min
 
-def update(fin_res):
+def update(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
+    
     if fin_res.tag_array2:
         g_tp.init(g_ip.F_sz_um, True)
         tag_arr_dyn_p = DynamicParameter(
@@ -1097,7 +1082,7 @@ def calculate_time_single(
     return ptr_array
 
 
-def solve_single(g_ip: InputParameter):
+def solve_single(g_ip: InputParameter, g_tp: TechnologyParameter):
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 

@@ -7,7 +7,6 @@ import sympy as sp
 from .area import Area
 from .const import *
 from . import parameter
-from .parameter import g_tp
 from .cacti_interface import PowerDef
 
 # Assuming g_ip and g_tp are global configurations provided elsewhere in the code

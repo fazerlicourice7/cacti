@@ -1,7 +1,7 @@
-from .component import Component
 import sympy as sp
+
+from .component import Component
 from .const import *
-from .parameter import g_tp
 
 class NucaOrgT:
     def __init__(self):
@@ -26,7 +26,7 @@ class NucaOrgT:
             del self.router
 
 class Nuca(Component):
-    def __init__(self, dt=None):
+    def __init__(self, g_tp, dt=None):
         if dt is None:
             dt = g_tp.peri_global
         self.deviceType = dt
@@ -83,4 +83,3 @@ MIN_BANKSIZE = 65536
 FIXED_OVERHEAD = 55e-12
 LATCH_DELAY = 28e-12
 CONTR_2_BANK_LAT = 0
-
