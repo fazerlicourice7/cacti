@@ -951,9 +951,9 @@ class TechnologyParameter:
         self.peri_global = DeviceType()
         self.cam_cell = DeviceType()
         self.sleep_tx = DeviceType()
-        self.wire_local = InterconnectType()
-        self.wire_inside_mat = InterconnectType()
-        self.wire_outside_mat = InterconnectType()
+        self.wire_local = InterconnectType(self.g_ip,)
+        self.wire_inside_mat = InterconnectType(self.g_ip,)
+        self.wire_outside_mat = InterconnectType(self.g_ip,)
         self.scaling_factor = ScalingFactor()
         self.sram = MemoryType()
         self.dram = MemoryType()
@@ -1340,13 +1340,13 @@ class TechnologyParameter:
 
         rd = tr_R_on(self.min_w_nmos_, NCH, 1)
         p_to_n_sizing_r = pmos_to_nmos_sz_ratio()
-        c_load = gate_C(self.min_w_nmos_ * (1 + p_to_n_sizing_r), 0.0)
+        c_load = gate_C(self, self.min_w_nmos_ * (1 + p_to_n_sizing_r), 0.0)
         tf = rd * c_load
         self.kinv = horowitz(0, tf, 0.5, 0.5, RISE)
         KLOAD = 1
         c_load = KLOAD * (drain_C_(self.min_w_nmos_, NCH, 1, 1, self.cell_h_def) +
                           drain_C_(self.min_w_nmos_ * p_to_n_sizing_r, PCH, 1, 1, self.cell_h_def) +
-                          gate_C(self.min_w_nmos_ * 4 * (1 + p_to_n_sizing_r), 0.0))
+                          gate_C(self, self.min_w_nmos_ * 4 * (1 + p_to_n_sizing_r), 0.0))
         tf = rd * c_load
         self.FO4 = horowitz(0, tf, 0.5, 0.5, RISE)
 
@@ -2862,34 +2862,6 @@ def combination(n, m):
     return factorial(n, m + 1) // factorial(n - m)
 
 
-outside_mat = "outside_mat"
-inside_mat = "inside_mat"
-local_wires = "local_wires"
-
-
-Add_htree = "Add_htree"
-Data_in_htree = "Data_in_htree"
-Data_out_htree = "Data_out_htree"
-Search_in_htree = "Search_in_htree"
-Search_out_htree = "Search_out_htree"
-
-
-Row_add_path = "Row_add_path"
-Col_add_path = "Col_add_path"
-Data_path = "Data_path"
-
-
-nmos = "nmos"
-pmos = "pmos"
-inv = "inv"
-nand = "nand"
-nor = "nor"
-tri = "tri"
-tg = "tg"
-
-parallel = "parallel"
-series = "series"
-
 class WirePlacement:
     outside_mat = "outside_mat"
     inside_mat = "inside_mat"
@@ -2938,8 +2910,8 @@ def gate_C(g_tp: TechnologyParameter, width, wirelength, _is_dram=False, _is_sra
     
     return (dt.C_g_ideal + dt.C_overlap + 3 * dt.C_fringe) * width + dt.l_phy * Cpolywire
 
-def gate_C_pass(width, wirelength, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
-    return gate_C(width, wirelength, _is_dram, _is_sram, _is_wl_tr, _is_sleep_tx)
+def gate_C_pass(g_tp: TechnologyParameter, width, wirelength, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
+    return gate_C(g_tp, width, wirelength, _is_dram, _is_sram, _is_wl_tr, _is_sleep_tx)
 
 def drain_C_(g_ip: InputParameter, g_tp: TechnologyParameter, width, nchannel, stack, next_arg_thresh_folding_width_or_height_cell, fold_dimension, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
     if _is_dram and _is_sram:
@@ -3043,7 +3015,7 @@ def R_to_w(g_tp: TechnologyParameter, res, nchannel, _is_dram=False, _is_sram=Fa
     restrans = dt.R_nch_on if nchannel else dt.R_pch_on
     return restrans / res
 
-def pmos_to_nmos_sz_ratio(_is_dram=False, _is_wl_tr=False, _is_sleep_tx=False):
+def pmos_to_nmos_sz_ratio(g_tp: TechnologyParameter, _is_dram=False, _is_wl_tr=False, _is_sleep_tx=False):
     if _is_dram and _is_wl_tr:
         return g_tp.dram_wl.n_to_p_eff_curr_drv_ratio
     elif _is_sleep_tx:
@@ -3067,7 +3039,7 @@ def horowitz(inputramptime, tf, vs1, vs2, rise):
         td = tf * sp.sqrt(sp.log(1.0 - vs1) ** 2 + 2 * a * b * vs1) + tf * (sp.log(1.0 - vs1) - sp.log(1.0 - vs2))
     return td
 
-def cmos_Ileak(nWidth, pWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
+def cmos_Ileak(g_tp: TechnologyParameter, nWidth, pWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
         dt = g_tp.sram_cell  # SRAM cell access transistor
     elif _is_dram and _is_wl_tr:
@@ -3079,7 +3051,7 @@ def cmos_Ileak(nWidth, pWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, 
 
     return nWidth * dt.I_off_n + pWidth * dt.I_off_p
 
-def simplified_nmos_Isat(nwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
+def simplified_nmos_Isat(g_tp: TechnologyParameter, nwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
         dt = g_tp.sram_cell  # SRAM cell access transistor
     elif _is_dram and _is_wl_tr:
@@ -3091,7 +3063,7 @@ def simplified_nmos_Isat(nwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False
 
     return nwidth * dt.I_on_n
 
-def simplified_pmos_Isat(pwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
+def simplified_pmos_Isat(g_tp: TechnologyParameter, pwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
         dt = g_tp.sram_cell  # SRAM cell access transistor
     elif _is_dram and _is_wl_tr:
@@ -3103,7 +3075,7 @@ def simplified_pmos_Isat(pwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False
 
     return pwidth * dt.I_on_n / dt.n_to_p_eff_curr_drv_ratio
 
-def simplified_nmos_leakage(nwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
+def simplified_nmos_leakage(g_tp: InputParameter, nwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
         dt = g_tp.sram_cell  # SRAM cell access transistor
     elif _is_dram and _is_wl_tr:
@@ -3115,7 +3087,7 @@ def simplified_nmos_leakage(nwidth, _is_dram=False, _is_cell=False, _is_wl_tr=Fa
 
     return nwidth * dt.I_off_n
 
-def simplified_pmos_leakage(pwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
+def simplified_pmos_leakage(g_tp: InputParameter, pwidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
         dt = g_tp.sram_cell  # SRAM cell access transistor
     elif _is_dram and _is_wl_tr:
@@ -3127,7 +3099,7 @@ def simplified_pmos_leakage(pwidth, _is_dram=False, _is_cell=False, _is_wl_tr=Fa
 
     return pwidth * dt.I_off_p
 
-def cmos_Ig_n(nWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
+def cmos_Ig_n(g_tp: InputParameter, nWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
         dt = g_tp.sram_cell  # SRAM cell access transistor
     elif _is_dram and _is_wl_tr:
@@ -3139,7 +3111,7 @@ def cmos_Ig_n(nWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep
 
     return nWidth * dt.I_g_on_n
 
-def cmos_Ig_p(pWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
+def cmos_Ig_p(g_tp: InputParameter, pWidth, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False):
     if not _is_dram and _is_cell:
         dt = g_tp.sram_cell  # SRAM cell access transistor
     elif _is_dram and _is_wl_tr:

@@ -139,7 +139,7 @@ def logical_effort(g_tp, num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio,
         f = 1
     C_in = C_load / f
 
-    w_n[i] = (1.0 / (1.0 + p_to_n_sz_ratio)) * C_in / parameter.gate_C(1, 0, is_dram_, False, is_wl_tr_)
+    w_n[i] = (1.0 / (1.0 + p_to_n_sz_ratio)) * C_in / parameter.gate_C(g_tp, 1, 0, is_dram_, False, is_wl_tr_)
 
     # CHANGE: Max - can ignore to reduce expression length
     w_n[i] = parameter.symbolic_convex_max(w_n[i], g_tp.min_w_nmos_)
@@ -149,8 +149,8 @@ def logical_effort(g_tp, num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio,
     # CHANGE: ARRAY LOGIC - cannot index with symbolic expressions
     # #TODO IMPORTANT SINCE RELATIONAL
     # if w_n[i] > max_w_nmos:
-    #     C_ld = gate_C((1 + p_to_n_sz_ratio) * max_w_nmos, 0, is_dram_, False, is_wl_tr_)
-    #     F = g * C_ld / gate_C(w_n[0] + w_p[0], 0, is_dram_, False, is_wl_tr_)
+    #     C_ld = gate_C(g_tp, (1 + p_to_n_sz_ratio) * max_w_nmos, 0, is_dram_, False, is_wl_tr_)
+    #     F = g * C_ld / gate_C(g_tp, w_n[0] + w_p[0], 0, is_dram_, False, is_wl_tr_)
 
     #     num_gates += 2
     #     f = sp.Pow(F, 1.0 / (num_gates - 1))

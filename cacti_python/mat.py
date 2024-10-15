@@ -146,15 +146,15 @@ class Mat(Component):
         R_wire_sa_mux_dec_out = self.num_subarrays_per_row * self.subarray.num_cols * self.g_tp.wire_inside_mat.R_per_um * self.cell.w
 
         if self.deg_bl_muxing > 1:
-            C_ld_bit_mux_dec_out = (2 * self.num_subarrays_per_mat * self.subarray.num_cols / self.deg_bl_muxing) * gate_C(self.g_tp.w_nmos_b_mux, 0, self.is_dram) + \
+            C_ld_bit_mux_dec_out = (2 * self.num_subarrays_per_mat * self.subarray.num_cols / self.deg_bl_muxing) * gate_C(self.g_tp, self.g_tp.w_nmos_b_mux, 0, self.is_dram) + \
                                    self.num_subarrays_per_row * self.subarray.num_cols * self.g_tp.wire_inside_mat.C_per_um * self.cell.get_w()
 
         if self.dp.Ndsam_lev_1 > 1:
-            C_ld_sa_mux_lev_1_dec_out = (self.num_subarrays_per_mat * number_sa_subarray / self.dp.Ndsam_lev_1) * gate_C(self.g_tp.w_nmos_sa_mux, 0, self.is_dram) + \
+            C_ld_sa_mux_lev_1_dec_out = (self.num_subarrays_per_mat * number_sa_subarray / self.dp.Ndsam_lev_1) * gate_C(self.g_tp, self.g_tp.w_nmos_sa_mux, 0, self.is_dram) + \
                                         self.num_subarrays_per_row * self.subarray.num_cols * self.g_tp.wire_inside_mat.C_per_um * self.cell.get_w()
 
         if self.dp.Ndsam_lev_2 > 1:
-            C_ld_sa_mux_lev_2_dec_out = (self.num_subarrays_per_mat * number_sa_subarray / (self.dp.Ndsam_lev_1 * self.dp.Ndsam_lev_2)) * gate_C(self.g_tp.w_nmos_sa_mux, 0, self.is_dram) + \
+            C_ld_sa_mux_lev_2_dec_out = (self.num_subarrays_per_mat * number_sa_subarray / (self.dp.Ndsam_lev_1 * self.dp.Ndsam_lev_2)) * gate_C(self.g_tp, self.g_tp.w_nmos_sa_mux, 0, self.is_dram) + \
                                         self.num_subarrays_per_row * self.subarray.num_cols * self.g_tp.wire_inside_mat.C_per_um * self.cell.get_w()
 
         if self.num_subarrays_per_row >= 2:
@@ -242,7 +242,7 @@ class Mat(Component):
         # def __init__(self, wire_model, length, nsense=1, width_scaling=1, spacing_scaling=1, wire_placement=outside_mat, resistivity=CU_RESISTIVITY, dt=g_tp.peri_global):
 
         if self.is_fa or self.pure_cam:
-            driver_c_gate_load = self.subarray.num_cols_fa_cam * parameter.gate_C(2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
+            driver_c_gate_load = self.subarray.num_cols_fa_cam * parameter.gate_C(self.g_tp, 2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
             driver_c_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * self.g_tp.wire_outside_mat.C_per_um
             driver_r_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * self.g_tp.wire_outside_mat.R_per_um
             self.cam_bl_precharge_eq_drv = Driver(
@@ -255,7 +255,7 @@ class Mat(Component):
             )
 
             if not self.pure_cam:
-                driver_c_gate_load = self.subarray.num_cols_fa_ram * parameter.gate_C(2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
+                driver_c_gate_load = self.subarray.num_cols_fa_ram * parameter.gate_C(self.g_tp, 2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
                 driver_c_wire_load = self.subarray.num_cols_fa_ram * self.cell.w * self.g_tp.wire_outside_mat.C_per_um
                 driver_r_wire_load = self.subarray.num_cols_fa_ram * self.cell.w * self.g_tp.wire_outside_mat.R_per_um
                 self.bl_precharge_eq_drv = Driver(
@@ -267,7 +267,7 @@ class Mat(Component):
                     self.is_dram,
                 )
         else:
-            driver_c_gate_load = self.subarray.num_cols * parameter.gate_C(2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
+            driver_c_gate_load = self.subarray.num_cols * parameter.gate_C(self.g_tp, 2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
             driver_c_wire_load = self.subarray.num_cols * self.cell.w * self.g_tp.wire_outside_mat.C_per_um
             driver_r_wire_load = self.subarray.num_cols * self.cell.w * self.g_tp.wire_outside_mat.R_per_um
             self.bl_precharge_eq_drv = Driver(
@@ -540,13 +540,13 @@ class Mat(Component):
 
         Htagbits = int(sp.ceiling(self.subarray.num_cols_fa_cam / 2.0))
 
-        driver_c_gate_load = self.subarray.num_cols_fa_cam * gate_C(2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
+        driver_c_gate_load = self.subarray.num_cols_fa_cam * gate_C(self.g_tp, 2 * self.g_tp.w_pmos_bl_precharge + self.g_tp.w_pmos_bl_eq, 0, self.is_dram, False, False)
         driver_c_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * self.g_tp.wire_outside_mat.C_per_um
         driver_r_wire_load = self.subarray.num_cols_fa_cam * self.cam_cell.w * self.g_tp.wire_outside_mat.R_per_um
 
         self.sl_precharge_eq_drv = Driver(self.g_ip, self.g_tp, driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, self.is_dram)
 
-        driver_c_gate_load = (self.subarray.num_rows + 1) * gate_C(Wdummyn, 0, self.is_dram, False, False)
+        driver_c_gate_load = (self.subarray.num_rows + 1) * gate_C(self.g_tp, Wdummyn, 0, self.is_dram, False, False)
         driver_c_wire_load = (self.subarray.num_rows + 1) * c_searchline_metal
         driver_r_wire_load = (self.subarray.num_rows + 1) * r_searchline_metal
         self.sl_data_drv = Driver(
@@ -568,7 +568,7 @@ class Mat(Component):
         out_time_ramp = self.sl_data_drv.compute_delay(inrisetime)
         self.delay_matchchline += self.sl_data_drv.delay
 
-        driver_c_gate_load = (self.subarray.num_rows + 1) * gate_C(Wfaprechp, 0, self.is_dram)
+        driver_c_gate_load = (self.subarray.num_rows + 1) * gate_C(self.g_tp, Wfaprechp, 0, self.is_dram)
         driver_c_wire_load = (self.subarray.num_rows + 1) * c_searchline_metal
         driver_r_wire_load = (self.subarray.num_rows + 1) * r_searchline_metal
 
@@ -595,7 +595,7 @@ class Mat(Component):
 
         rd = tr_R_on(Waddrnandn, NCH, 2, self.is_dram)
         c_intrinsic = drain_C_(Waddrnandn, NCH, 2, 1, self.g_tp.cell_h_def, self.is_dram) + drain_C_(Waddrnandp, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) * 2
-        c_gate_load = gate_C(Wdummyinvn + Wdummyinvp, 0, self.is_dram)
+        c_gate_load = gate_C(self.g_tp, Wdummyinvn + Wdummyinvp, 0, self.is_dram)
         tf = rd * (c_intrinsic + c_gate_load)
         this_delay = horowitz(out_time_ramp, tf, VTHFA3, VTHFA4, RISE)
         out_time_ramp = this_delay / (1 - VTHFA4)
@@ -607,7 +607,7 @@ class Mat(Component):
         c_intrinsic = drain_C_(Wdummyinvn, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + drain_C_(Wdummyinvp, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram)
         Cwire = c_matchline_metal * Htagbits + c_searchline_metal * (self.subarray.num_rows + 1) / 2
         Rwire = r_matchline_metal * Htagbits + r_searchline_metal * (self.subarray.num_rows + 1) / 2
-        c_gate_load = gate_C(Wfanorn + Wfanorp, 0, self.is_dram)
+        c_gate_load = gate_C(self.g_tp, Wfanorn + Wfanorp, 0, self.is_dram)
         tf = rd * (c_intrinsic + Cwire + c_gate_load) + Rwire * (Cwire / 2 + c_gate_load)
         this_delay = horowitz(out_time_ramp, tf, VTHFA4, VTHFA5, FALL)
         out_time_ramp = this_delay / VTHFA5
@@ -615,7 +615,7 @@ class Mat(Component):
 
         dynSearchEng += (c_intrinsic + Cwire + self.subarray.num_rows * c_gate_load) * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
 
-        driver_c_gate_load = gate_C(W_hit_miss_n, 0, self.is_dram, False, False)
+        driver_c_gate_load = gate_C(self.g_tp, W_hit_miss_n, 0, self.is_dram, False, False)
         driver_c_wire_load = self.subarray.C_wl_ram
         driver_r_wire_load = self.subarray.R_wl_ram
 
@@ -623,7 +623,7 @@ class Mat(Component):
 
         rd = tr_R_on(Wfanorn, NCH, 1, self.is_dram)
         c_intrinsic = 2 * drain_C_(Wfanorn, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + drain_C_(Wfanorp, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram)
-        c_gate_load = gate_C(self.ml_to_ram_wl_drv.width_n[0] + self.ml_to_ram_wl_drv.width_p[0], 0, self.is_dram)
+        c_gate_load = gate_C(self.g_tp, self.ml_to_ram_wl_drv.width_n[0] + self.ml_to_ram_wl_drv.width_p[0], 0, self.is_dram)
         tf = rd * (c_intrinsic + c_gate_load)
         this_delay = horowitz(out_time_ramp, tf, 0.5, 0.5, RISE)
         out_time_ramp = this_delay / (1 - 0.5)
@@ -765,7 +765,7 @@ class Mat(Component):
         R_bit_mux = tr_R_on(self.g_tp.w_nmos_b_mux, NCH, 1, self.is_dram)
         C_drain_sense_amp_iso = drain_C_(self.g_tp.w_iso, PCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram)
         R_sense_amp_iso = tr_R_on(self.g_tp.w_iso, PCH, 1, self.is_dram)
-        C_sense_amp_latch = gate_C(self.g_tp.w_sense_p + self.g_tp.w_sense_n, 0, self.is_dram) + \
+        C_sense_amp_latch = gate_C(self.g_tp, self.g_tp.w_sense_p + self.g_tp.w_sense_n, 0, self.is_dram) + \
             drain_C_(self.g_tp.w_sense_n, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
             drain_C_(self.g_tp.w_sense_p, PCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram)
         C_drain_sense_amp_mux = drain_C_(self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram)
@@ -852,7 +852,7 @@ class Mat(Component):
         self.leak_power_sense_amps_open_page_state = lkgReadPh * self.g_tp.peri_global.Vdd
 
         # Load seen by sense amp.
-        C_ld = gate_C(self.g_tp.w_sense_p + self.g_tp.w_sense_n, 0, self.is_dram) + \
+        C_ld = gate_C(self.g_tp, self.g_tp.w_sense_p + self.g_tp.w_sense_n, 0, self.is_dram) + \
                drain_C_(self.g_tp.w_sense_n, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
                drain_C_(self.g_tp.w_sense_p, PCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
                drain_C_(self.g_tp.w_iso, PCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
@@ -872,7 +872,7 @@ class Mat(Component):
         # Delay of signal through pass-transistor of first level of sense-amp mux to input of inverter-buffer.
         rd = tr_R_on(self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
         C_ld = self.dp.Ndsam_lev_1 * drain_C_(self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
-               gate_C(self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
+               gate_C(self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
         tf = rd * C_ld
         this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
@@ -884,7 +884,7 @@ class Mat(Component):
         rd = tr_R_on(self.g_tp.min_w_nmos_, NCH, 1, self.is_dram)
         C_ld = drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
                drain_C_(p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               gate_C(self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
+               gate_C(self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
         tf = rd * C_ld
         this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
@@ -909,7 +909,7 @@ class Mat(Component):
         # Delay of signal through pass-transistor to input of subarray output driver.
         rd = tr_R_on(self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
         C_ld = self.dp.Ndsam_lev_2 * drain_C_(self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
-               gate_C(self.subarray_out_wire.repeater_size * (self.subarray_out_wire.wire_length / self.subarray_out_wire.repeater_spacing) * self.g_tp.min_w_nmos_ * (1 + p_to_n_sz_r), 0.0, self.is_dram)
+               gate_C(self.g_tp, self.subarray_out_wire.repeater_size * (self.subarray_out_wire.wire_length / self.subarray_out_wire.repeater_spacing) * self.g_tp.min_w_nmos_ * (1 + p_to_n_sz_r), 0.0, self.is_dram)
         tf = rd * C_ld
         this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
@@ -924,7 +924,7 @@ class Mat(Component):
         tagbits_ = self.dp.tagbits // 4  # Assuming there are 4 quarter comparators. input tagbits is already a multiple of 4.
 
         # First Inverter
-        Ceq = gate_C(self.g_tp.w_comp_inv_n2 + self.g_tp.w_comp_inv_p2, 0, self.is_dram) + \
+        Ceq = gate_C(self.g_tp, self.g_tp.w_comp_inv_n2 + self.g_tp.w_comp_inv_p2, 0, self.is_dram) + \
               drain_C_(self.g_tp.w_comp_inv_p1, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
               drain_C_(self.g_tp.w_comp_inv_n1, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram)
         Req = tr_R_on(self.g_tp.w_comp_inv_p1, PCH, 1, self.is_dram)
@@ -937,7 +937,7 @@ class Mat(Component):
         gatelkgCurrent = cmos_Ig_leakage(self.g_tp.w_comp_inv_n1, self.g_tp.w_comp_inv_p1, 1, inv, self.is_dram) * 4 * A
 
         # Second Inverter
-        Ceq = gate_C(self.g_tp.w_comp_inv_n3 + self.g_tp.w_comp_inv_p3, 0, self.is_dram) + \
+        Ceq = gate_C(self.g_tp, self.g_tp.w_comp_inv_n3 + self.g_tp.w_comp_inv_p3, 0, self.is_dram) + \
               drain_C_(self.g_tp.w_comp_inv_p2, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
               drain_C_(self.g_tp.w_comp_inv_n2, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram)
         Req = tr_R_on(self.g_tp.w_comp_inv_n2, NCH, 1, self.is_dram)
@@ -949,7 +949,7 @@ class Mat(Component):
         gatelkgCurrent += cmos_Ig_leakage(self.g_tp.w_comp_inv_n2, self.g_tp.w_comp_inv_p2, 1, inv, self.is_dram) * 4 * A
 
         # Third Inverter
-        Ceq = gate_C(self.g_tp.w_eval_inv_n + self.g_tp.w_eval_inv_p, 0, self.is_dram) + \
+        Ceq = gate_C(self.g_tp, self.g_tp.w_eval_inv_n + self.g_tp.w_eval_inv_p, 0, self.is_dram) + \
               drain_C_(self.g_tp.w_comp_inv_p3, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
               drain_C_(self.g_tp.w_comp_inv_n3, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram)
         Req = tr_R_on(self.g_tp.w_comp_inv_p3, PCH, 1, self.is_dram)
@@ -970,7 +970,7 @@ class Mat(Component):
         c1 = (tagbits_) * (drain_C_(self.g_tp.w_comp_n, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
                            drain_C_(self.g_tp.w_comp_n, NCH, 2, 1, self.g_tp.cell_h_def, self.is_dram)) + \
              drain_C_(self.g_tp.w_comp_p, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-             gate_C(WmuxdrvNANDn + WmuxdrvNANDp, 0, self.is_dram)
+             gate_C(self.g_tp, WmuxdrvNANDn + WmuxdrvNANDp, 0, self.is_dram)
         self.power_comparator.readOp.dynamic += 0.5 * c2 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd * 4 * A
         self.power_comparator.readOp.dynamic += c1 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd * (A - 1)
         lkgCurrent += cmos_Isub_leakage(self.g_tp.w_eval_inv_n, self.g_tp.w_eval_inv_p, 1, inv, self.is_dram) * 4 * A

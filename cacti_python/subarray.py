@@ -77,7 +77,7 @@ class Subarray(Component):
         C_b_row_drain_C = 0
         
         if self.dp.is_dram:
-            self.C_wl = (parameter.gate_C_pass(self.g_tp.dram.cell_a_w, self.g_tp.dram.b_w, True, True) + c_w_metal) * self.num_cols
+            self.C_wl = (parameter.gate_C_pass(self.g_tp, self.g_tp.dram.cell_a_w, self.g_tp.dram.b_w, True, True) + c_w_metal) * self.num_cols
             if self.dp.ram_cell_tech_type == comm_dram:
                 self.C_bl = self.num_rows * C_b_metal
             else:
@@ -86,7 +86,7 @@ class Subarray(Component):
         else:
             if not (self.is_fa or self.dp.pure_cam):
                 self.C_wl = (
-                    parameter.gate_C_pass(self.g_tp.sram.cell_a_w, (self.g_tp.sram.b_w - 2 * self.g_tp.sram.cell_a_w) / 2.0, False, True) * 2 +
+                    parameter.gate_C_pass(self.g_tp, self.g_tp.sram.cell_a_w, (self.g_tp.sram.b_w - 2 * self.g_tp.sram.cell_a_w) / 2.0, False, True) * 2 +
                     c_w_metal
                 ) * self.num_cols
                 C_b_row_drain_C = parameter.drain_C_(self.g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
@@ -95,7 +95,7 @@ class Subarray(Component):
                 c_w_metal = self.cam_cell.w * self.g_tp.wire_local.C_per_um
                 r_w_metal = self.cam_cell.w * self.g_tp.wire_local.R_per_um
                 self.C_wl_cam = (
-                    parameter.gate_C_pass(self.g_tp.cam.cell_a_w, (self.g_tp.cam.b_w - 2 * self.g_tp.cam.cell_a_w) / 2.0, False, True) * 2 +
+                    parameter.gate_C_pass(self.g_tp, self.g_tp.cam.cell_a_w, (self.g_tp.cam.b_w - 2 * self.g_tp.cam.cell_a_w) / 2.0, False, True) * 2 +
                     c_w_metal
                 ) * self.num_cols_fa_cam
                 self.R_wl_cam = r_w_metal * self.num_cols_fa_cam
@@ -104,7 +104,7 @@ class Subarray(Component):
                     c_w_metal = self.cell.w * self.g_tp.wire_local.C_per_um
                     r_w_metal = self.cell.w * self.g_tp.wire_local.R_per_um
                     self.C_wl_ram = (
-                        parameter.gate_C_pass(self.g_tp.sram.cell_a_w, (self.g_tp.sram.b_w - 2 * self.g_tp.sram.cell_a_w) / 2.0, False, True) * 2 +
+                        parameter.gate_C_pass(self.g_tp, self.g_tp.sram.cell_a_w, (self.g_tp.sram.b_w - 2 * self.g_tp.sram.cell_a_w) / 2.0, False, True) * 2 +
                         c_w_metal
                     ) * self.num_cols_fa_ram
                     self.R_wl_ram = r_w_metal * self.num_cols_fa_ram

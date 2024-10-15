@@ -7,6 +7,7 @@ from .component import Component, compute_gate_area
 from .const import *
 from . import decoder
 from . import parameter
+from .parameter import gate_C, drain_C_, horowitz, tr_R_on
 
 class Wire(Component):
     global_ = Component()
@@ -232,12 +233,12 @@ class Wire(Component):
     def signal_fall_time(self):
         timeconst = (drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def) +
                      drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-                     gate_C(self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
+                     gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
                     tr_R_on(self.min_w_pmos, PCH, 1)
         rt = horowitz(0, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, FALL) / (self.deviceType.Vdd - self.deviceType.Vth)
         timeconst = (drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def) +
                      drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-                     gate_C(self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
+                     gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
                     tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
         ft = horowitz(rt, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE) / self.deviceType.Vth
         return ft
@@ -246,7 +247,7 @@ class Wire(Component):
         timeconst = (
             parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.gate_C(self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
+            + parameter.gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
         ) * parameter.tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
         rt = (
             parameter.horowitz(
@@ -261,7 +262,7 @@ class Wire(Component):
         timeconst = (
             parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.gate_C(self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
+            + parameter.gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
         ) * parameter.tr_R_on(self.min_w_pmos, PCH, 1)
         ft = parameter.horowitz(
             rt,
@@ -353,15 +354,15 @@ class Wire(Component):
 
         st_eff = sp.sqrt(
             (2 + beta / 1 + beta)
-            * parameter.gate_C(nsize, 0)
+            * parameter.gate_C(self.g_tp, nsize, 0)
             / (
-                parameter.gate_C(2 * self.g_tp.min_w_nmos_, 0)
-                + parameter.gate_C(2 * self.min_w_pmos, 0)
+                parameter.gate_C(self.g_tp, 2 * self.g_tp.min_w_nmos_, 0)
+                + parameter.gate_C(self.g_tp, 2 * self.min_w_pmos, 0)
             )
         )
-        req_cin = ((2 + beta / 1 + beta) * parameter.gate_C(nsize, 0)) / st_eff
+        req_cin = ((2 + beta / 1 + beta) * parameter.gate_C(self.g_tp, nsize, 0)) / st_eff
         inv_size = req_cin / (
-            parameter.gate_C(self.min_w_pmos, 0) + parameter.gate_C(self.g_tp.min_w_nmos_, 0)
+            parameter.gate_C(self.g_tp, self.min_w_pmos, 0) + parameter.gate_C(self.g_tp, self.g_tp.min_w_nmos_, 0)
         )
 
         # CHANGE: MAX - can ignore to reduce expression size
@@ -371,8 +372,8 @@ class Wire(Component):
         cap_eq = (
             2 * parameter.drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.drain_C_(2 * self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.gate_C(inv_size * self.g_tp.min_w_nmos_, 0)
-            + parameter.gate_C(inv_size * self.min_w_pmos, 0)
+            + parameter.gate_C(self.g_tp, inv_size * self.g_tp.min_w_nmos_, 0)
+            + parameter.gate_C(self.g_tp, inv_size * self.min_w_pmos, 0)
         )
 
         timeconst = res_eq * cap_eq
@@ -393,7 +394,7 @@ class Wire(Component):
             + parameter.drain_C_(
                 inv_size * self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def
             )
-            + parameter.gate_C(nsize, 0)
+            + parameter.gate_C(self.g_tp, nsize, 0)
         )
         timeconst = res_eq * cap_eq
 
@@ -472,7 +473,7 @@ class Wire(Component):
     def sense_amp_input_cap(self):
         return (
             parameter.drain_C_(self.g_tp.w_iso, PCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.gate_C(self.g_tp.w_sense_en + self.g_tp.w_sense_n, 0)
+            + parameter.gate_C(self.g_tp, self.g_tp.w_sense_en + self.g_tp.w_sense_n, 0)
             + parameter.drain_C_(self.g_tp.w_sense_n, NCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.drain_C_(self.g_tp.w_sense_p, PCH, 1, 1, self.g_tp.cell_h_def)
         )
@@ -483,7 +484,7 @@ class Wire(Component):
         switching = 0
         short_ckt = 0
         tc = 0
-        input_cap = parameter.gate_C(self.g_tp.min_w_nmos_ + self.min_w_pmos, 0)
+        input_cap = parameter.gate_C(self.g_tp, self.g_tp.min_w_nmos_ + self.min_w_pmos, 0)
         out_cap = parameter.drain_C_(
             self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def
         ) + parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
@@ -640,7 +641,7 @@ class Wire(Component):
         switching = 0
         short_ckt = 0
         tc = 0
-        input_cap = parameter.gate_C(self.g_tp.min_w_nmos_ + self.min_w_pmos, 0)
+        input_cap = parameter.gate_C(self.g_tp, self.g_tp.min_w_nmos_ + self.min_w_pmos, 0)
         out_cap = parameter.drain_C_(
             self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def
         ) + parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)

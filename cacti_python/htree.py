@@ -95,20 +95,20 @@ class Htree2(Component):
 
         tc = 2 * parameter.tr_R_on(nsize * self.min_w_nmos, NCH, 1) * (
             parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) * 2 +
-            2 * parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         )
         self.delay += parameter.horowitz(w1.out_rise_time, tc,
                                self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE)
         self.power.readOp.dynamic += 0.5 * (
             2 * parameter.drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            2 * parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
             2 * parameter.drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            2 * parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+            2 * parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.wire_bw
         self.power.readOp.leakage += (self.wire_bw * parameter.cmos_Isub_leakage(nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand)) * self.deviceType.Vdd
         self.power.readOp.gate_leakage += (
@@ -124,14 +124,14 @@ class Htree2(Component):
         size = s1 * (1 + pton_size) / (2 + pton_size + 1 + 2 * pton_size)
 
         s_eff = (
-            parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
             + w1.wire_cap(l_eff * 1e-6, True)
-        ) / parameter.gate_C(s2 * (self.min_w_nmos + self.min_w_pmos), 0)
+        ) / parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         if s_eff == sp.zoo:
             s_eff = 1
 
-        tr_size = parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0) / (
-            2 * s_eff * parameter.gate_C(self.min_w_pmos, 0)
+        tr_size = parameter.gate_C(self.g_tp, s1 * (self.min_w_nmos + self.min_w_pmos), 0) / (
+            2 * s_eff * parameter.gate_C(self.g_tp, self.min_w_pmos, 0)
         )
 
         # CHANGE: MAX - avoiding max to decrease expression size
@@ -142,11 +142,11 @@ class Htree2(Component):
         cap_nand_out = (
             parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.gate_C(tr_size * self.min_w_pmos, 0)
+            parameter.gate_C(self.g_tp, tr_size * self.min_w_pmos, 0)
         )
         cap_ptrans_out = (
             2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
-            parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         )
 
         tc = res_nor * cap_nand_out + (res_nor + res_ptrans) * cap_ptrans_out
@@ -160,50 +160,50 @@ class Htree2(Component):
         self.power.readOp.dynamic += 0.5 * (
             2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.gate_C(tr_size * self.min_w_pmos, 0)
+            parameter.gate_C(self.g_tp, tr_size * self.min_w_pmos, 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
             2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.gate_C(tr_size * self.min_w_pmos, 0)
+            parameter.gate_C(self.g_tp, tr_size * self.min_w_pmos, 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # NOT
         self.power.readOp.dynamic += 0.5 * (
             parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.gate_C(size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
             parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.gate_C(size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # NOR
         self.power.readOp.dynamic += 0.5 * (
             parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             2 * parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.gate_C(tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
             parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             2 * parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.gate_C(tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # Output transistor
         self.power.readOp.dynamic += 0.5 * (
             2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
-            parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
             2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
-            parameter.gate_C(s1 * (self.min_w_nmos + self.min_w_pmos), 0)
+            parameter.gate_C(self.g_tp, s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         if self.uca_tree:
