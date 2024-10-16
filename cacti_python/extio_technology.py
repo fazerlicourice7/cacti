@@ -147,6 +147,12 @@ class IOTechParam:
         self.num_loads = num_loads
         self.frequency = freq
 
+        print(f"io_type: {self.io_type}, num_mem_dq: {self.num_mem_dq}, mem_data_width: {self.mem_data_width}, "
+        f"num_dq: {self.num_dq}, connection: {self.connection}, num_loads: {self.num_loads}, "
+        f"frequency: {self.frequency}")
+        import time
+        time.sleep(5)
+
         self.num_mem_ca = num_mem_dq * mem_data_width
         self.num_mem_clk = num_mem_dq * (num_dq / mem_data_width) / (g_ip.num_clk / 2)
 
@@ -154,7 +160,7 @@ class IOTechParam:
         # import time
         # time.sleep(5)
 
-        if self.io_type == Mem_IO_type.LPDDR2:
+        if self.io_type == "LPDDR2":
             # KEEP THIS
             # Sensitivity Inputs for Timing and Voltage Noise
             self.k_noise_write_sen = self.k_noise_write * (1 + 0.2 * (self.r_on / 34 - 1) +
@@ -177,7 +183,7 @@ class IOTechParam:
                                                                      0.4 * (self.num_mem_ca / 16 - 1))
             # KEEP THIS
 
-        elif self.io_type == Mem_IO_type.WideIO:
+        elif self.io_type == "WideIO":
             # KEEP THIS
             # Sensitivity Inputs for Timing and Voltage Noise
             self.k_noise_write_sen = self.k_noise_write * (1 + 0.2 * (self.r_on / 50 - 1) +
@@ -197,7 +203,44 @@ class IOTechParam:
                                                                     0.4 * (self.num_mem_ca / 16 - 1))
             # KEEP THIS
 
-        elif self.io_type == Mem_IO_type.DDR3:
+        elif self.io_type == "DDR3":
+            # KEEP THIS
+            # Sensitivity Inputs for Timing and Voltage Noise
+            print("IN DDR3")
+            self.k_noise_write_sen = self.k_noise_write * (1 + 0.1 * (self.rtt1_dq_write / 60 - 1) +
+                                                          0.2 * (self.rtt2_dq_write / 60 - 1) +
+                                                          0.2 * (self.r_on / 34 - 1) +
+                                                          0.2 * (self.num_mem_dq / 2 - 1))
+
+            self.k_noise_read_sen = self.k_noise_read * (1 + 0.1 * (self.rtt1_dq_read / 60 - 1) +
+                                                        0.2 * (self.rtt2_dq_read / 60 - 1) +
+                                                        0.2 * (self.r_on / 34 - 1) +
+                                                        0.2 * (self.num_mem_dq / 2 - 1))
+
+            self.k_noise_addr_sen = self.k_noise_addr * (1 + 0.1 * (self.rtt_ca / 50 - 1) +
+                                                        0.2 * (self.r_on / 34 - 1) +
+                                                        0.2 * (self.num_mem_ca / 16 - 1))
+
+            self.t_jitter_setup_sen = self.t_jitter_setup * (1 + 0.2 * (self.rtt1_dq_write / 60 - 1) +
+                                                            0.3 * (self.rtt2_dq_write / 60 - 1) +
+                                                            0.1 * (self.r_on / 34 - 1) +
+                                                            0.3 * (self.num_mem_dq / 2 - 1))
+
+            self.t_jitter_hold_sen = self.t_jitter_hold * (1 + 0.2 * (self.rtt1_dq_write / 60 - 1) +
+                                                          0.3 * (self.rtt2_dq_write / 60 - 1) +
+                                                          0.1 * (self.r_on / 34 - 1) +
+                                                          0.3 * (self.num_mem_dq / 2 - 1))
+
+            self.t_jitter_addr_setup_sen = self.t_jitter_addr_setup * (1 + 0.2 * (self.rtt_ca / 50 - 1) +
+                                                                      0.1 * (self.r_on / 34 - 1) +
+                                                                      0.4 * (self.num_mem_ca / 16 - 1))
+
+            self.t_jitter_addr_hold_sen = self.t_jitter_addr_hold * (1 + 0.2 * (self.rtt_ca / 50 - 1) +
+                                                                    0.1 * (self.r_on / 34 - 1) +
+                                                                    0.4 * (self.num_mem_ca / 16 - 1))
+            # KEEP THIS
+
+        elif self.io_type == "DDR4":
             # KEEP THIS
             # Sensitivity Inputs for Timing and Voltage Noise
             self.k_noise_write_sen = self.k_noise_write * (1 + 0.1 * (self.rtt1_dq_write / 60 - 1) +
@@ -233,43 +276,7 @@ class IOTechParam:
                                                                     0.4 * (self.num_mem_ca / 16 - 1))
             # KEEP THIS
 
-        elif self.io_type == Mem_IO_type.DDR4:
-            # KEEP THIS
-            # Sensitivity Inputs for Timing and Voltage Noise
-            self.k_noise_write_sen = self.k_noise_write * (1 + 0.1 * (self.rtt1_dq_write / 60 - 1) +
-                                                          0.2 * (self.rtt2_dq_write / 60 - 1) +
-                                                          0.2 * (self.r_on / 34 - 1) +
-                                                          0.2 * (self.num_mem_dq / 2 - 1))
-
-            self.k_noise_read_sen = self.k_noise_read * (1 + 0.1 * (self.rtt1_dq_read / 60 - 1) +
-                                                        0.2 * (self.rtt2_dq_read / 60 - 1) +
-                                                        0.2 * (self.r_on / 34 - 1) +
-                                                        0.2 * (self.num_mem_dq / 2 - 1))
-
-            self.k_noise_addr_sen = self.k_noise_addr * (1 + 0.1 * (self.rtt_ca / 50 - 1) +
-                                                        0.2 * (self.r_on / 34 - 1) +
-                                                        0.2 * (self.num_mem_ca / 16 - 1))
-
-            self.t_jitter_setup_sen = self.t_jitter_setup * (1 + 0.2 * (self.rtt1_dq_write / 60 - 1) +
-                                                            0.3 * (self.rtt2_dq_write / 60 - 1) +
-                                                            0.1 * (self.r_on / 34 - 1) +
-                                                            0.3 * (self.num_mem_dq / 2 - 1))
-
-            self.t_jitter_hold_sen = self.t_jitter_hold * (1 + 0.2 * (self.rtt1_dq_write / 60 - 1) +
-                                                          0.3 * (self.rtt2_dq_write / 60 - 1) +
-                                                          0.1 * (self.r_on / 34 - 1) +
-                                                          0.3 * (self.num_mem_dq / 2 - 1))
-
-            self.t_jitter_addr_setup_sen = self.t_jitter_addr_setup * (1 + 0.2 * (self.rtt_ca / 50 - 1) +
-                                                                      0.1 * (self.r_on / 34 - 1) +
-                                                                      0.4 * (self.num_mem_ca / 16 - 1))
-
-            self.t_jitter_addr_hold_sen = self.t_jitter_addr_hold * (1 + 0.2 * (self.rtt_ca / 50 - 1) +
-                                                                    0.1 * (self.r_on / 34 - 1) +
-                                                                    0.4 * (self.num_mem_ca / 16 - 1))
-            # KEEP THIS
-
-        elif self.io_type == Mem_IO_type.Serial:
+        elif self.io_type == "Serial":
             # KEEP THIS
             self.t_jitter_setup_sen = self.t_jitter_setup
             self.t_jitter_hold_sen = self.t_jitter_hold
@@ -302,8 +309,10 @@ class IOTechParam:
         self.v_sw_data_write_line = self.vdd_io * self.rpar_write / (self.r_on + self.rpar_write)
         # KEEP THIS
 
-    def frequency_index(self, type: Mem_IO_type):
-        if type == Mem_IO_type.DDR3:
+    def frequency_index(self, mem_type: Mem_IO_type):
+        print(f"freak type {mem_type}")
+        if mem_type == "DDR3":
+            print("freak DDR3")
             if self.frequency <= 400:
                 return 0
             elif self.frequency <= 533:
@@ -312,7 +321,7 @@ class IOTechParam:
                 return 2
             else:
                 return 3
-        elif type == Mem_IO_type.DDR4:
+        elif mem_type == "DDR4":
             if self.frequency <= 800:
                 return 0
             elif self.frequency <= 933:

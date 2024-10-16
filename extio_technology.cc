@@ -1,5 +1,6 @@
 #include "extio_technology.h"
 #include "cacti_interface.h"
+#include "logger.h"
 #include <cassert>
 
 /* This file contains configuration parameters, including
@@ -1232,6 +1233,7 @@ IOTechParam::IOTechParam(InputParameter * g_ip, Mem_IO_type io_type1, int num_me
      rtt1_dq_write = g_ip->rtt_value;
      rtt2_dq_write = g_ip->rtt_value;
      */
+     log_double("connecion", connection);
      switch(connection)
      {
 		 case(0):

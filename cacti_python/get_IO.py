@@ -203,8 +203,10 @@ class Mem_IO_type():
     Serial = "Serial"  
 
 def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, connection, num_loads, freq):
-    def frequency_index(type: Mem_IO_type):
-      if type == Mem_IO_type.DDR3:
+    def frequency_index(mem_type: Mem_IO_type):
+      print(f"THIS IS THE TYPE FREAK: {mem_type}")
+      if mem_type == "DDR3":
+          print(f"IN DDR3 FREAK: {mem_type} {frequency}")
           if frequency <= 400:
               return 0
           elif frequency <= 533:
@@ -213,7 +215,7 @@ def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, co
               return 2
           else:
               return 3
-      elif type == Mem_IO_type.DDR4:
+      elif mem_type == "DDR4":
           if frequency <= 800:
               return 0
           elif frequency <= 933:
@@ -229,14 +231,19 @@ def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, co
     num_mem_dq = num_mem_dq
     mem_data_width = mem_data_width
     num_dq = num_dq
+    print(f"connection is {connection}")
     connection = connection if connection != None else "UDIMM"
     num_loads = num_loads
     frequency = freq
 
     num_mem_ca = num_mem_dq * mem_data_width
     num_mem_clk = num_mem_dq * (num_dq / mem_data_width) / (g_ip.num_clk / 2)
+
+    print(f"IO_TYPE: {io_type}; CONNECTION: {connection}")
+    import time
+    time.sleep(6)
     
-    if io_type == Mem_IO_type.LPDDR2:
+    if io_type == "LPDDR2":
         # Technology Parameters
         IO_tech_dict['vdd_io'] = 1.2
         IO_tech_dict['v_sw_clk'] = 1
@@ -460,7 +467,7 @@ def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, co
         IO_tech_dict['phy_deskew_wtime'] = 0
         IO_tech_dict['phy_vrefgen_wtime'] = 0
 
-    elif io_type == Mem_IO_type.DDR3:
+    elif io_type == "DDR3":
         # Default parameters for DDR3
         IO_tech_dict['vdd_io'] = 1.5
         IO_tech_dict['v_sw_clk'] = 0.75
@@ -520,13 +527,22 @@ def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, co
             IO_tech_dict['rtt2_dq_read'] = rtt2_rd_lrdimm_ddr3[num_loads - 1][frequency_index(io_type)]
 
         # print(f'rtt1_dq_read {IO_tech_dict["rtt1_dq_read"]}; {num_loads - 1}; {frequency_index(io_type)}; {connection}')
+        # Printing with f-strings
+        print(f"rtt1_dq_write: {IO_tech_dict['rtt1_dq_write']}")
+        print(f"rtt2_dq_write: {IO_tech_dict['rtt2_dq_write']}")
+        print(f"rtt1_dq_read: {IO_tech_dict['rtt1_dq_read']}")
+        print(f"rtt2_dq_read: {IO_tech_dict['rtt2_dq_read']}")
+
+        # Example for printing num_loads and g_ip.ron_value (assuming g_ip is defined)
+        print(f"num_loads: {num_loads}")
+        print(f"ron_value: {g_ip.ron_value}")
 
         IO_tech_dict['rtt_ca'] = 50
         IO_tech_dict['rs1_dq'] = 15
         IO_tech_dict['rs2_dq'] = 15
         IO_tech_dict['r_stub_ca'] = 0
         IO_tech_dict['r_on'] = g_ip.ron_value
-        # print(f"IN DDR3 {g_ip.ron_value}")
+        print(f"IN DDR3 {g_ip.ron_value}")
         IO_tech_dict['r_on_ca'] = 50
         IO_tech_dict['z0'] = 50
         IO_tech_dict['t_flight'] = g_ip.tflight_value
@@ -605,7 +621,7 @@ def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, co
         IO_tech_dict['phy_vrefgen_wtime'] = 0.5
 
 
-    elif io_type == Mem_IO_type.DDR4:
+    elif io_type == "DDR4":
         # Default parameters for DDR4
         IO_tech_dict['vdd_io'] = 1.2
         IO_tech_dict['v_sw_clk'] = 0.6
@@ -746,7 +762,7 @@ def scan_IO(IO_tech_dict, g_ip, io_type1, num_mem_dq, mem_data_width, num_dq, co
         IO_tech_dict['phy_vrefgen_wtime'] = 0.5
 
 
-    elif io_type == Mem_IO_type.Serial:
+    elif io_type == "Serial":
         # Default parameters for Serial
         # IO Supply voltage (V)
         IO_tech_dict['vdd_io'] = 1.2

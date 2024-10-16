@@ -54232,6 +54232,7 @@ width: 0.000000e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
 gate_C: 0.000000e+00
+connecion: 0.000000e+00
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -55193,10 +55194,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -56303,10 +56304,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -56925,82 +56926,82 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -57015,91 +57016,91 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.660538e-01
+width: 5.663515e-01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.098315e-16
+gate_C: 7.102047e-16
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.660538e-01
+width: 5.663515e-01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.098315e-16
+gate_C: 7.102047e-16
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.660538e-01
+width: 5.663515e-01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.098315e-16
+gate_C: 7.102047e-16
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.240982e+00
+width: 4.242148e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.318191e-15
+gate_C: 5.319654e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.240982e+00
+width: 4.242148e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.318191e-15
+gate_C: 5.319654e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.889097e-01
+width: 7.893245e-01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.892927e-16
+gate_C: 9.898129e-16
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.889097e-01
+width: 7.893245e-01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.892927e-16
+gate_C: 9.898129e-16
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.272294e+01
+width: 1.272644e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.595457e-14
+gate_C: 1.595896e-14
 IN MAT
 5!
 C_g_ideal: 8.450000e-16
@@ -57494,10 +57495,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -57999,262 +58000,136 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.429000e-01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 4.299966e-16
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.031565e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.293582e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.031565e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.293582e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.031565e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.293582e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 7.728676e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 9.691760e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 7.728676e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 9.691760e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.437693e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.802866e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.437693e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.802866e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -58269,91 +58144,217 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.750040e+00
+width: 1.032107e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.194550e-15
+gate_C: 1.294262e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.750040e+00
+width: 1.032107e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.194550e-15
+gate_C: 1.294262e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.750040e+00
+width: 1.032107e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.194550e-15
+gate_C: 1.294262e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.728676e+00
+width: 7.730803e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.691760e-15
+gate_C: 9.694427e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.728676e+00
+width: 7.730803e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.691760e-15
+gate_C: 9.694427e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.439032e+00
+width: 1.438448e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.058546e-15
+gate_C: 1.803814e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.439032e+00
+width: 1.438448e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.058546e-15
+gate_C: 1.803814e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.318603e+01
+width: 2.319241e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.907528e-14
+gate_C: 2.908328e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.319241e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.908328e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.319241e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.908328e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.319241e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.908328e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.429000e-01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.299966e-16
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.750922e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.195657e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.319241e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.908328e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.750922e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.195657e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.750922e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.195657e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 7.730803e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 9.694427e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 7.730803e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 9.694427e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.440262e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.060088e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.440262e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.060088e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.319241e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.908328e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.319241e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.908328e-14
 IN MAT
 5!
 C_g_ideal: 8.450000e-16
@@ -58730,10 +58731,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -59163,316 +59164,190 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.429000e-01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 4.299966e-16
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.131099e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.418398e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.131099e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.418398e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.131099e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.418398e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 8.474405e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.062690e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 8.474405e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.062690e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.576413e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.976822e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.576413e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.976822e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -59487,118 +59362,118 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.457360e+00
+width: 1.131694e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.827530e-15
+gate_C: 1.419144e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.457360e+00
+width: 1.131694e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.827530e-15
+gate_C: 1.419144e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.457360e+00
+width: 1.131694e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.827530e-15
+gate_C: 1.419144e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 8.474405e+00
+width: 8.476737e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.062690e-14
+gate_C: 1.062983e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 8.474405e+00
+width: 8.476737e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.062690e-14
+gate_C: 1.062983e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.031124e+00
+width: 1.577242e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.547030e-15
+gate_C: 1.977862e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.031124e+00
+width: 1.577242e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.547030e-15
+gate_C: 1.977862e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -59613,91 +59488,217 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.131099e+00
+width: 1.458107e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.418398e-15
+gate_C: 1.828466e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.131099e+00
+width: 1.458107e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.418398e-15
+gate_C: 1.828466e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.131099e+00
+width: 1.458107e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.418398e-15
+gate_C: 1.828466e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 8.474405e+00
+width: 8.476737e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.062690e-14
+gate_C: 1.062983e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 8.474405e+00
+width: 8.476737e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.062690e-14
+gate_C: 1.062983e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.576413e+00
+width: 2.032165e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.976822e-15
+gate_C: 2.548335e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.576413e+00
+width: 2.032165e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.976822e-15
+gate_C: 2.548335e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.542322e+01
+width: 2.543021e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.188071e-14
+gate_C: 3.188948e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.543021e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.188948e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.543021e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.188948e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.543021e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.188948e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.429000e-01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.299966e-16
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.131694e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.419144e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.543021e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.188948e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.131694e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.419144e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.131694e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.419144e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 8.476737e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.062983e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 8.476737e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.062983e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.577242e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.977862e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.577242e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.977862e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.543021e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.188948e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.543021e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.188948e-14
 IN MAT
 5!
 C_g_ideal: 8.450000e-16
@@ -60074,10 +60075,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -60480,235 +60481,235 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -60732,10 +60733,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.007343e+00
+width: 2.008306e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.517208e-15
+gate_C: 2.518416e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -60750,19 +60751,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.007343e+00
+width: 2.008306e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.517208e-15
+gate_C: 2.518416e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.007343e+00
+width: 2.008306e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.517208e-15
+gate_C: 2.518416e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -60786,28 +60787,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.797636e+00
+width: 2.798978e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.508235e-15
+gate_C: 3.509919e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.797636e+00
+width: 2.798978e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.508235e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 3.509919e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -60822,154 +60814,37 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.429000e-01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.299966e-16
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.907756e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 6.154326e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.907756e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 6.154326e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.907756e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 6.154326e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.571213e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.970301e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.571213e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.970301e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.839943e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 8.577289e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.839943e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 8.577289e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.713640e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 5.910904e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -60984,118 +60859,118 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.048568e+00
+width: 4.910144e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.314904e-15
+gate_C: 6.157321e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.048568e+00
+width: 4.910144e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.314904e-15
+gate_C: 6.157321e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.048568e+00
+width: 4.910144e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.314904e-15
+gate_C: 6.157321e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.856066e+00
+width: 1.571646e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.851507e-15
+gate_C: 1.970843e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.856066e+00
+width: 1.571646e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.851507e-15
+gate_C: 1.970843e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.461390e+00
+width: 6.843272e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.832583e-15
+gate_C: 8.581463e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.461390e+00
+width: 6.843272e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.832583e-15
+gate_C: 8.581463e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 4.714937e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 5.912530e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -61110,91 +60985,217 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.453878e+00
+width: 1.049119e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.077163e-15
+gate_C: 1.315595e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.453878e+00
+width: 1.049119e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.077163e-15
+gate_C: 1.315595e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.453878e+00
+width: 1.049119e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.077163e-15
+gate_C: 1.315595e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.856066e+00
+width: 7.858228e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.851507e-15
+gate_C: 9.854217e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.856066e+00
+width: 7.858228e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.851507e-15
+gate_C: 9.854217e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.419972e+00
+width: 1.462158e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.288644e-15
+gate_C: 1.833546e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.419972e+00
+width: 1.462158e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.288644e-15
+gate_C: 1.833546e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.356820e+01
+width: 2.357468e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.955452e-14
+gate_C: 2.956265e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.357468e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.956265e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.357468e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.956265e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.357468e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.956265e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.429000e-01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.299966e-16
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.455072e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.078661e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.357468e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.956265e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.455072e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.078661e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.455072e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.078661e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 7.858228e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 9.854217e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 7.858228e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 9.854217e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.421636e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.290732e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.421636e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.290732e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.357468e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.956265e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.357468e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.956265e-14
 IN MAT
 5!
 C_g_ideal: 8.450000e-16
@@ -61535,10 +61536,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -61941,235 +61942,235 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -62193,10 +62194,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.410980e+00
+width: 2.412102e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.023368e-15
+gate_C: 3.024776e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -62211,19 +62212,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.410980e+00
+width: 2.412102e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.023368e-15
+gate_C: 3.024776e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.410980e+00
+width: 2.412102e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.023368e-15
+gate_C: 3.024776e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -62247,28 +62248,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.360184e+00
+width: 3.361749e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.213671e-15
+gate_C: 4.215633e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.360184e+00
+width: 3.361749e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.213671e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 4.215633e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -62283,154 +62275,37 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.429000e-01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.299966e-16
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.747401e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.207240e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.747401e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.207240e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.747401e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.207240e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.944543e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.438456e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.944543e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.438456e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 8.010157e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.004474e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 8.010157e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.004474e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.833628e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.315369e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -62445,118 +62320,118 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.297713e+00
+width: 5.750210e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.627333e-15
+gate_C: 7.210764e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.297713e+00
+width: 5.750210e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.627333e-15
+gate_C: 7.210764e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.297713e+00
+width: 5.750210e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.627333e-15
+gate_C: 7.210764e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.722713e+00
+width: 1.945077e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.219228e-14
+gate_C: 2.439127e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.722713e+00
+width: 1.945077e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.219228e-14
+gate_C: 2.439127e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.808624e+00
+width: 8.014073e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.268015e-15
+gate_C: 1.004965e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.808624e+00
+width: 8.014073e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.268015e-15
+gate_C: 1.004965e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 5.835232e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 7.317381e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -62571,91 +62446,217 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.873700e+00
+width: 1.298396e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.603620e-15
+gate_C: 1.628188e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.873700e+00
+width: 1.298396e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.603620e-15
+gate_C: 1.628188e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.873700e+00
+width: 1.298396e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.603620e-15
+gate_C: 1.628188e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.722713e+00
+width: 9.725387e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.219228e-14
+gate_C: 1.219564e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.722713e+00
+width: 9.725387e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.219228e-14
+gate_C: 1.219564e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.005078e+00
+width: 1.809575e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.022368e-15
+gate_C: 2.269207e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.005078e+00
+width: 1.809575e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.022368e-15
+gate_C: 2.269207e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.916814e+01
+width: 2.917616e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.657684e-14
+gate_C: 3.658691e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.917616e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.658691e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.917616e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.658691e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.917616e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.658691e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.429000e-01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.299966e-16
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.875105e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.605382e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.917616e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.658691e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.875105e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.605382e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.875105e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.605382e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 9.725387e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.219564e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 9.725387e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.219564e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 4.007036e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 5.024824e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 4.007036e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 5.024824e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.917616e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.658691e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.917616e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.658691e-14
 IN MAT
 5!
 C_g_ideal: 8.450000e-16
@@ -62996,10 +62997,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63258,343 +63259,343 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63618,10 +63619,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.510878e+00
+width: 3.512378e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.402642e-15
+gate_C: 4.404522e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63636,19 +63637,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.510878e+00
+width: 3.512378e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.402642e-15
+gate_C: 4.404522e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.510878e+00
+width: 3.512378e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.402642e-15
+gate_C: 4.404522e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63672,28 +63673,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.893114e+00
+width: 4.895204e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 6.135965e-15
+gate_C: 6.138585e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.893114e+00
+width: 4.895204e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 6.135965e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 6.138585e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63708,28 +63700,37 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 9.265073e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63744,109 +63745,109 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.060491e+01
+width: 1.061000e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.329855e-14
+gate_C: 1.330494e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.060491e+01
+width: 1.061000e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.329855e-14
+gate_C: 1.330494e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.060491e+01
+width: 1.061000e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.329855e-14
+gate_C: 1.330494e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.087508e+01
+width: 3.088358e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.871735e-14
+gate_C: 3.872800e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.087508e+01
+width: 3.088358e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.871735e-14
+gate_C: 3.872800e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.478007e+01
+width: 1.478717e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.853421e-14
+gate_C: 1.854311e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.478007e+01
+width: 1.478717e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.853421e-14
+gate_C: 1.854311e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 9.262524e+01
+width: 9.265073e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.161521e-13
+gate_C: 1.161840e-13
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63870,10 +63871,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.976683e+00
+width: 1.977634e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.478761e-15
+gate_C: 2.479953e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63888,19 +63889,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.976683e+00
+width: 1.977634e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.478761e-15
+gate_C: 2.479953e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.976683e+00
+width: 1.977634e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.478761e-15
+gate_C: 2.479953e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63924,28 +63925,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.754905e+00
+width: 2.756230e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.454651e-15
+gate_C: 3.456312e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.754905e+00
+width: 2.756230e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.454651e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 3.456312e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -63960,154 +63952,37 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.429000e-01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.299966e-16
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.302454e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 6.649277e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.302454e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 6.649277e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 5.302454e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 6.649277e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.543754e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.935868e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.543754e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.935868e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 7.390034e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 9.267103e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 7.390034e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 9.267103e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 4.631262e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 5.807603e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -64122,118 +63997,118 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.030243e+00
+width: 5.305000e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.291924e-15
+gate_C: 6.652470e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.030243e+00
+width: 5.305000e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.291924e-15
+gate_C: 6.652470e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.030243e+00
+width: 5.305000e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.291924e-15
+gate_C: 6.652470e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.718770e+00
+width: 1.544179e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.679338e-15
+gate_C: 1.936400e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.718770e+00
+width: 1.544179e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.679338e-15
+gate_C: 1.936400e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.435850e+00
+width: 7.393583e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.800556e-15
+gate_C: 9.271553e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.435850e+00
+width: 7.393583e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.800556e-15
+gate_C: 9.271553e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 4.632536e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 5.809200e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -64248,91 +64123,217 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.651227e+00
+width: 1.030784e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.324639e-15
+gate_C: 1.292603e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.651227e+00
+width: 1.030784e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.324639e-15
+gate_C: 1.292603e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.651227e+00
+width: 1.030784e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.324639e-15
+gate_C: 1.292603e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.718770e+00
+width: 7.720894e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.679338e-15
+gate_C: 9.682001e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 7.718770e+00
+width: 7.720894e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 9.679338e-15
+gate_C: 9.682001e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.695017e+00
+width: 1.436605e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.633551e-15
+gate_C: 1.801502e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.695017e+00
+width: 1.436605e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.633551e-15
+gate_C: 1.801502e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.315631e+01
+width: 2.316268e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.903801e-14
+gate_C: 2.904600e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.316268e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.904600e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.316268e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.904600e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.316268e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.904600e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.429000e-01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.299966e-16
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.652500e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.326235e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.316268e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.904600e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.652500e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.326235e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.652500e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.326235e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 7.720894e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 9.682001e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 7.720894e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 9.682001e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.696792e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.635777e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.696792e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.635777e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.316268e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.904600e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 2.316268e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.904600e-14
 IN MAT
 5!
 C_g_ideal: 8.450000e-16
@@ -64655,10 +64656,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -64944,118 +64945,109 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65106,114 +65098,6 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
 width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
@@ -65223,118 +65107,109 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.429000e-01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.299966e-16
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.395569e+00
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.750043e-15
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.395569e+00
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.750043e-15
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.395569e+00
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.750043e-15
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.045586e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.311165e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.045586e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.311165e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.945005e+00
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.439037e-15
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.945005e+00
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.439037e-15
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
+width: 3.143006e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 3.941329e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65376,10 +65251,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.395569e+00
+width: 1.395919e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.750043e-15
+gate_C: 1.750482e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65394,19 +65269,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.395569e+00
+width: 1.395919e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.750043e-15
+gate_C: 1.750482e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.395569e+00
+width: 1.395919e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.750043e-15
+gate_C: 1.750482e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65430,19 +65305,28 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.945005e+00
+width: 1.945493e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.439037e-15
+gate_C: 2.439648e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.945005e+00
+width: 1.945493e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.439037e-15
+gate_C: 2.439648e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.136759e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65466,19 +65350,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65502,10 +65377,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.566750e+00
+width: 1.395919e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.218704e-15
+gate_C: 1.750482e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65520,19 +65395,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.566750e+00
+width: 1.395919e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.218704e-15
+gate_C: 1.750482e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 2.566750e+00
+width: 1.395919e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.218704e-15
+gate_C: 1.750482e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65556,28 +65431,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.577281e+00
+width: 1.945493e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.485910e-15
+gate_C: 2.439648e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.577281e+00
+width: 1.945493e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.485910e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 2.439648e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65592,145 +65458,28 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.429000e-01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 4.299966e-16
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 7.350818e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 9.217926e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 7.350818e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 9.217926e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 7.350818e+00
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 9.217926e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.094761e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.626830e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 2.094761e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 2.626830e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.024484e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.284703e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 1.024484e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 1.284703e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 6.284282e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 7.880490e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65754,10 +65503,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.397750e+00
+width: 2.567931e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.752778e-15
+gate_C: 3.220185e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65772,19 +65521,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.397750e+00
+width: 2.567931e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.752778e-15
+gate_C: 3.220185e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.397750e+00
+width: 2.567931e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.752778e-15
+gate_C: 3.220185e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65808,28 +65557,19 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.948045e+00
+width: 3.578927e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.442849e-15
+gate_C: 4.487975e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.948045e+00
+width: 3.578927e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 2.442849e-15
-5!
-C_g_ideal: 8.450000e-16
-C_overlap: 1.690000e-16
-C_fringe: 8.000000e-17
-n2p_drv_rt: 2.540000e+00
-width: 3.136759e+01
-l_phy: 5.300000e-02
-Cpolywire: 0.000000e+00
-gate_C: 3.933496e-14
+gate_C: 4.487975e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65844,28 +65584,37 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 3.136759e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 3.933496e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 7.882658e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 6.286011e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -65880,91 +65629,343 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.675409e+00
+width: 7.354337e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.608963e-15
+gate_C: 9.222338e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.675409e+00
+width: 7.354337e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.608963e-15
+gate_C: 9.222338e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.675409e+00
+width: 7.354337e+00
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 4.608963e-15
+gate_C: 9.222338e-15
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.047380e+01
+width: 2.095337e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.313415e-14
+gate_C: 2.627553e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.047380e+01
+width: 2.095337e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.313415e-14
+gate_C: 2.627553e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.122421e+00
+width: 1.024974e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 6.423515e-15
+gate_C: 1.285318e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 5.122421e+00
+width: 1.024974e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 6.423515e-15
+gate_C: 1.285318e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 7.882658e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 3.142141e+01
+width: 6.286011e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 3.940245e-14
+gate_C: 7.882658e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.136759e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.933496e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.429000e-01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.299966e-16
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.398451e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.753657e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.136759e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.933496e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.398451e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.753657e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.398451e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.753657e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.045586e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.311165e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.045586e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.311165e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.949022e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.444073e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.949022e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 2.444073e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.136759e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.933496e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.136759e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.933496e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.429000e-01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.299966e-16
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.677168e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.611169e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.677168e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.611169e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.677168e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 4.611169e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.047669e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.313776e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 1.047669e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 1.313776e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 5.124872e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 6.426590e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 5.124872e+00
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 6.426590e-15
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
+5!
+C_g_ideal: 8.450000e-16
+C_overlap: 1.690000e-16
+C_fringe: 8.000000e-17
+n2p_drv_rt: 2.540000e+00
+width: 3.143006e+01
+l_phy: 5.300000e-02
+Cpolywire: 0.000000e+00
+gate_C: 3.941329e-14
 IN MAT
 5!
 C_g_ideal: 8.450000e-16
@@ -66287,10 +66288,10 @@ C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
 C_fringe: 8.000000e-17
 n2p_drv_rt: 2.540000e+00
-width: 1.028457e+01
+width: 1.028740e+01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
-gate_C: 1.289685e-14
+gate_C: 1.290039e-14
 5!
 C_g_ideal: 8.450000e-16
 C_overlap: 1.690000e-16
@@ -120526,3 +120527,4 @@ width: 7.875000e-01
 l_phy: 5.300000e-02
 Cpolywire: 0.000000e+00
 gate_C: 9.875250e-16
+connecion: 0.000000e+00

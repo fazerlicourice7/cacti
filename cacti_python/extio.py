@@ -1,4 +1,7 @@
 from .parameter import g_ip
+from .parameter import g_ip, InputParameter, symbolic_convex_max
+import sympy as sp
+import math
 
 class Extio:
     def __init__(self, io_param):
@@ -154,7 +157,7 @@ class Extio:
             c_line_2T = 1e6 * 2 / (self.io_param.z0 * self.io_param.frequency)
             c_line_3T = 1e6 * 3 / (self.io_param.z0 * self.io_param.frequency)
 
-            # TODO CHECK: ask if just set these values
+            # TODO CHANGE: ask if just set these values
             # if float(self.io_param.t_flight) < 1e3 / (4 * float(self.io_param.frequency)):
             #     c_line = 1e3 * float(self.io_param.t_flight) / float(self.io_param.z0)
 
@@ -170,12 +173,12 @@ class Extio:
             # if float(self.io_param.t_flight_ca) < 1e3 * 3 / (2 * float(self.io_param.frequency)):
             #     c_line_3T = 1e3 * float(self.io_param.t_flight_ca) / float(self.io_param.z0)
 
-            # if g_ip.addr_timing == 1.0:
-            #     c_line_ca = c_line_sdr
-            # elif g_ip.addr_timing == 2.0:
-            #     c_line_ca = c_line_2T
-            # elif g_ip.addr_timing == 3.0:
-            #     c_line_ca = c_line_3T
+            if g_ip.addr_timing == 1.0:
+                c_line_ca = c_line_sdr
+            elif g_ip.addr_timing == 2.0:
+                c_line_ca = c_line_2T
+            elif g_ip.addr_timing == 3.0:
+                c_line_ca = c_line_3T
 
             self.power_dq_write = (g_ip.num_dq * g_ip.activity_dq *
                                    (self.io_param.c_tx + c_line) * self.io_param.vdd_io *
@@ -269,11 +272,14 @@ class Extio:
 
             # CHANGE: Min
             if g_ip.iostate == 'READ':
-                self.io_vmargin = self.io_param.v_sw_data_read_line / 2 - v_noise_read
+                self.io_vmargin = self.approximate_min(self.io_param.v_sw_data_read_line / 2 - v_noise_read, self.io_param.v_sw_addr / 2 - v_noise_addr)
                 # self.io_vmargin = min(self.io_param.v_sw_data_read_line / 2 - v_noise_read,
                 #                       self.io_param.v_sw_addr / 2 - v_noise_addr)
             elif g_ip.iostate == 'WRITE':
-                self.io_vmargin = self.io_param.v_sw_data_write_line / 2 - v_noise_write
+                print(f"v_sw_data_write_line {self.io_param.v_sw_data_write_line / 2 - v_noise_write}")
+                print()
+                print(f"v_sw_addr {self.io_param.v_sw_addr / 2 - v_noise_addr}")
+                self.io_vmargin = self.approximate_min((self.io_param.v_sw_data_write_line / 2 - v_noise_write), (self.io_param.v_sw_addr / 2 - v_noise_addr))
                 # self.io_vmargin = min(self.io_param.v_sw_data_write_line / 2 - v_noise_write,
                 #                       self.io_param.v_sw_addr / 2 - v_noise_addr)
             else:
@@ -333,10 +339,17 @@ class Extio:
 
         # CHANGE: min
         if g_ip.iostate == 'READ':
-            self.io_tmargin = t_margin_read_setup
+            self.io_tmargin = self.approximate_min(t_margin_read_setup, t_margin_read_hold)
+            self.io_tmargin = self.approximate_min(self.io_tmargin, t_margin_addr_setup)
+            self.io_tmargin = self.approximate_min(self.io_tmargin, t_margin_addr_hold)
+            print(f"io margin R: {self.io_tmargin}")
             # self.io_tmargin = min(t_margin_read_setup, t_margin_read_hold, t_margin_addr_setup, t_margin_addr_hold)
+            
         elif g_ip.iostate == 'WRITE':
-            self.io_tmargin = t_margin_write_setup
+            self.io_tmargin = self.approximate_min(t_margin_write_setup, t_margin_write_hold)
+            self.io_tmargin = self.approximate_min(self.io_tmargin, t_margin_addr_setup)
+            self.io_tmargin = self.approximate_min(self.io_tmargin, t_margin_addr_hold)
+            print(f"io margin W: {self.io_tmargin}")
             # self.io_tmargin = min(t_margin_write_setup, t_margin_write_hold, t_margin_addr_setup, t_margin_addr_hold)
         else:
             self.io_tmargin = 0
@@ -344,3 +357,24 @@ class Extio:
         # print("IO Timing Margin (ps) =", self.io_tmargin)
         # print("IO Voltage Margin (V) =", self.io_vmargin)
         return self.io_tmargin
+
+    def approximate_min(self, a, b, k=0.1):
+        """
+        Approximates the minimum of two symbolic expressions using the softmin function
+        with improved numerical stability suitable for SymPy symbolic computation.
+
+        Parameters:
+        - a (sympy.Expr): First symbolic expression.
+        - b (sympy.Expr): Second symbolic expression.
+        - k (float or sympy.Expr): Smoothness parameter.
+
+        Returns:
+        - sympy.Expr: The approximated minimum of a and b as a symbolic expression.
+        """
+        # Compute scaled exponents to prevent overflow
+        exponents = [(-1 * a) / k, (-1 * b) / k]
+        max_exponent = symbolic_convex_max(exponents[0], exponents[1])
+        
+        sum_exp = sp.exp(exponents[0] - max_exponent) + sp.exp(exponents[1] - max_exponent)
+        result = -k * (sp.log(sum_exp) + max_exponent)
+        return result
