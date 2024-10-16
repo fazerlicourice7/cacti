@@ -50,7 +50,7 @@ using namespace std;
 
 int main(int argc,char *argv[])
 {
-	init_log_file("cacti.log");
+	init_log_file("cacti_c.log");
   uca_org_t result;
   if (argc != 53 && argc != 55 && argc !=64)
   {

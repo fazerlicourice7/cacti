@@ -288,6 +288,9 @@ class Mat(Component):
         # assert self.area.w > 0
 
     def compute_delays(self, inrisetime):
+        with open("src/cacti/cacti_debug.log", "a") as file:
+            file.write("NO_SYM IN MAT\n")
+
         if self.is_fa or self.pure_cam:
             outrisetime_search = self.compute_cam_delay(inrisetime)
 

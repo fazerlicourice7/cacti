@@ -1,15 +1,15 @@
 parameters (unit) hp lstp lop lp-dram comm-dram   
 -C_g_ideal (F/um) 6.64e-16 9.15e-16 8.45e-16 1.47e-15 5.08e-16
--C_fringe (F/um) 8e-17 8e-17 8e-17 8e-17 8e-17   
--C_junc (F/um^2) 1e-15 1e-15 1e-15 1e-15 1e-15   
--C_junc_sw (F/um^2) 2.5e-16 2.5e-16 2.5e-16 2.5e-16 2.5e-16   
+-C_fringe (F/um) 8e-17 8e-17 8e-17 8e-17 8e-17
+-C_junc (F/um^2) 1e-15 1e-15 1e-15 1e-15 1e-15
+-C_junc_sw (F/um^2) 2.5e-16 2.5e-16 2.5e-16 2.5e-16 2.5e-16
 -l_phy (um) 0.037 0.075 0.053 0.12 0.09   
 -l_elec (um) 0.0266 0.0486 0.0354 0.0756 0.0576   
--nmos_effective_resistance_multiplier (-) 1.54 1.92 1.77 1.65 1.62   
--Vdd (V) 1.2 1.3 0.9 1.2 1.6   
--Vth (V) 0.23707 0.48203 0.30764 0.4545 1   
+-nmos_effective_resistance_multiplier (-) 1.54 1.92 1.77 1.65 1.62
+-Vdd (V) 1.2 1.3 0.9 1.2 1.6
+-Vth (V) 0.23707 0.48203 0.30764 0.4545 1
 -Vdsat (V) 0.128 0.373 0.113 0.3 0.32
--I_on_n (A/um) 0.0010769 0.0005036 0.0003866 0.0003216 0.0010943   
+-I_on_n (A/um) 0.0010769 0.0005036 0.0003866 0.0003216 0.0010943
 -I_on_p (A/um) 0.0007126 0.0002351 0.0002097 0.0002033 0.00054715   
          
 parameters (unit) temp hp lstp lop lp-dram comm-dram  
@@ -39,7 +39,7 @@ parameters (unit) temp hp lstp lop lp-dram comm-dram
 parameters (unit) hp lstp lop lp-dram comm-dram   
 -C_ox (F/um^2) 1.79e-14 1.22e-14 1.59e-14 1.22e-14 5.65e-15
 -t_ox (um) 0.0012 0.0022 0.0015 0.0022 0.0055   
--n2p_drv_rt (-) 2.45 2.44 2.54 1.95 2.05   
+-n2p_drv_rt (-) 2.45 2.44 2.54 1.95 2.05
 -lch_lk_rdc (-) 1 1 1 1 1   
 -Mobility_n (um^2/V.sec) 3.4216e+10 3.5676e+10 4.6039e+10 3.2395e+10 3.022e+10   
 -gmp_to_gmn_multiplier (-) 1.22 0.88 0.98 0.9 0.9   

@@ -174,7 +174,6 @@ class InputParameter:
         self.repeater_size = 0.0
         
     # fix, issues when called more than once
-    #
     def parse_cfg(self, in_file):
         try:
             with open(in_file, "r") as fp:
@@ -1046,6 +1045,8 @@ class TechnologyParameter:
         in_file_hi = os.path.join(CACTI_DIR, in_file_hi)
         return tech_lo, in_file_lo, tech_hi, in_file_hi
 
+    # ISSUE: This here needs to assign coarse vs fine TSV, so 2 tsv_types... this may be issue with symbolic
+    # Need to add separate TSVs
     def assign_tsv(self, in_file):
         for iter in range(2):  # 0:fine 1:coarse
             tsv_type = g_ip.tsv_is_subarray_type if iter == 0 else g_ip.tsv_os_bank_type
@@ -1617,6 +1618,7 @@ class DeviceType:
         self.long_channel_leakage_reduction = 0
         self.Mobility_n = 0
 
+        # ISSUE: CHECK IF THIS IS ISSUE
         # auxiliary parameters
         self.Vdsat = 0
         self.gmp_to_gmn_multiplier = 0
@@ -1643,6 +1645,8 @@ class DeviceType:
         self.gmp_to_gmn_multiplier = sympy_var['gmp_to_gmn_multiplier']
 
         self.C_overlap = 0.2 * self.C_g_ideal
+
+        # ISSUE: DBOULE CHECK IF THIS SHOULD BE SET TOGETHER
         self.I_off_p = self.I_off_n
         self.I_g_on_p = self.I_g_on_n
 
@@ -2927,17 +2931,30 @@ def logtwo(x):
     return sp.log(x) / sp.log(2.0)
 
 def gate_C(width, wirelength, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):
+    i = 0
     if _is_dram and _is_sram:
         dt = g_tp.dram_acc  # DRAM cell access transistor
+        i = 1
     elif _is_dram and _is_wl_tr:
         dt = g_tp.dram_wl  # DRAM wordline transistor
+        i = 2
     elif not _is_dram and _is_sram:
         dt = g_tp.sram_cell  # SRAM cell access transistor
+        i = 3
     elif _is_sleep_tx:
         dt = g_tp.sleep_tx  # Sleep transistor
+        i = 4
     else:
         dt = g_tp.peri_global
+        i = 5
     
+    d = (dt.C_g_ideal + dt.C_overlap + 3 * dt.C_fringe) * width + dt.l_phy * Cpolywire
+    with open("src/cacti/cacti_debug.log", "a") as file:
+        file.write("C_g_ideal" + str(i) +" : " + str(dt.C_g_ideal) + "\n")
+        file.write("C_fringe" + str(i) +" : " + str(dt.C_fringe) + "\n")
+        file.write("width" + str(i) +" : " + str(width) + "\n")
+        file.write("gate_C" + str(i) +" : " + str(d) + "\n" + "\n")  # Convert d to string
+
     return (dt.C_g_ideal + dt.C_overlap + 3 * dt.C_fringe) * width + dt.l_phy * Cpolywire
 
 def gate_C_pass(width, wirelength, _is_dram=False, _is_sram=False, _is_wl_tr=False, _is_sleep_tx=False):

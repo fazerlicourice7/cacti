@@ -34,6 +34,7 @@
 
 #include "basic_circuit.h"
 #include "parameter.h"
+#include "logger.h"
 #include <iostream>
 #include <assert.h>
 #include <cmath>
@@ -109,23 +110,39 @@ double gate_C(
   if (_is_dram && _is_cell)
   {
     dt = &g_tp.dram_acc;   //DRAM cell access transistor
+    log_message("1!");
   }
   else if (_is_dram && _is_wl_tr)
   {
     dt = &g_tp.dram_wl;    //DRAM wordline transistor
+    log_message("2!");
   }
   else if (!_is_dram && _is_cell)
   {
     dt = &g_tp.sram_cell;  // SRAM cell access transistor
+    log_message("3!");
   }
   else if (_is_sleep_tx)
   {
     dt = &g_tp.sleep_tx;  // Sleep transistor
+    log_message("4!");
   }
   else
   {
     dt = &g_tp.peri_global;
+    log_message("5!");
   }
+
+  double ret_val = (dt->C_g_ideal + dt->C_overlap + 3*dt->C_fringe)*width + dt->l_phy*Cpolywire;
+  printf("ret_val: %e\n", ret_val);
+  log_double("C_g_ideal", dt->C_g_ideal);
+  log_double("C_overlap", dt->C_overlap);
+  log_double("C_fringe", dt->C_fringe);
+  log_double("n2p_drv_rt", dt->n_to_p_eff_curr_drv_ratio);
+  log_double("width", width);
+  log_double("l_phy", dt->l_phy);
+  log_double("Cpolywire", Cpolywire);
+  log_double("gate_C", ret_val);
 
   return (dt->C_g_ideal + dt->C_overlap + 3*dt->C_fringe)*width + dt->l_phy*Cpolywire;
 }
