@@ -97,7 +97,7 @@ class Htree2(Component):
             parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) * 2 +
             2 * parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         )
-        self.delay += parameter.horowitz(w1.out_rise_time, tc,
+        self.delay += parameter.horowitz(self.g_ip, w1.out_rise_time, tc,
                                self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE)
         self.power.readOp.dynamic += 0.5 * (
             2 * parameter.drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
@@ -151,7 +151,7 @@ class Htree2(Component):
 
         tc = res_nor * cap_nand_out + (res_nor + res_ptrans) * cap_ptrans_out
 
-        self.delay += parameter.horowitz(
+        self.delay += parameter.horowitz(self.g_ip, 
             w1.out_rise_time, tc,
             self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE
         )

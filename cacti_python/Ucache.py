@@ -1062,6 +1062,8 @@ def calculate_time_single(
     is_main_mem,
 ):
     dyn_p = DynamicParameter(
+        g_ip,
+        g_tp,
         is_tag,
         pure_ram,
         pure_cam,

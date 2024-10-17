@@ -268,7 +268,7 @@ class Memorybus(Component):
             local_data_r_gate_load = 0
 
             tf = (local_data_c_gate_load + local_data_c_wire_load) * (local_data_r_wire_load + local_data_r_gate_load)
-            this_delay = horowitz(0, tf, 0.5, 0.5, RISE)
+            this_delay = horowitz(self.g_ip, 0, tf, 0.5, 0.5, RISE)
 
             data_drv_c_gate_load = local_data_c_gate_load
             data_drv_c_wire_load = local_data_c_wire_load

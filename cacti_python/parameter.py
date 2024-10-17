@@ -883,7 +883,8 @@ class InputParameter:
             print("Invalid dram_dimm value")
 
 class TechnologyParameter:
-    def __init__(self):
+    def __init__(self, g_ip: InputParameter):
+        self.g_ip = g_ip
         self.reset()
 
     def reset(self):
@@ -951,13 +952,13 @@ class TechnologyParameter:
         self.peri_global = DeviceType()
         self.cam_cell = DeviceType()
         self.sleep_tx = DeviceType()
-        self.wire_local = InterconnectType(self.g_ip,)
-        self.wire_inside_mat = InterconnectType(self.g_ip,)
-        self.wire_outside_mat = InterconnectType(self.g_ip,)
+        self.wire_local = InterconnectType(self.g_ip.F_sz_um,)
+        self.wire_inside_mat = InterconnectType(self.g_ip.F_sz_um,)
+        self.wire_outside_mat = InterconnectType(self.g_ip.F_sz_um,)
         self.scaling_factor = ScalingFactor()
-        self.sram = MemoryType()
-        self.dram = MemoryType()
-        self.cam = MemoryType()
+        self.sram = MemoryType(self.g_ip,)
+        self.dram = MemoryType(self.g_ip,)
+        self.cam = MemoryType(self.g_ip,)
 
         self.dram_cell_I_on = sympy_var['dram_cell_I_on']
         self.dram_cell_Vdd = sympy_var['dram_cell_Vdd']
@@ -1048,7 +1049,7 @@ class TechnologyParameter:
 
     def assign_tsv(self, in_file):
         for iter in range(2):  # 0:fine 1:coarse
-            tsv_type = self.tsv_is_subarray_type if iter == 0 else self.tsv_os_bank_type
+            tsv_type = self.g_ip.tsv_is_subarray_type if iter == 0 else self.g_ip.tsv_os_bank_type
             with open(in_file, "r") as fp:
                 lines = fp.readlines()
 
@@ -1076,7 +1077,7 @@ class TechnologyParameter:
             #     elif line.startswith("-tsv_liner_dielectric_cons"):
             #         self.tsv_liner_dielectric_constant = scan_input_double_tsv_type(line, "-tsv_liner_dielectric_cons", "F/um", self.ic_proj_type, tsv_type, self.print_detail_debug)
             
-            self.tsv_length *= self.num_die_3d
+            self.tsv_length *= self.g_ip.num_die_3d
             if iter == 0:
                 self.tsv_parasitic_resistance_fine = tsv_resistance(BULK_CU_RESISTIVITY, self.tsv_length, self.tsv_diameter, self.tsv_contact_resistance)
                 self.tsv_parasitic_capacitance_fine = tsv_capacitance(self.tsv_length, self.tsv_diameter, self.tsv_pitch, self.tsv_dielec_thickness, self.tsv_liner_dielectric_constant, self.tsv_depletion_width)
@@ -1087,8 +1088,8 @@ class TechnologyParameter:
                 self.tsv_minimum_area_coarse = tsv_area(self.tsv_pitch)
 
     def init(self, g_ip, technology, is_tag):
-        self.reset()
         self.g_ip = g_ip
+        self.reset()
         ram_cell_tech_type = g_ip.tag_arr_ram_cell_tech_type if is_tag else g_ip.data_arr_ram_cell_tech_type
         peri_global_tech_type = g_ip.tag_arr_peri_global_tech_type if is_tag else g_ip.data_arr_peri_global_tech_type
         tech_lo, tech_hi = 0, 0
@@ -1144,9 +1145,9 @@ class TechnologyParameter:
 
         peri_global_lo = DeviceType()
         peri_global_hi = DeviceType()
-        peri_global_lo.assign(g_ip, in_file_lo, peri_global_tech_type, g_ip.temp)
+        peri_global_lo.assign(g_ip, self, in_file_lo, peri_global_tech_type, g_ip.temp)
         # peri_global_lo.display()
-        peri_global_hi.assign(g_ip, in_file_hi, peri_global_tech_type, g_ip.temp)
+        peri_global_hi.assign(g_ip, self, in_file_hi, peri_global_tech_type, g_ip.temp)
         # peri_global_hi.display()
         
         self.peri_global.interpolate(alpha, peri_global_lo, peri_global_hi)
@@ -1154,20 +1155,20 @@ class TechnologyParameter:
 
         sleep_tx_lo = DeviceType()
         sleep_tx_hi = DeviceType()
-        sleep_tx_lo.assign(g_ip, in_file_lo, 1, g_ip.temp)
-        sleep_tx_hi.assign(g_ip, in_file_hi, 1, g_ip.temp)
+        sleep_tx_lo.assign(g_ip, self, in_file_lo, 1, g_ip.temp)
+        sleep_tx_hi.assign(g_ip, self, in_file_hi, 1, g_ip.temp)
         self.sleep_tx.interpolate(alpha, sleep_tx_lo, sleep_tx_hi)
 
         sram_cell_lo = DeviceType()
         sram_cell_hi = DeviceType()
-        sram_cell_lo.assign(g_ip, in_file_lo, ram_cell_tech_type, g_ip.temp)
-        sram_cell_hi.assign(g_ip, in_file_hi, ram_cell_tech_type, g_ip.temp)
+        sram_cell_lo.assign(g_ip, self, in_file_lo, ram_cell_tech_type, g_ip.temp)
+        sram_cell_hi.assign(g_ip, self, in_file_hi, ram_cell_tech_type, g_ip.temp)
         self.sram_cell.interpolate(alpha, sram_cell_lo, sram_cell_hi)
 
         dram_acc_lo = DeviceType()
         dram_acc_hi = DeviceType()
-        dram_acc_lo.assign(g_ip, in_file_lo, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
-        dram_acc_hi.assign(g_ip, in_file_hi, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
+        dram_acc_lo.assign(g_ip, self, in_file_lo, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
+        dram_acc_hi.assign(g_ip, self, in_file_hi, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
         self.dram_acc.interpolate(alpha, dram_acc_lo, dram_acc_hi)
         if tech_lo <= 22:
             pass
@@ -1190,8 +1191,8 @@ class TechnologyParameter:
 
         dram_wl_lo = DeviceType()
         dram_wl_hi = DeviceType()
-        dram_wl_lo.assign(g_ip, in_file_lo, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
-        dram_wl_hi.assign(g_ip, in_file_hi, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
+        dram_wl_lo.assign(g_ip, self, in_file_lo, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
+        dram_wl_hi.assign(g_ip, self, in_file_hi, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
         self.dram_wl.interpolate(alpha, dram_wl_lo, dram_wl_hi)
 
         self.dram_wl.Vdd = 0.0
@@ -1206,24 +1207,24 @@ class TechnologyParameter:
 
         cam_cell_lo = DeviceType()
         cam_cell_hi = DeviceType()
-        cam_cell_lo.assign(g_ip, in_file_lo, ram_cell_tech_type, g_ip.temp)
-        cam_cell_hi.assign(g_ip, in_file_hi, ram_cell_tech_type, g_ip.temp)
+        cam_cell_lo.assign(g_ip, self, in_file_lo, ram_cell_tech_type, g_ip.temp)
+        cam_cell_hi.assign(g_ip, self, in_file_hi, ram_cell_tech_type, g_ip.temp)
         self.cam_cell.interpolate(alpha, cam_cell_lo, cam_cell_hi)
 
-        dram_lo = MemoryType()
-        dram_hi = MemoryType()
+        dram_lo = MemoryType(self.g_ip,)
+        dram_hi = MemoryType(self.g_ip,)
         dram_lo.assign(in_file_lo, ram_cell_tech_type, 2)  # cell_type = dram(2)
         dram_hi.assign(in_file_hi, ram_cell_tech_type, 2)
         self.dram.interpolate(alpha, dram_lo, dram_hi)
 
-        sram_lo = MemoryType()
-        sram_hi = MemoryType()
+        sram_lo = MemoryType(self.g_ip,)
+        sram_hi = MemoryType(self.g_ip,)
         sram_lo.assign(in_file_lo, ram_cell_tech_type, 0)  # cell_type = sram(0)
         sram_hi.assign(in_file_hi, ram_cell_tech_type, 0)
         self.sram.interpolate(alpha, sram_lo, sram_hi)
 
-        cam_lo = MemoryType()
-        cam_hi = MemoryType()
+        cam_lo = MemoryType(self.g_ip,)
+        cam_hi = MemoryType(self.g_ip,)
         cam_lo.assign(in_file_lo, ram_cell_tech_type, 1)  # cell_type = sram(0)
         cam_hi.assign(in_file_hi, ram_cell_tech_type, 1)
         self.cam.interpolate(alpha, cam_lo, cam_hi)
@@ -1300,8 +1301,8 @@ class TechnologyParameter:
         self.w_sense_en = 5 * g_ip.F_sz_um
         self.w_nmos_b_mux = 6 * self.min_w_nmos_
         self.w_nmos_sa_mux = 6 * self.min_w_nmos_
-        self.w_pmos_bl_precharge = 6 * pmos_to_nmos_sz_ratio() * self.min_w_nmos_
-        self.w_pmos_bl_eq = pmos_to_nmos_sz_ratio() * self.min_w_nmos_
+        self.w_pmos_bl_precharge = 6 * pmos_to_nmos_sz_ratio(self) * self.min_w_nmos_
+        self.w_pmos_bl_eq = pmos_to_nmos_sz_ratio(self) * self.min_w_nmos_
 
         if ram_cell_tech_type == comm_dram:
             self.max_w_nmos_dec = 8 * g_ip.F_sz_um
@@ -1314,20 +1315,20 @@ class TechnologyParameter:
         gmp_sense_amp_latch = self.peri_global.gmp_to_gmn_multiplier * gmn_sense_amp_latch
         self.gm_sense_amp_latch = gmn_sense_amp_latch + gmp_sense_amp_latch
 
-        wire_local_lo = InterconnectType()
-        wire_local_hi = InterconnectType()
+        wire_local_lo = InterconnectType(self.g_ip.F_sz_um)
+        wire_local_hi = InterconnectType(self.g_ip.F_sz_um)
         wire_local_lo.assign(in_file_lo, g_ip.ic_proj_type, 3 if ram_cell_tech_type == comm_dram else 0)
         wire_local_hi.assign(in_file_hi, g_ip.ic_proj_type, 3 if ram_cell_tech_type == comm_dram else 0)
         self.wire_local.interpolate(alpha, wire_local_lo, wire_local_hi)
 
-        wire_inside_mat_lo = InterconnectType()
-        wire_inside_mat_hi = InterconnectType()
+        wire_inside_mat_lo = InterconnectType(self.g_ip.F_sz_um)
+        wire_inside_mat_hi = InterconnectType(self.g_ip.F_sz_um)
         wire_inside_mat_lo.assign(in_file_lo, g_ip.ic_proj_type, g_ip.wire_is_mat_type)
         wire_inside_mat_hi.assign(in_file_hi, g_ip.ic_proj_type, g_ip.wire_is_mat_type)
         self.wire_inside_mat.interpolate(alpha, wire_inside_mat_lo, wire_inside_mat_hi)
 
-        wire_outside_mat_lo = InterconnectType()
-        wire_outside_mat_hi = InterconnectType()
+        wire_outside_mat_lo = InterconnectType(self.g_ip.F_sz_um)
+        wire_outside_mat_hi = InterconnectType(self.g_ip.F_sz_um)
         wire_outside_mat_lo.assign(in_file_lo, g_ip.ic_proj_type, g_ip.wire_os_mat_type)
         wire_outside_mat_hi.assign(in_file_hi, g_ip.ic_proj_type, g_ip.wire_os_mat_type)
         self.wire_outside_mat.interpolate(alpha, wire_outside_mat_lo, wire_outside_mat_hi)
@@ -1338,17 +1339,17 @@ class TechnologyParameter:
 
         self.fringe_cap = wire_local_hi.fringe_cap
 
-        rd = tr_R_on(self.min_w_nmos_, NCH, 1)
-        p_to_n_sizing_r = pmos_to_nmos_sz_ratio()
+        rd = tr_R_on(self, self.min_w_nmos_, NCH, 1)
+        p_to_n_sizing_r = pmos_to_nmos_sz_ratio(self)
         c_load = gate_C(self, self.min_w_nmos_ * (1 + p_to_n_sizing_r), 0.0)
         tf = rd * c_load
-        self.kinv = horowitz(0, tf, 0.5, 0.5, RISE)
+        self.kinv = horowitz(self.g_ip, 0, tf, 0.5, 0.5, RISE)
         KLOAD = 1
-        c_load = KLOAD * (drain_C_(self.min_w_nmos_, NCH, 1, 1, self.cell_h_def) +
-                          drain_C_(self.min_w_nmos_ * p_to_n_sizing_r, PCH, 1, 1, self.cell_h_def) +
+        c_load = KLOAD * (drain_C_(self.g_ip, self, self.min_w_nmos_, NCH, 1, 1, self.cell_h_def) +
+                          drain_C_(self.g_ip, self, self.min_w_nmos_ * p_to_n_sizing_r, PCH, 1, 1, self.cell_h_def) +
                           gate_C(self, self.min_w_nmos_ * 4 * (1 + p_to_n_sizing_r), 0.0))
         tf = rd * c_load
-        self.FO4 = horowitz(0, tf, 0.5, 0.5, RISE)
+        self.FO4 = horowitz(self.g_ip, 0, tf, 0.5, 0.5, RISE)
 
     def isEqual(self, tech):
         if not is_equal(self.ram_wl_stitching_overhead_, tech.ram_wl_stitching_overhead_):
@@ -1693,7 +1694,7 @@ class DeviceType:
         if not is_equal(self.Mobility_n, dev.Mobility_n): self.display(); print("\n\n\n"); dev.display(); assert False
         return True
 
-    def assign(self, g_ip, in_file, tech_flavor, temperature):
+    def assign(self, g_ip, g_tp, in_file, tech_flavor, temperature):
         with open(in_file, 'r') as fp:
             lines = fp.readlines()
 
@@ -1832,7 +1833,7 @@ class DeviceType:
         self.C_junc_sidewall = dev1.C_junc_sidewall
 
 class InterconnectType:
-    def __init__(self, g_ip: InputParameter):
+    def __init__(self, F_sz_um, print_debug=False):
         self.pitch = 0
         self.R_per_um = 0
         self.C_per_um = 0
@@ -1842,7 +1843,8 @@ class InterconnectType:
         self.miller_value = 0
         self.ild_thickness = 0
 
-        self.g_ip = g_ip
+        self.F_sz_um = F_sz_um
+        self.print_debug = print_debug
 
         # auxiliary parameters
         self.wire_width = 0
@@ -1866,7 +1868,7 @@ class InterconnectType:
         self.R_per_um = sympy_var['wire_r_per_micron']
         self.C_per_um = sympy_var['wire_c_per_micron']
         self.resistivity = sympy_var['resistivity']
-        self.pitch *= g_ip.F_sz_um
+        self.pitch *= F_sz_um
         self.wire_width = self.pitch / 2  # micron
         self.wire_thickness = self.aspect_ratio * self.wire_width  # micron
         self.wire_spacing = self.pitch - self.wire_width  # micron
@@ -1905,7 +1907,7 @@ class InterconnectType:
         self.R_per_um = sympy_var['wire_r_per_micron']
         self.C_per_um = sympy_var['wire_c_per_micron']
         self.resistivity = sympy_var['resistivity']
-        self.pitch *= self.g_ip.F_sz_um
+        self.pitch *= self.F_sz_um
         self.wire_width = self.pitch / 2  # micron
         self.wire_thickness = self.aspect_ratio * self.wire_width  # micron
         self.wire_spacing = self.pitch - self.wire_width  # micron
@@ -1937,7 +1939,7 @@ class InterconnectType:
             lines = fp.readlines()
 
         resistivity = 0
-        print_debug = self.g_ip.print_detail_debug
+        # print_debug = self.g_ip.print_detail_debug
 
         self.pitch = sympy_var['wire_pitch']
         self.barrier_thickness = sympy_var['barrier_thickness']
@@ -1994,7 +1996,7 @@ class InterconnectType:
         #         resistivity = scan_input_double_inter_type(line, "-resistivity", "um", g_ip.ic_proj_type, tech_flavor, print_debug)
         #         continue
 
-        self.pitch *= self.g_ip.F_sz_um
+        self.pitch *= self.F_sz_um
         self.wire_width = self.pitch / 2  # micron
         self.wire_thickness = self.aspect_ratio * self.wire_width  # micron
         self.wire_spacing = self.pitch - self.wire_width  # micron
@@ -2002,13 +2004,13 @@ class InterconnectType:
         if projection_type != 1 or tech_flavor != 3:
             self.R_per_um = wire_resistance(resistivity, self.wire_width,
                                             self.wire_thickness, self.barrier_thickness, self.dishing_thickness, self.alpha_scatter)  # ohm/micron
-            if print_debug:
+            if self.print_debug:
                 print(f"{self.R_per_um} = wire_resistance({resistivity}, {self.wire_width}, {self.wire_thickness}, {self.barrier_thickness}, {self.dishing_thickness}, {self.alpha_scatter})")
 
             self.C_per_um = wire_capacitance(self.wire_width, self.wire_thickness, self.wire_spacing,
                                              self.ild_thickness, self.miller_value, self.horiz_dielectric_constant,
                                              self.vert_dielectric_constant, self.fringe_cap)  # F/micron
-            if print_debug:
+            if self.print_debug:
                 print(f"{self.C_per_um} = wire_capacitance({self.wire_width}, {self.wire_thickness}, {self.wire_spacing}, {self.ild_thickness}, {self.miller_value}, {self.horiz_dielectric_constant}, {self.vert_dielectric_constant}, {self.fringe_cap})")
 
     def interpolate(self, alpha, inter1, inter2):
@@ -2600,7 +2602,7 @@ class DynamicParameter:
         self.V_b_sense = symbolic_convex_max(0.05 * self.g_tp.sram_cell.Vdd, VBITSENSEMIN)
         self.deg_bl_muxing = 1
 
-        Cbitrow_drain_cap = drain_C_(self.g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
+        Cbitrow_drain_cap = drain_C_(self.g_ip, self.g_tp, self.g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
         self.dram_refresh_period = 0
 
         if self.Ndbl == 0:
@@ -3023,7 +3025,7 @@ def pmos_to_nmos_sz_ratio(g_tp: TechnologyParameter, _is_dram=False, _is_wl_tr=F
     else:
         return g_tp.peri_global.n_to_p_eff_curr_drv_ratio
 
-def horowitz(inputramptime, tf, vs1, vs2, rise):
+def horowitz(g_ip: InputParameter, inputramptime, tf, vs1, vs2, rise):
     if inputramptime == 0 and vs1 == vs2:
         if g_ip.use_piecewise:
             return tf * sp.Piecewise((-sp.log(vs1), vs1 < 1), (sp.log(vs1), vs1 >= 1))

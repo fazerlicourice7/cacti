@@ -235,12 +235,12 @@ class Wire(Component):
                      drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
                      gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
                     tr_R_on(self.min_w_pmos, PCH, 1)
-        rt = horowitz(0, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, FALL) / (self.deviceType.Vdd - self.deviceType.Vth)
+        rt = horowitz(self.g_ip, 0, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, FALL) / (self.deviceType.Vdd - self.deviceType.Vth)
         timeconst = (drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def) +
                      drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
                      gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
                     tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
-        ft = horowitz(rt, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE) / self.deviceType.Vth
+        ft = horowitz(self.g_ip, rt, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE) / self.deviceType.Vth
         return ft
 
     def signal_rise_time(self):
@@ -250,7 +250,7 @@ class Wire(Component):
             + parameter.gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
         ) * parameter.tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
         rt = (
-            parameter.horowitz(
+            parameter.horowitz(self.g_ip, 
                 0,
                 timeconst,
                 self.deviceType.Vth / self.deviceType.Vdd,
@@ -264,7 +264,7 @@ class Wire(Component):
             + parameter.drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
         ) * parameter.tr_R_on(self.min_w_pmos, PCH, 1)
-        ft = parameter.horowitz(
+        ft = parameter.horowitz(self.g_ip, 
             rt,
             timeconst,
             self.deviceType.Vth / self.deviceType.Vdd,
@@ -377,7 +377,7 @@ class Wire(Component):
         )
 
         timeconst = res_eq * cap_eq
-        self.delay = parameter.horowitz(
+        self.delay = parameter.horowitz(self.g_ip, 
             inputrise,
             timeconst,
             self.deviceType.Vth / self.deviceType.Vdd,
@@ -398,7 +398,7 @@ class Wire(Component):
         )
         timeconst = res_eq * cap_eq
 
-        self.delay += parameter.horowitz(
+        self.delay += parameter.horowitz(self.g_ip, 
             inputrise,
             timeconst,
             self.deviceType.Vth / self.deviceType.Vdd,
@@ -437,7 +437,7 @@ class Wire(Component):
             * self.sense_amp_input_cap()
         )
 
-        self.delay += parameter.horowitz(
+        self.delay += parameter.horowitz(self.g_ip, 
             inputrise, timeconst, self.deviceType.Vth / self.deviceType.Vdd, 0.25, 0
         )
         VOL_SWING = 0.1

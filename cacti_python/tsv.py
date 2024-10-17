@@ -104,7 +104,7 @@ class TSV(Component):
         c_intrinsic = parameter.drain_C_(self.w_TSV_p[0], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
                       parameter.drain_C_(self.w_TSV_n[0], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         tf = rd * (c_intrinsic + c_load)
-        self.delay = parameter.horowitz(0, tf, 0.5, 0.5, RISE)
+        self.delay = parameter.horowitz(self.g_ip, 0, tf, 0.5, 0.5, RISE)
         inrisetime = self.delay / (1.0 - 0.5)
 
         Vdd = self.deviceType.Vdd
@@ -116,7 +116,7 @@ class TSV(Component):
             c_intrinsic = parameter.drain_C_(self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
                           parameter.drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
             tf = rd * (c_intrinsic + c_load)
-            self.delay += parameter.horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+            self.delay += parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
             inrisetime = self.delay / (1.0 - 0.5)
             self.power.readOp.dynamic += (c_load + c_intrinsic) * Vdd * Vdd
 
@@ -127,7 +127,7 @@ class TSV(Component):
                       parameter.drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         R_TSV_out = self.res
         tf = rd * (c_intrinsic + c_load) + R_TSV_out * c_load / 2
-        self.delay += parameter.horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+        self.delay += parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.power.readOp.dynamic += (c_load + c_intrinsic) * Vdd * Vdd
 
     def print_TSV(self):

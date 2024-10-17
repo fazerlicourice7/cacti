@@ -68,7 +68,7 @@ class Decoder(Component):
         self.compute_area()
 
     def compute_widths(self):
-        p_to_n_sz_ratio = parameter.pmos_to_nmos_sz_ratio(self.is_dram, self.is_wl_tr)
+        p_to_n_sz_ratio = parameter.pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram, self.is_wl_tr)
         gnand2 = (2 + p_to_n_sz_ratio) / (1 + p_to_n_sz_ratio)
         gnand3 = (3 + p_to_n_sz_ratio) / (1 + p_to_n_sz_ratio)
 
@@ -158,34 +158,53 @@ class Decoder(Component):
             return 0.0
 
         ret_val = 0
-        rd = tr_R_on(self.w_dec_n[0], NCH, self.num_in_signals, self.is_dram, False, self.is_wl_tr)
+        rd = parameter.tr_R_on(self.w_dec_n[0], NCH, self.num_in_signals, self.is_dram, False, self.is_wl_tr)
         c_load = parameter.gate_C(self.g_tp, self.w_dec_n[1] + self.w_dec_p[1], 0.0, self.is_dram, False, self.is_wl_tr)
-        c_intrinsic = drain_C_(self.w_dec_p[0], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) * self.num_in_signals + \
+        c_intrinsic = parameter.drain_C_(self.w_dec_p[0], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) * self.num_in_signals + \
                       drain_C_(self.w_dec_n[0], NCH, self.num_in_signals, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         tf = rd * (c_intrinsic + c_load)
-        this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+        this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
         self.power.readOp.dynamic += (c_load + c_intrinsic) * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
 
         for i in range(1, self.num_gates - 1):
-            rd = tr_R_on(self.w_dec_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
+            rd = parameter.tr_R_on(
+                self.w_dec_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr
+            )
             c_load = parameter.gate_C(self.g_tp, self.w_dec_p[i + 1] + self.w_dec_n[i + 1], 0.0, self.is_dram, False, self.is_wl_tr)
-            c_intrinsic = drain_C_(self.w_dec_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
-                          drain_C_(self.w_dec_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
+            c_intrinsic = parameter.drain_C_(
+                self.w_dec_p[i],
+                PCH,
+                1,
+                1,
+                self.area.h,
+                self.is_dram,
+                False,
+                self.is_wl_tr,
+            ) + parameter.drain_C_(
+                self.w_dec_n[i],
+                NCH,
+                1,
+                1,
+                self.area.h,
+                self.is_dram,
+                False,
+                self.is_wl_tr,
+            )
             tf = rd * (c_intrinsic + c_load)
-            this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+            this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
             self.delay += this_delay
             inrisetime = this_delay / (1.0 - 0.5)
             self.power.readOp.dynamic += (c_load + c_intrinsic) * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
 
         i = self.num_gates - 1
         c_load = self.C_ld_dec_out
-        rd = tr_R_on(self.w_dec_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
-        c_intrinsic = drain_C_(self.w_dec_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
+        rd = parameter.tr_R_on(self.g_tp, self.w_dec_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
+        c_intrinsic = parameter.drain_C_(self.w_dec_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
                       drain_C_(self.w_dec_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         tf = rd * (c_intrinsic + c_load) + self.R_wire_dec_out * c_load / 2
-        this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+        this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay += this_delay
         ret_val = this_delay / (1.0 - 0.5)
         self.power.readOp.dynamic += c_load * self.g_tp.vpp * self.g_tp.vpp + c_intrinsic * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
@@ -286,7 +305,7 @@ class PredecBlk(Component):
         self.exist = True
         self.number_input_addr_bits = blk2_num_input_addr_bits
         branch_effort_predec_out = sp.Pow(2, blk1_num_input_addr_bits) #(1 << blk1_num_input_addr_bits)
-        C_ld_dec_gate = num_dec_per_predec * parameter.parameter.gate_C(self.g_tp, self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False)
+        C_ld_dec_gate = num_dec_per_predec * parameter.gate_C(self.g_tp, self.dec.w_dec_n[0] + self.dec.w_dec_p[0], 0, self.is_dram_, False, False)
         self.R_wire_predec_blk_out = R_wire_predec_blk_out_
         self.C_ld_predec_blk_out = branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out
 
@@ -649,7 +668,7 @@ class PredecBlk(Component):
                     self.w_L1_nand2_n[0], NCH, 2, 1, self.g_tp.cell_h_def, self.is_dram_
                 )
                 tf = rd * (c_intrinsic + c_load)
-                this_delay = parameter.horowitz(
+                this_delay = parameter.horowitz(self.g_ip, 
                     inrisetime_nand2_path, tf, 0.5, 0.5, RISE
                 )
                 self.delay_nand2_path += this_delay
@@ -665,7 +684,7 @@ class PredecBlk(Component):
                         self.w_L1_nand2_n[i], NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram_
                     )
                     tf = rd * (c_intrinsic + c_load)
-                    this_delay = parameter.horowitz(
+                    this_delay = parameter.horowitz(self.g_ip, 
                         inrisetime_nand2_path, tf, 0.5, 0.5, RISE
                     )
                     self.delay_nand2_path += this_delay
@@ -681,7 +700,7 @@ class PredecBlk(Component):
                 )
                 c_load = self.C_ld_predec_blk_out
                 tf = rd * (c_intrinsic + c_load) + self.R_wire_predec_blk_out * c_load / 2
-                this_delay = parameter.horowitz(
+                this_delay = parameter.horowitz(self.g_ip, 
                     inrisetime_nand2_path, tf, 0.5, 0.5, RISE
                 )
                 self.delay_nand2_path += this_delay
@@ -697,7 +716,7 @@ class PredecBlk(Component):
                     self.w_L1_nand3_n[0], NCH, 3, 1, self.g_tp.cell_h_def, self.is_dram_
                 )
                 tf = rd * (c_intrinsic + c_load)
-                this_delay = parameter.horowitz(
+                this_delay = parameter.horowitz(self.g_ip, 
                     inrisetime_nand3_path, tf, 0.5, 0.5, RISE
                 )
                 self.delay_nand3_path += this_delay
@@ -710,7 +729,7 @@ class PredecBlk(Component):
                     c_intrinsic = parameter.drain_C_(self.w_L1_nand3_p[i], PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram_) + \
                                   parameter.drain_C_(self.w_L1_nand3_n[i], NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram_)
                     tf = rd * (c_intrinsic + c_load)
-                    this_delay = parameter.horowitz(
+                    this_delay = parameter.horowitz(self.g_ip, 
                         inrisetime_nand3_path, tf, 0.5, 0.5, RISE
                     )
                     self.delay_nand3_path += this_delay
@@ -726,7 +745,7 @@ class PredecBlk(Component):
                 )
                 c_load = self.C_ld_predec_blk_out
                 tf = rd * (c_intrinsic + c_load) + self.R_wire_predec_blk_out * c_load / 2
-                this_delay = parameter.horowitz(
+                this_delay = parameter.horowitz(self.g_ip, 
                     inrisetime_nand3_path, tf, 0.5, 0.5, RISE
                 )
                 self.delay_nand3_path += this_delay
@@ -1050,7 +1069,7 @@ class PredecBlkDrv(Component):
                 )
 
                 tf = rd * (c_intrinsic + c_gate_load)
-                this_delay = parameter.horowitz(
+                this_delay = parameter.horowitz(self.g_ip, 
                     inrisetime_nand2_path, tf, 0.5, 0.5, RISE
                 )
                 self.delay_nand2_path += this_delay
@@ -1067,7 +1086,7 @@ class PredecBlkDrv(Component):
                 )
                 c_load = self.c_load_nand2_path_out
                 tf = rd * (c_intrinsic + c_load) + self.r_load_nand2_path_out * c_load / 2
-                this_delay = parameter.horowitz(
+                this_delay = parameter.horowitz(self.g_ip, 
                     inrisetime_nand2_path, tf, 0.5, 0.5, RISE
                 )
                 self.delay_nand2_path += this_delay
@@ -1083,7 +1102,7 @@ class PredecBlkDrv(Component):
                     self.width_nand3_path_n[i], NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
                 )
                 tf = rd * (c_intrinsic + c_gate_load)
-                this_delay = parameter.horowitz(
+                this_delay = parameter.horowitz(self.g_ip, 
                     inrisetime_nand3_path, tf, 0.5, 0.5, RISE
                 )
                 self.delay_nand3_path += this_delay
@@ -1097,7 +1116,7 @@ class PredecBlkDrv(Component):
                               parameter.drain_C_(self.width_nand3_path_n[i], NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram)
                 c_load = self.c_load_nand3_path_out
                 tf = rd * (c_intrinsic + c_load) + self.r_load_nand3_path_out * c_load / 2
-                this_delay = parameter.horowitz(inrisetime_nand3_path, tf, 0.5, 0.5, RISE)
+                this_delay = parameter.horowitz(self.g_ip, inrisetime_nand3_path, tf, 0.5, 0.5, RISE)
                 self.delay_nand3_path += this_delay
                 ret_val = (ret_val[0], this_delay / (1.0 - 0.5))
                 self.power_nand3_path.readOp.dynamic += (c_intrinsic + c_load) * 0.5 * Vdd * Vdd
@@ -1359,7 +1378,7 @@ class Driver(Component):
                 self.width_n[i], NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram_
             )
             tf = rd * (c_intrinsic + c_load)
-            this_delay = parameter.horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+            this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
             self.delay += this_delay
             inrisetime = this_delay / (1.0 - 0.5)
             self.power.readOp.dynamic += (c_intrinsic + c_load) * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
@@ -1380,7 +1399,7 @@ class Driver(Component):
             self.width_n[i], NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram_
         )
         tf = rd * (c_intrinsic + c_load) + self.r_wire_load * (self.c_wire_load / 2 + self.c_gate_load)
-        this_delay = parameter.horowitz(inrisetime, tf, 0.5, 0.5, RISE)
+        this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay += this_delay
         self.power.readOp.dynamic += (c_intrinsic + c_load) * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
         self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.width_n[i], self.width_p[i], 1, inv, self.is_dram_) * self.g_tp.peri_global.Vdd

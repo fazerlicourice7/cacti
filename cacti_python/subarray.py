@@ -118,7 +118,7 @@ class Subarray(Component):
                 self.R_wl += (16 + 128) * self.g_tp.wire_local.pitch * self.g_tp.wire_local.R_per_um
                 
                 C_b_metal = self.cam_cell.h * self.g_tp.wire_local.C_per_um
-                C_b_row_drain_C = parameter.drain_C_(self.g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
+                C_b_row_drain_C = parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
                 self.C_bl_cam = (self.num_rows + 1) * (C_b_row_drain_C + C_b_metal)
-                C_b_row_drain_C = parameter.drain_C_(self.g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
+                C_b_row_drain_C = parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
                 self.C_bl = (self.num_rows + 1) * (C_b_row_drain_C + C_b_metal)
