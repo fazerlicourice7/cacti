@@ -18,8 +18,8 @@ NTHREADS = 4
 MAXDATAN = 4
 MAX_COL_MUX = 4
 MAXDATASPD = 4.0
+# ISSUE: delete?
 Full_swing, Global, Low_swing = 0, 1, 2  # Just example values
-Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wr = sp.symbols('Nspd Ndwl Ndbl Ndcm Ndsam_lev_1 Ndsam_lev_2 wr')
 
 class MinValuesT:
     def __init__(self):
@@ -262,7 +262,7 @@ def calc_time_mt_wrapper(void_obj):
 def calculate_time(
     is_tag,
     pure_ram,
-    pure_cam,
+    pure_cam_in,
     Nspd,
     Ndwl,
     Ndbl,
@@ -276,7 +276,7 @@ def calculate_time(
     wt,
     is_main_mem
 ):
-    dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
+    dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam_in, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
 
     if not dyn_p.is_valid:
         return False
@@ -323,6 +323,7 @@ def calculate_time(
 
         ptr_array.delay_before_subarray_output_driver = uca.delay_before_subarray_output_driver
         ptr_array.delay_from_subarray_output_driver_to_output = uca.delay_from_subarray_out_drv_to_out
+
         ptr_array.delay_route_to_bank = uca.htree_in_add.delay
         ptr_array.delay_input_htree = uca.bank.htree_in_add.delay
         ptr_array.delay_row_predecode_driver_and_block = uca.bank.mat.r_predec.delay
@@ -347,21 +348,25 @@ def calculate_time(
             ptr_array.delay_global_data = uca.membus_data.delay_global_data
             ptr_array.delay_local_data_and_drv = uca.membus_data.delay_local_data
             ptr_array.delay_data_buffer = uca.membus_data.delay_data_buffer
+
             ptr_array.energy_row_activate_net = uca.membus_RAS.power_bus.readOp.dynamic
             ptr_array.energy_row_predecode_driver_and_block = uca.membus_RAS.power_add_predecoder.readOp.dynamic
             ptr_array.energy_row_decoder = uca.membus_RAS.power_add_decoders.readOp.dynamic
             ptr_array.energy_local_wordline = uca.membus_RAS.power_lwl_drv.readOp.dynamic
             ptr_array.energy_bitlines = dyn_p.Ndwl * uca.bank.mat.power_bitline.readOp.dynamic
             ptr_array.energy_sense_amp = dyn_p.Ndwl * uca.bank.mat.power_sa.readOp.dynamic
+
             ptr_array.energy_column_access_net = uca.membus_CAS.power_bus.readOp.dynamic
             ptr_array.energy_column_predecoder = uca.membus_CAS.power_add_predecoder.readOp.dynamic
             ptr_array.energy_column_decoder = uca.membus_CAS.power_add_decoders.readOp.dynamic
             ptr_array.energy_column_selectline = uca.membus_CAS.power_col_sel.readOp.dynamic
+
             ptr_array.energy_datapath_net = uca.membus_data.power_bus.readOp.dynamic
             ptr_array.energy_global_data = uca.membus_data.power_global_data.readOp.dynamic
             ptr_array.energy_local_data_and_drv = uca.membus_data.power_local_data.readOp.dynamic
             ptr_array.energy_subarray_output_driver = uca.bank.mat.power_subarray_out_drv.readOp.dynamic
             ptr_array.energy_data_buffer = 0
+
             ptr_array.area_lwl_drv = uca.area_lwl_drv
             ptr_array.area_row_predec_dec = uca.area_row_predec_dec
             ptr_array.area_col_predec_dec = uca.area_col_predec_dec
@@ -376,6 +381,7 @@ def calculate_time(
         ptr_array.all_banks_height = uca.area.h
         ptr_array.all_banks_width = uca.area.w
         ptr_array.area_efficiency = uca.area_all_dataramcells * 100 / ptr_array.area
+
         ptr_array.power_routing_to_bank = uca.power_routing_to_bank
         ptr_array.power_addr_input_htree = uca.bank.htree_in_add.power
         ptr_array.power_data_input_htree = uca.bank.htree_in_data.power
@@ -384,66 +390,82 @@ def calculate_time(
         ptr_array.power_row_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_row_predecoder_blocks = uca.bank.mat.r_predec.block_power
         ptr_array.power_row_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+        
         ptr_array.power_row_decoders = uca.bank.mat.power_row_decoders
         ptr_array.power_row_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bit_mux_predecoder_drivers = uca.bank.mat.b_mux_predec.driver_power
         ptr_array.power_bit_mux_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bit_mux_predecoder_blocks = uca.bank.mat.b_mux_predec.block_power
         ptr_array.power_bit_mux_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bit_mux_decoders = uca.bank.mat.power_bit_mux_decoders
         ptr_array.power_bit_mux_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers = uca.bank.mat.sa_mux_lev_1_predec.driver_power
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks = uca.bank.mat.sa_mux_lev_1_predec.block_power
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_1_decoders = uca.bank.mat.power_sa_mux_lev_1_decoders
         ptr_array.power_senseamp_mux_lev_1_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers = uca.bank.mat.sa_mux_lev_2_predec.driver_power
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks = uca.bank.mat.sa_mux_lev_2_predec.block_power
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_2_decoders = uca.bank.mat.power_sa_mux_lev_2_decoders
         ptr_array.power_senseamp_mux_lev_2_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bitlines = uca.bank.mat.power_bitline
         ptr_array.power_bitlines.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bitlines.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bitlines.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_sense_amps = uca.bank.mat.power_sa
         ptr_array.power_sense_amps.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_sense_amps.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_sense_amps.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_prechg_eq_drivers = uca.bank.mat.power_bl_precharge_eq_drv
         ptr_array.power_prechg_eq_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_prechg_eq_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_prechg_eq_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_output_drivers_at_subarray = uca.bank.mat.power_subarray_out_drv
         ptr_array.power_output_drivers_at_subarray.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_output_drivers_at_subarray.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_output_drivers_at_subarray.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_comparators = uca.bank.mat.power_comparator
         ptr_array.power_comparators.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_comparators.writeOp.dynamic *= num_act_mats_hor_dir
@@ -453,6 +475,7 @@ def calculate_time(
             ptr_array.power_htree_in_search = uca.bank.htree_in_search.power
             ptr_array.power_htree_out_search = uca.bank.htree_out_search.power
             ptr_array.power_searchline = uca.bank.mat.power_searchline
+
             ptr_array.power_searchline.searchOp.dynamic *= num_mats
             ptr_array.power_searchline_precharge = uca.bank.mat.power_searchline_precharge
             ptr_array.power_searchline_precharge.searchOp.dynamic *= num_mats
@@ -470,6 +493,7 @@ def calculate_time(
         ptr_array.leak_power_subbank_closed_page = uca.leak_power_subbank_closed_page
         ptr_array.leak_power_subbank_open_page = uca.leak_power_subbank_open_page
         ptr_array.leak_power_request_and_reply_networks = uca.leak_power_request_and_reply_networks
+
         ptr_array.precharge_delay = uca.precharge_delay
 
         if g_ip.is_3d_mem:
@@ -479,16 +503,20 @@ def calculate_time(
             ptr_array.t_CAS = uca.t_CAS
             ptr_array.t_RP = uca.t_RP
             ptr_array.t_RRD = uca.t_RRD
+
             ptr_array.activate_energy = uca.activate_energy
             ptr_array.read_energy = uca.read_energy
             ptr_array.write_energy = uca.write_energy
             ptr_array.precharge_energy = uca.precharge_energy
+
             ptr_array.activate_power = uca.activate_power
             ptr_array.read_power = uca.read_power
             ptr_array.write_power = uca.write_power
             ptr_array.peak_read_power = uca.read_energy / ((g_ip.burst_depth) / (g_ip.sys_freq_MHz * 1e6) / 2)
+
             ptr_array.num_row_subarray = dyn_p.num_r_subarray
             ptr_array.num_col_subarray = dyn_p.num_c_subarray
+
             ptr_array.delay_TSV_tot = uca.delay_TSV_tot
             ptr_array.area_TSV_tot = uca.area_TSV_tot
             ptr_array.dyn_pow_TSV_tot = uca.dyn_pow_TSV_tot
@@ -500,12 +528,15 @@ def calculate_time(
             ptr_array.sram_sleep_tx_area = uca.bank.mat.array_sleep_tx_area
             ptr_array.sram_sleep_wakeup_latency = uca.bank.mat.array_wakeup_t
             ptr_array.sram_sleep_wakeup_energy = uca.bank.mat.array_wakeup_e.readOp.dynamic
+
             ptr_array.wl_sleep_tx_width = uca.bank.mat.row_dec.sleeptx.width
             ptr_array.wl_sleep_tx_area = uca.bank.mat.wl_sleep_tx_area
             ptr_array.wl_sleep_wakeup_latency = uca.bank.mat.wl_wakeup_t
             ptr_array.wl_sleep_wakeup_energy = uca.bank.mat.wl_wakeup_e.readOp.dynamic
+
             ptr_array.bl_floating_wakeup_latency = uca.bank.mat.blfloating_wakeup_t
             ptr_array.bl_floating_wakeup_energy = uca.bank.mat.blfloating_wakeup_e.readOp.dynamic
+
             ptr_array.array_leakage = uca.bank.array_leakage
             ptr_array.wl_leakage = uca.bank.wl_leakage
             ptr_array.cl_leakage = uca.bank.cl_leakage
@@ -515,7 +546,8 @@ def calculate_time(
 
     return True
 
-def check_uca_org(u, minval):
+# ISSUE: min_values_t not class
+def check_uca_org(u: uca_org_t, minval: MinValuesT):
     if ((u.access_time - minval.min_delay) * 100 / minval.min_delay) > g_ip.delay_dev:
         return False
     if ((u.power.readOp.dynamic - minval.min_dyn) / minval.min_dyn) * 100 > g_ip.dynamic_power_dev:
@@ -528,7 +560,7 @@ def check_uca_org(u, minval):
         return False
     return True
 
-def check_mem_org(u, minval):
+def check_mem_org(u: MemArray, minval: MinValuesT):
     if ((u.access_time - minval.min_delay) * 100 / minval.min_delay) > g_ip.delay_dev:
         return False
     if ((u.power.readOp.dynamic - minval.min_dyn) / minval.min_dyn) * 100 > g_ip.dynamic_power_dev:
@@ -541,7 +573,8 @@ def check_mem_org(u, minval):
         return False
     return True
 
-def find_optimal_uca(res, minval, ulist):
+# We don't use:
+def find_optimal_uca(res: uca_org_t, minval: MinValuesT, ulist):
     cost = 0
     min_cost = BIGNUM
     dp = g_ip.dynamic_power_wt
@@ -585,7 +618,7 @@ def find_optimal_uca(res, minval, ulist):
         print("ERROR: no cache organizations met optimization criteria")
         exit(1)
 
-def filter_tag_arr(min_val, mem_list):
+def filter_tag_arr(min_val: MinValuesT, mem_list):
     cost = float('inf')
     cur_cost = 0.0
     wt_delay = g_ip.delay_wt
@@ -655,6 +688,7 @@ def filter_data_arr(curr_list):
         if m is None:
             exit(1)
 
+        # ISSUE: should this even be here?
         if (math.isnan(m.access_time) or math.isnan(m.arr_min.min_delay) or
             math.isnan(m.power.readOp.dynamic) or math.isnan(m.arr_min.min_dyn)):
             continue  # Skip this iteration if any relevant value is NaN
@@ -666,7 +700,7 @@ def filter_data_arr(curr_list):
 import threading
 from functools import cmp_to_key
 
-def solve(fin_res):
+def solve(fin_res: uca_org_t):
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 
@@ -697,6 +731,7 @@ def solve(fin_res):
 
     if not (pure_ram or pure_cam or g_ip.fully_assoc):
         is_tag = True
+        # ISSUE: Could be in init and init_tech_params
         g_tp.init(g_ip.F_sz_um, is_tag)
 
         for t in range(NTHREADS):
@@ -844,24 +879,25 @@ def update(fin_res):
 def calculate_time_single(
     is_tag,
     pure_ram,
-    pure_cam,
+    pure_cam_in,
     Nspd,
     Ndwl,
     Ndbl,
     Ndcm,
     Ndsam_lev_1,
     Ndsam_lev_2,
-    ptr_array,
+    ptr_array: MemArray,
     flag_results_populate,
     ptr_results,
     ptr_fin_res,
     wt,
     is_main_mem
 ):
-    dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
+    dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam_in, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
 
-    # if not dyn_p.is_valid:
-    #     return False
+    # Issue? Check DYnamic Parameter...
+    if not dyn_p.is_valid:
+        return False
     uca = UCA(dyn_p)
 
     if flag_results_populate:
@@ -902,6 +938,7 @@ def calculate_time_single(
 
         ptr_array.delay_before_subarray_output_driver = uca.delay_before_subarray_output_driver
         ptr_array.delay_from_subarray_output_driver_to_output = uca.delay_from_subarray_out_drv_to_out
+
         ptr_array.delay_route_to_bank = uca.htree_in_add.delay
         ptr_array.delay_input_htree = uca.bank.htree_in_add.delay
         ptr_array.delay_row_predecode_driver_and_block = uca.bank.mat.r_predec.delay
@@ -925,22 +962,27 @@ def calculate_time_single(
             ptr_array.delay_datapath_net = uca.membus_data.delay_bus
             ptr_array.delay_global_data = uca.membus_data.delay_global_data
             ptr_array.delay_local_data_and_drv = uca.membus_data.delay_local_data
+            ptr_array.delay_subarray_output_driver = uca.bank.mat.delay_subarray_out_drv
             ptr_array.delay_data_buffer = uca.membus_data.delay_data_buffer
+
             ptr_array.energy_row_activate_net = uca.membus_RAS.power_bus.readOp.dynamic
             ptr_array.energy_row_predecode_driver_and_block = uca.membus_RAS.power_add_predecoder.readOp.dynamic
             ptr_array.energy_row_decoder = uca.membus_RAS.power_add_decoders.readOp.dynamic
             ptr_array.energy_local_wordline = uca.membus_RAS.power_lwl_drv.readOp.dynamic
             ptr_array.energy_bitlines = dyn_p.Ndwl * uca.bank.mat.power_bitline.readOp.dynamic
             ptr_array.energy_sense_amp = dyn_p.Ndwl * uca.bank.mat.power_sa.readOp.dynamic
+
             ptr_array.energy_column_access_net = uca.membus_CAS.power_bus.readOp.dynamic
             ptr_array.energy_column_predecoder = uca.membus_CAS.power_add_predecoder.readOp.dynamic
             ptr_array.energy_column_decoder = uca.membus_CAS.power_add_decoders.readOp.dynamic
             ptr_array.energy_column_selectline = uca.membus_CAS.power_col_sel.readOp.dynamic
+
             ptr_array.energy_datapath_net = uca.membus_data.power_bus.readOp.dynamic
             ptr_array.energy_global_data = uca.membus_data.power_global_data.readOp.dynamic
             ptr_array.energy_local_data_and_drv = uca.membus_data.power_local_data.readOp.dynamic
             ptr_array.energy_subarray_output_driver = uca.bank.mat.power_subarray_out_drv.readOp.dynamic
             ptr_array.energy_data_buffer = 0
+
             ptr_array.area_lwl_drv = uca.area_lwl_drv
             ptr_array.area_row_predec_dec = uca.area_row_predec_dec
             ptr_array.area_col_predec_dec = uca.area_col_predec_dec
@@ -955,74 +997,93 @@ def calculate_time_single(
         ptr_array.all_banks_height = uca.area.h
         ptr_array.all_banks_width = uca.area.w
         ptr_array.area_efficiency = uca.area_all_dataramcells * 100 / ptr_array.area
+
         ptr_array.power_routing_to_bank = uca.power_routing_to_bank
         ptr_array.power_addr_input_htree = uca.bank.htree_in_add.power
         ptr_array.power_data_input_htree = uca.bank.htree_in_data.power
+
         ptr_array.power_data_output_htree = uca.bank.htree_out_data.power
+
         ptr_array.power_row_predecoder_drivers = uca.bank.mat.r_predec.driver_power
         ptr_array.power_row_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_row_predecoder_blocks = uca.bank.mat.r_predec.block_power
         ptr_array.power_row_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_row_decoders = uca.bank.mat.power_row_decoders
         ptr_array.power_row_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bit_mux_predecoder_drivers = uca.bank.mat.b_mux_predec.driver_power
         ptr_array.power_bit_mux_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bit_mux_predecoder_blocks = uca.bank.mat.b_mux_predec.block_power
         ptr_array.power_bit_mux_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bit_mux_decoders = uca.bank.mat.power_bit_mux_decoders
         ptr_array.power_bit_mux_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers = uca.bank.mat.sa_mux_lev_1_predec.driver_power
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks = uca.bank.mat.sa_mux_lev_1_predec.block_power
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_1_decoders = uca.bank.mat.power_sa_mux_lev_1_decoders
         ptr_array.power_senseamp_mux_lev_1_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_1_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers = uca.bank.mat.sa_mux_lev_2_predec.driver_power
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks = uca.bank.mat.sa_mux_lev_2_predec.block_power
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_senseamp_mux_lev_2_decoders = uca.bank.mat.power_sa_mux_lev_2_decoders
         ptr_array.power_senseamp_mux_lev_2_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_senseamp_mux_lev_2_decoders.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_bitlines = uca.bank.mat.power_bitline
         ptr_array.power_bitlines.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bitlines.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bitlines.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_sense_amps = uca.bank.mat.power_sa
         ptr_array.power_sense_amps.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_sense_amps.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_sense_amps.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_prechg_eq_drivers = uca.bank.mat.power_bl_precharge_eq_drv
         ptr_array.power_prechg_eq_drivers.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_prechg_eq_drivers.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_prechg_eq_drivers.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_output_drivers_at_subarray = uca.bank.mat.power_subarray_out_drv
         ptr_array.power_output_drivers_at_subarray.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_output_drivers_at_subarray.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_output_drivers_at_subarray.searchOp.dynamic *= num_act_mats_hor_dir
+
         ptr_array.power_comparators = uca.bank.mat.power_comparator
         ptr_array.power_comparators.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_comparators.writeOp.dynamic *= num_act_mats_hor_dir
@@ -1107,20 +1168,36 @@ def solve_single():
     data_arr = MemArray()
     sol = uca_org_t()
 
+    print(f"pure_ram: {pure_ram}")
+    print(f"pure_cam: {pure_cam}")
+    print(f"nspd: {g_ip.nspd}")
+    print(f"ndwl: {g_ip.ndwl}")
+    print(f"ndbl: {g_ip.ndbl}")
+    print(f"ndcm: {g_ip.ndcm}")
+    print(f"ndsam1: {g_ip.ndsam1}")
+    print(f"ndsam2: {g_ip.ndsam2}")
+    print(f"wt (wire type): {g_ip.wt}")
+    print(f"is_main_mem: {g_ip.is_main_mem}")
+    print(f"{g_ip.F_sz_um}")
+    time.sleep(10)
+
     if not (pure_ram or pure_cam or g_ip.fully_assoc):
         is_tag = True
+        # ISSUE: is init even correct?
+        # Check calc_time_mt_wrapper
         g_tp.init(g_ip.F_sz_um, is_tag)
         
         calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
                                         g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
-                                            tag_arr, 0, None, None, wr, g_ip.is_main_mem)
+                                            tag_arr, False, None, None, g_ip.wt, g_ip.is_main_mem)
 
     is_tag = False
     g_tp.init(g_ip.F_sz_um, is_tag)
 
+    # ISSUE: ndwl maybe need to treat wt like ndbl
     calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
                                 g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
-                                data_arr, 0, None, None, wr, g_ip.is_main_mem)
+                                data_arr, False, None, None, g_ip.wt, g_ip.is_main_mem)
     
     if pure_ram or pure_cam or g_ip.fully_assoc:
         curr_org = sol

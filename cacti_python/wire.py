@@ -18,7 +18,7 @@ class Wire(Component):
     wire_width_init = None
     wire_spacing_init = None
 
-    def __init__(self, wire_model=0, wl=1, n=1, w_s=1, s_s=1, wp=outside_mat, resistivity=CU_RESISTIVITY, dt=g_tp.peri_global):
+    def __init__(self, wire_model='Global_30', wl=1, n=1, w_s=1, s_s=1, wp=outside_mat, resistivity=CU_RESISTIVITY, dt=g_tp.peri_global):
         super().__init__()
         self.wt = wire_model
         self.wire_length = wl * 1e-6
@@ -49,6 +49,7 @@ class Wire(Component):
 
         self.calculate_wire_stats()
 
+        # ISSUE? -> might need to delete -> rpeater spacing is probably messed up
         self.repeater_spacing *= 1e6
         self.wire_length *= 1e6
         self.wire_width *= 1e6
@@ -85,6 +86,9 @@ class Wire(Component):
         pass
 
     def calculate_wire_stats(self):
+        # Issue
+        print(f"self.wt: {self.wt}")
+        time.sleep(5)
         if self.wire_placement == outside_mat:
             self.wire_width = g_tp.wire_outside_mat.pitch / 2
         elif self.wire_placement == inside_mat:

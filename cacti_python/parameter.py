@@ -1145,9 +1145,12 @@ class TechnologyParameter:
         peri_global_lo = DeviceType()
         peri_global_hi = DeviceType()
         peri_global_lo.assign(in_file_lo, peri_global_tech_type, g_ip.temp)
-        # peri_global_lo.display()
+        peri_global_lo.display()
         peri_global_hi.assign(in_file_hi, peri_global_tech_type, g_ip.temp)
-        # peri_global_hi.display()
+        peri_global_hi.display()
+        print("DISPLAYED GLOBAL")
+        import time
+        time.sleep(10)
         
         self.peri_global.interpolate(alpha, peri_global_lo, peri_global_hi)
         # self.peri_global.display()
@@ -1340,6 +1343,7 @@ class TechnologyParameter:
 
         rd = tr_R_on(self.min_w_nmos_, NCH, 1)
         p_to_n_sizing_r = pmos_to_nmos_sz_ratio()
+        print(f"CHECK IN PARAM TP np2: {p_to_n_sizing_r}")
         c_load = gate_C(self.min_w_nmos_ * (1 + p_to_n_sizing_r), 0.0)
         tf = rd * c_load
         self.kinv = horowitz(0, tf, 0.5, 0.5, RISE)
@@ -1646,9 +1650,9 @@ class DeviceType:
 
         self.C_overlap = 0.2 * self.C_g_ideal
 
-        # ISSUE: DBOULE CHECK IF THIS SHOULD BE SET TOGETHER
-        self.I_off_p = self.I_off_n
-        self.I_g_on_p = self.I_g_on_n
+        # ISSUE !: DBOULE CHECK IF THIS SHOULD BE SET TOGETHER
+        # self.I_off_p = self.I_off_n
+        # self.I_g_on_p = self.I_g_on_n
 
     def display(self, indent=0):
         indent_str = ' ' * indent
@@ -2234,7 +2238,7 @@ class ScalingFactor:
 #     w: float = 0.0
 
 class DynamicParameter:
-    def __init__(self, is_tag_=False, pure_ram_=0, pure_cam_=0, Nspd_=1.0, Ndwl_=1, Ndbl_=1, Ndcm_=1, Ndsam_lev_1_=1, Ndsam_lev_2_=1, wt=None, is_main_mem_=False):
+    def __init__(self, is_tag_=False, pure_ram_=0, pure_cam_=0, Nspd_=1.0, Ndwl_=1, Ndbl_=1, Ndcm_=1, Ndsam_lev_1_=1, Ndsam_lev_2_=1, wt="Global_30", is_main_mem_=False):
         self.is_tag = is_tag_
         self.pure_ram = pure_ram_
         self.pure_cam = pure_cam_

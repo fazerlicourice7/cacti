@@ -17,11 +17,11 @@ class WireType(enum.Enum):
     SemiGlobal = 2
     Local = 3
 
-class DeviceType:
-    def __init__(self, n_to_p_eff_curr_drv_ratio, Vth, Vdd):
-        self.n_to_p_eff_curr_drv_ratio = n_to_p_eff_curr_drv_ratio
-        self.Vth = Vth
-        self.Vdd = Vdd
+# class DeviceType:
+#     def __init__(self, n_to_p_eff_curr_drv_ratio, Vth, Vdd):
+#         self.n_to_p_eff_curr_drv_ratio = n_to_p_eff_curr_drv_ratio
+#         self.Vth = Vth
+#         self.Vdd = Vdd
 
 class Htree2(Component):
     def __init__(self, wire_model, mat_w, mat_h, a_bits, d_inbits, search_data_in, d_outbits, search_data_out, bl, wl, htree_type, uca_tree_=False, search_tree_=False, dt=None):
