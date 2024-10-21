@@ -2941,9 +2941,9 @@ def drain_C_(g_ip: InputParameter, g_tp: TechnologyParameter, width, nchannel, s
             w_folded_tr = (1 - ratio_p_to_n) * (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)
         else:
             w_folded_tr = ratio_p_to_n * (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)
-    print(f"w_folded_tr: {w_folded_tr}, width: {width}")
+    # print(f"w_folded_tr: {w_folded_tr}, width: {width}")
     num_folded_tr = sp.ceiling(width / w_folded_tr)
-    print(f"num_folded_tr: {num_folded_tr}")
+    # print(f"num_folded_tr: {num_folded_tr}")
 
     if g_ip.use_piecewise:
         w_folded_tr = sp.Piecewise((width, num_folded_tr < 2), (w_folded_tr, True))

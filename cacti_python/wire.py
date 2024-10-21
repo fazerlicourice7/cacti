@@ -5,7 +5,6 @@ import sympy as sp
 from .cacti_interface import PowerDef
 from .component import Component, compute_gate_area
 from .const import *
-from . import decoder
 from . import parameter
 from .parameter import gate_C, drain_C_, horowitz, tr_R_on
 

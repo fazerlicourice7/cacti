@@ -1,5 +1,4 @@
 import math
-import time
 
 import sympy as sp
 
@@ -9,7 +8,6 @@ from .component import Component, logical_effort, compute_gate_area
 from .const import *
 from . import parameter
 from .parameter import _log2, symbolic_convex_max
-from . import powergating
 from .powergating import SleepTx
 
 class Decoder(Component):
@@ -1412,7 +1410,6 @@ class Driver(Component):
 
         return this_delay / (1.0 - 0.5)
 
-
-# Helper functions and constants (placeholders for actual implementations)
-NAND = 'nand'
-INV = 'inv'
+# # Helper functions and constants (placeholders for actual implementations)
+# NAND = 'nand'
+# INV = 'inv'

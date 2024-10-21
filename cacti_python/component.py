@@ -1,5 +1,5 @@
 import math
-from math import ceil, log, pow
+from math import ceil
 import sys
 
 import sympy as sp

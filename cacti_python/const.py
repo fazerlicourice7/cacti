@@ -1,5 +1,3 @@
-import math
-
 # Constants
 ADDRESS_BITS = 42
 EXTRA_TAG_BITS = 5

@@ -5,8 +5,7 @@ import time
 
 import sympy as sp
 
-from . import cacti_interface
-from .cacti_interface import MemArray, uca_org_t, PowerDef
+from .cacti_interface import MemArray, uca_org_t
 from .nuca import NucaOrgT
 from .parameter import (
     DynamicParameter,
@@ -15,7 +14,6 @@ from .parameter import (
     InputParameter,
     TechnologyParameter,
 )
-from . import parameter
 from .uca import UCA
 
 

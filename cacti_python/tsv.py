@@ -1,5 +1,3 @@
-import math
-
 from .area import Area
 from .cacti_interface import PowerDef
 from .component import Component
