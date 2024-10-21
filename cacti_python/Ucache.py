@@ -1,7 +1,5 @@
 import math
 from typing import List
-from threading import Thread
-import time
 
 import sympy as sp
 
@@ -847,146 +845,146 @@ import threading
 from functools import cmp_to_key
 
 
-def solve(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
-    pure_ram = g_ip.pure_ram
-    pure_cam = g_ip.pure_cam
+# def solve(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
+#     pure_ram = g_ip.pure_ram
+#     pure_cam = g_ip.pure_cam
 
-    g_tp.init(g_ip.F_sz_um, False)
-    g_ip.print_detail_debug = 0
+#     g_tp.init(g_ip.F_sz_um, False)
+#     g_ip.print_detail_debug = 0
 
-    tag_arr = []
-    data_arr = []
-    sol_list = [uca_org_t(g_ip)]
+#     tag_arr = []
+#     data_arr = []
+#     sol_list = [uca_org_t(g_ip)]
 
-    fin_res.tag_array.access_time = 0
-    fin_res.tag_array.Ndwl = 0
-    fin_res.tag_array.Ndbl = 0
-    fin_res.tag_array.Nspd = 0
-    fin_res.tag_array.deg_bl_muxing = 0
-    fin_res.tag_array.Ndsam_lev_1 = 0
-    fin_res.tag_array.Ndsam_lev_2 = 0
+#     fin_res.tag_array.access_time = 0
+#     fin_res.tag_array.Ndwl = 0
+#     fin_res.tag_array.Ndbl = 0
+#     fin_res.tag_array.Nspd = 0
+#     fin_res.tag_array.deg_bl_muxing = 0
+#     fin_res.tag_array.Ndsam_lev_1 = 0
+#     fin_res.tag_array.Ndsam_lev_2 = 0
 
-    calc_array = [CalcTimeMtWrapperStruct() for _ in range(NTHREADS)]
-    threads = [None] * NTHREADS
+#     calc_array = [CalcTimeMtWrapperStruct() for _ in range(NTHREADS)]
+#     threads = [None] * NTHREADS
 
-    for t in range(NTHREADS):
-        calc_array[t].tid = t
-        calc_array[t].pure_ram = pure_ram
-        calc_array[t].pure_cam = pure_cam
-        calc_array[t].data_res = MinValuesT()
-        calc_array[t].tag_res = MinValuesT()
+#     for t in range(NTHREADS):
+#         calc_array[t].tid = t
+#         calc_array[t].pure_ram = pure_ram
+#         calc_array[t].pure_cam = pure_cam
+#         calc_array[t].data_res = MinValuesT()
+#         calc_array[t].tag_res = MinValuesT()
 
-    if not (pure_ram or pure_cam or g_ip.fully_assoc):
-        is_tag = True
-        g_tp.init(g_ip.F_sz_um, is_tag)
+#     if not (pure_ram or pure_cam or g_ip.fully_assoc):
+#         is_tag = True
+#         g_tp.init(g_ip.F_sz_um, is_tag)
 
-        for t in range(NTHREADS):
-            calc_array[t].is_tag = is_tag
-            calc_array[t].is_main_mem = False
-            calc_array[t].Nspd_min = 0.125
-            threads[t] = threading.Thread(
-                target=calc_time_mt_wrapper, args=(calc_array[t],)
-            )
-            threads[t].start()
+#         for t in range(NTHREADS):
+#             calc_array[t].is_tag = is_tag
+#             calc_array[t].is_main_mem = False
+#             calc_array[t].Nspd_min = 0.125
+#             threads[t] = threading.Thread(
+#                 target=calc_time_mt_wrapper, args=(calc_array[t],)
+#             )
+#             threads[t].start()
 
-        for t in range(NTHREADS):
-            threads[t].join()
+#         for t in range(NTHREADS):
+#             threads[t].join()
 
-        for t in range(NTHREADS):
-            calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
-            data_arr.extend(calc_array[t].data_arr)
-            calc_array[t].tag_arr.sort(key=cmp_to_key(MemArray.lt))
-            tag_arr.extend(calc_array[t].tag_arr)
+#         for t in range(NTHREADS):
+#             calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
+#             data_arr.extend(calc_array[t].data_arr)
+#             calc_array[t].tag_arr.sort(key=cmp_to_key(MemArray.lt))
+#             tag_arr.extend(calc_array[t].tag_arr)
 
-    is_tag = False
-    g_tp.init(g_ip.F_sz_um, is_tag)
+#     is_tag = False
+#     g_tp.init(g_ip.F_sz_um, is_tag)
 
-    for t in range(NTHREADS):
-        calc_array[t].is_tag = is_tag
-        calc_array[t].is_main_mem = g_ip.is_main_mem
-        if not (pure_cam or g_ip.fully_assoc):
-            calc_array[t].Nspd_min = g_ip.out_w / (g_ip.block_sz * 8)
-        else:
-            calc_array[t].Nspd_min = 1
+#     for t in range(NTHREADS):
+#         calc_array[t].is_tag = is_tag
+#         calc_array[t].is_main_mem = g_ip.is_main_mem
+#         if not (pure_cam or g_ip.fully_assoc):
+#             calc_array[t].Nspd_min = g_ip.out_w / (g_ip.block_sz * 8)
+#         else:
+#             calc_array[t].Nspd_min = 1
 
-        threads[t] = threading.Thread(
-            target=calc_time_mt_wrapper, args=(calc_array[t],)
-        )
-        threads[t].start()
+#         threads[t] = threading.Thread(
+#             target=calc_time_mt_wrapper, args=(calc_array[t],)
+#         )
+#         threads[t].start()
 
-    for t in range(NTHREADS):
-        threads[t].join()
+#     for t in range(NTHREADS):
+#         threads[t].join()
 
-    data_arr.clear()
-    for t in range(NTHREADS):
-        calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
-        data_arr.extend(calc_array[t].data_arr)
+#     data_arr.clear()
+#     for t in range(NTHREADS):
+#         calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
+#         data_arr.extend(calc_array[t].data_arr)
 
-    d_min = MinValuesT()
-    t_min = MinValuesT()
-    cache_min = MinValuesT()
+#     d_min = MinValuesT()
+#     t_min = MinValuesT()
+#     cache_min = MinValuesT()
 
-    for t in range(NTHREADS):
-        d_min.update_min_values(calc_array[t].data_res)
-        t_min.update_min_values(calc_array[t].tag_res)
+#     for t in range(NTHREADS):
+#         d_min.update_min_values(calc_array[t].data_res)
+#         t_min.update_min_values(calc_array[t].tag_res)
 
-    for m in data_arr:
-        m.arr_min = d_min
+#     for m in data_arr:
+#         m.arr_min = d_min
 
-    filter_data_arr(data_arr)
-    if not (pure_ram or pure_cam or g_ip.fully_assoc):
-        filter_tag_arr(t_min, tag_arr)
+#     filter_data_arr(data_arr)
+#     if not (pure_ram or pure_cam or g_ip.fully_assoc):
+#         filter_tag_arr(t_min, tag_arr)
 
-    if pure_ram or pure_cam or g_ip.fully_assoc:
-        for m in data_arr:
-            curr_org = sol_list[-1]
-            curr_org.tag_array2 = None
-            curr_org.data_array2 = m
+#     if pure_ram or pure_cam or g_ip.fully_assoc:
+#         for m in data_arr:
+#             curr_org = sol_list[-1]
+#             curr_org.tag_array2 = None
+#             curr_org.data_array2 = m
 
-            curr_org.find_delay()
-            curr_org.find_energy()
-            curr_org.find_area()
-            curr_org.find_cyc()
+#             curr_org.find_delay()
+#             curr_org.find_energy()
+#             curr_org.find_area()
+#             curr_org.find_cyc()
 
-            cache_min.update_min_values_from_uca(curr_org)
+#             cache_min.update_min_values_from_uca(curr_org)
 
-            sol_list.append(uca_org_t(g_ip))
-    else:
-        while tag_arr:
-            arr_temp = tag_arr.pop()
-            for m in data_arr:
-                curr_org = sol_list[-1]
-                curr_org.tag_array2 = arr_temp
-                curr_org.data_array2 = m
+#             sol_list.append(uca_org_t(g_ip))
+#     else:
+#         while tag_arr:
+#             arr_temp = tag_arr.pop()
+#             for m in data_arr:
+#                 curr_org = sol_list[-1]
+#                 curr_org.tag_array2 = arr_temp
+#                 curr_org.data_array2 = m
 
-                curr_org.find_delay()
-                curr_org.find_energy()
-                curr_org.find_area()
-                curr_org.find_cyc()
+#                 curr_org.find_delay()
+#                 curr_org.find_energy()
+#                 curr_org.find_area()
+#                 curr_org.find_cyc()
 
-                cache_min.update_min_values_from_uca(curr_org)
+#                 cache_min.update_min_values_from_uca(curr_org)
 
-                sol_list.append(uca_org_t(g_ip))
+#                 sol_list.append(uca_org_t(g_ip))
 
-    sol_list.pop()
+#     sol_list.pop()
 
-    find_optimal_uca(fin_res, cache_min, sol_list)
+#     find_optimal_uca(fin_res, cache_min, sol_list)
 
-    sol_list.clear()
+#     sol_list.clear()
 
-    for m in data_arr:
-        if m != fin_res.data_array2:
-            del m
-    data_arr.clear()
+#     for m in data_arr:
+#         if m != fin_res.data_array2:
+#             del m
+#     data_arr.clear()
 
-    for t in range(NTHREADS):
-        del calc_array[t].data_res
-        del calc_array[t].tag_res
+#     for t in range(NTHREADS):
+#         del calc_array[t].data_res
+#         del calc_array[t].tag_res
 
-    del calc_array
-    del cache_min
-    del d_min
-    del t_min
+#     del calc_array
+#     del cache_min
+#     del d_min
+#     del t_min
 
 
 def update(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
@@ -1040,7 +1038,7 @@ def update(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
 ##### SINGLE SOLVE
 
 
-def calculate_time_single(
+def calculate_all_results_single(
     g_ip,
     g_tp,
     is_tag,
@@ -1052,13 +1050,16 @@ def calculate_time_single(
     Ndcm,
     Ndsam_lev_1,
     Ndsam_lev_2,
-    ptr_array,
+    ptr_array, 
     flag_results_populate,
     ptr_results,
     ptr_fin_res,
     wt,
     is_main_mem,
 ):
+    """"
+    All the bulk of the calculation happens here. 
+    """
     dyn_p = DynamicParameter(
         g_ip,
         g_tp,
@@ -1425,45 +1426,46 @@ def calculate_time_single(
     return ptr_array
 
 
-def solve_single(g_ip: InputParameter, g_tp: TechnologyParameter):
+def solve_single(g_ip: InputParameter):
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 
+    g_tp = TechnologyParameter(g_ip)
     g_tp.init(g_ip, g_ip.F_sz_um, False)
-    g_ip.print_detail_debug = 0
+    g_ip.print_detail_debug = False
 
     tag_arr = MemArray()
     data_arr = MemArray()
     sol = uca_org_t(g_ip)
 
-    if not (pure_ram or pure_cam or g_ip.fully_assoc):
-        is_tag = True
-        g_tp.init(g_ip, g_ip.F_sz_um, is_tag)
+    # if not (pure_ram or pure_cam or g_ip.fully_assoc):
+    #     is_tag = True
+    #     g_tp.init(g_ip, g_ip.F_sz_um, is_tag)
 
-        calculate_time_single(
-            g_ip,
-            g_tp,
-            is_tag,
-            pure_ram,
-            pure_cam,
-            g_ip.nspd,
-            g_ip.ndwl,
-            g_ip.ndbl,
-            g_ip.ndcm,
-            g_ip.ndsam1,
-            g_ip.ndsam2,
-            tag_arr,
-            0,
-            None,
-            None,
-            wr,
-            g_ip.is_main_mem,
-        )
+    #     calculate_all_results_single(
+    #         g_ip,
+    #         g_tp,
+    #         is_tag,
+    #         pure_ram,
+    #         pure_cam,
+    #         g_ip.nspd,
+    #         g_ip.ndwl,
+    #         g_ip.ndbl,
+    #         g_ip.ndcm,
+    #         g_ip.ndsam1,
+    #         g_ip.ndsam2,
+    #         tag_arr,
+    #         0,
+    #         None,
+    #         None,
+    #         wr,
+    #         g_ip.is_main_mem,
+    #     )
 
     is_tag = False
     g_tp.init(g_ip, g_ip.F_sz_um, is_tag)
 
-    calculate_time_single(
+    data_arr = calculate_all_results_single(
         g_ip,
         g_tp,
         is_tag,
@@ -1484,6 +1486,7 @@ def solve_single(g_ip: InputParameter, g_tp: TechnologyParameter):
     )
 
     if pure_ram or pure_cam or g_ip.fully_assoc:
+        print(f"Should always be FA 2")
         curr_org = sol
         curr_org.tag_array2 = None
         curr_org.data_array2 = data_arr

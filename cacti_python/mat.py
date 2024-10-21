@@ -1,3 +1,5 @@
+import math
+
 import sympy as sp
 
 from .cacti_interface import PowerDef

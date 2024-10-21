@@ -245,6 +245,7 @@ class uca_org_t:
         data_arr = self.data_array2
         tag_arr = self.tag_array2
         if self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc:
+            print(f"always should be FA")
             self.access_time = data_arr.access_time
             if(self.g_ip.pure_ram):
                 if (self.g_ip.is_main_mem):
