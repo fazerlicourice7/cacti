@@ -81,7 +81,7 @@ class Subarray(Component):
             if self.dp.ram_cell_tech_type == comm_dram:
                 self.C_bl = self.num_rows * C_b_metal
             else:
-                C_b_row_drain_C = parameter.drain_C_(self.g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
+                C_b_row_drain_C = parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
                 self.C_bl = self.num_rows * (C_b_row_drain_C + C_b_metal)
         else:
             if not (self.is_fa or self.dp.pure_cam):
@@ -89,7 +89,7 @@ class Subarray(Component):
                     parameter.gate_C_pass(self.g_tp, self.g_tp.sram.cell_a_w, (self.g_tp.sram.b_w - 2 * self.g_tp.sram.cell_a_w) / 2.0, False, True) * 2 +
                     c_w_metal
                 ) * self.num_cols
-                C_b_row_drain_C = parameter.drain_C_(self.g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
+                C_b_row_drain_C = parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
                 self.C_bl = self.num_rows * (C_b_row_drain_C + C_b_metal)
             else:
                 c_w_metal = self.cam_cell.w * self.g_tp.wire_local.C_per_um

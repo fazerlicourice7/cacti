@@ -262,7 +262,7 @@ class Memorybus(Component):
             self.global_data_drv.compute_delay(0)
             self.global_data_drv.compute_area()
 
-            local_data_c_gate_load = self.dp.num_c_subarray * drain_C_(self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cell.w, self.is_dram)
+            local_data_c_gate_load = self.dp.num_c_subarray * drain_C_(self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cell.w, self.is_dram)
             local_data_c_wire_load = self.dp.num_c_subarray * self.g_tp.dram.b_w * self.g_tp.wire_inside_mat.C_per_um
             local_data_r_wire_load = self.dp.num_c_subarray * self.g_tp.dram.b_w * self.g_tp.wire_inside_mat.R_per_um
             local_data_r_gate_load = 0

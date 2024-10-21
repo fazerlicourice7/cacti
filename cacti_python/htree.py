@@ -93,27 +93,27 @@ class Htree2(Component):
         # CHANGE: LENGTH max ignored, otherwise, expression will be too long
         # nsize = symbolic_convex_max(1, nsize)
 
-        tc = 2 * parameter.tr_R_on(nsize * self.min_w_nmos, NCH, 1) * (
-            parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) * 2 +
+        tc = 2 * parameter.tr_R_on(self.g_tp, nsize * self.min_w_nmos, NCH, 1) * (
+            parameter.drain_C_(self.g_ip, self.g_tp, nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) * 2 +
             2 * parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         )
         self.delay += parameter.horowitz(self.g_ip, w1.out_rise_time, tc,
                                self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE)
         self.power.readOp.dynamic += 0.5 * (
-            2 * parameter.drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             2 * parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            2 * parameter.drain_C_(pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.drain_C_(nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, pton_size * nsize * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, nsize * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             2 * parameter.gate_C(self.g_tp, s2 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.wire_bw
-        self.power.readOp.leakage += (self.wire_bw * parameter.cmos_Isub_leakage(nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand)) * self.deviceType.Vdd
+        self.power.readOp.leakage += (self.wire_bw * parameter.cmos_Isub_leakage(self.g_tp, nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand)) * self.deviceType.Vdd
         self.power.readOp.gate_leakage += (
             self.wire_bw
-            * parameter.cmos_Ig_leakage(
+            * parameter.cmos_Ig_leakage(self.g_tp, 
                 nsize * self.min_w_nmos * 2, self.min_w_pmos * nsize * 2, 2, nand
             )
         ) * self.deviceType.Vdd
@@ -137,15 +137,15 @@ class Htree2(Component):
         # CHANGE: MAX - avoiding max to decrease expression size
         size = parameter.symbolic_convex_max(1, size)
 
-        res_nor = 2 * parameter.tr_R_on(size * self.min_w_pmos, PCH, 1)
-        res_ptrans = parameter.tr_R_on(tr_size * self.min_w_nmos, NCH, 1)
+        res_nor = 2 * parameter.tr_R_on(self.g_tp, size * self.min_w_pmos, PCH, 1)
+        res_ptrans = parameter.tr_R_on(self.g_tp, tr_size * self.min_w_nmos, NCH, 1)
         cap_nand_out = (
-            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
-            2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.gate_C(self.g_tp, tr_size * self.min_w_pmos, 0)
         )
         cap_ptrans_out = (
-            2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
+            2 * (parameter.drain_C_(self.g_ip, self.g_tp, tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(self.g_ip, self.g_tp, tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
             parameter.gate_C(self.g_tp, s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         )
 
@@ -158,71 +158,71 @@ class Htree2(Component):
 
         # NAND
         self.power.readOp.dynamic += 0.5 * (
-            2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.gate_C(self.g_tp, tr_size * self.min_w_pmos, 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            2 * parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.gate_C(self.g_tp, tr_size * self.min_w_pmos, 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # NOT
         self.power.readOp.dynamic += 0.5 * (
-            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.gate_C(self.g_tp, size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.gate_C(self.g_tp, size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # NOR
         self.power.readOp.dynamic += 0.5 * (
-            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            2 * parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.gate_C(self.g_tp, tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            parameter.drain_C_(size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
-            2 * parameter.drain_C_(size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
+            parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def) +
             parameter.gate_C(self.g_tp, tr_size * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         # Output transistor
         self.power.readOp.dynamic += 0.5 * (
-            2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
+            2 * (parameter.drain_C_(self.g_ip, self.g_tp, tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(self.g_ip, self.g_tp, tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
             parameter.gate_C(self.g_tp, s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd
 
         self.power.searchOp.dynamic += 0.5 * (
-            2 * (parameter.drain_C_(tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
+            2 * (parameter.drain_C_(self.g_ip, self.g_tp, tr_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) + parameter.drain_C_(self.g_ip, self.g_tp, tr_size * self.min_w_nmos, NCH, 1, 1, self.g_tp.cell_h_def)) +
             parameter.gate_C(self.g_tp, s1 * (self.min_w_nmos + self.min_w_pmos), 0)
         ) * self.deviceType.Vdd * self.deviceType.Vdd * self.init_wire_bw
 
         if self.uca_tree:
-            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp, self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp, self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp, self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
 
-            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.g_tp, self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.g_tp, self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.g_tp, self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
         else:
-            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp, self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp, self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp, self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor) * self.deviceType.Vdd * self.wire_bw
 
-            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
-            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.g_tp, self.min_w_nmos * tr_size * 2, self.min_w_pmos * tr_size * 2, 1, inv) * self.deviceType.Vdd * self.wire_bw
+            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.g_tp, self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nand) * self.deviceType.Vdd * self.wire_bw
             self.power.readOp.gate_leakage += (
-                parameter.cmos_Ig_leakage(
+                parameter.cmos_Ig_leakage(self.g_tp, 
                     self.min_w_nmos * size * 3, self.min_w_pmos * size * 3, 2, nor
                 )
                 * self.deviceType.Vdd

@@ -231,24 +231,24 @@ class Wire(Component):
             raise AssertionError()
 
     def signal_fall_time(self):
-        timeconst = (drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def) +
-                     drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+        timeconst = (drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def) +
+                     drain_C_(self.g_ip, self.g_tp, self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
                      gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
-                    tr_R_on(self.min_w_pmos, PCH, 1)
+                    tr_R_on(self.g_tp, self.min_w_pmos, PCH, 1)
         rt = horowitz(self.g_ip, 0, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, FALL) / (self.deviceType.Vdd - self.deviceType.Vth)
-        timeconst = (drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def) +
-                     drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
+        timeconst = (drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def) +
+                     drain_C_(self.g_ip, self.g_tp, self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def) +
                      gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)) * \
-                    tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
+                    tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1)
         ft = horowitz(self.g_ip, rt, timeconst, self.deviceType.Vth / self.deviceType.Vdd, self.deviceType.Vth / self.deviceType.Vdd, RISE) / self.deviceType.Vth
         return ft
 
     def signal_rise_time(self):
         timeconst = (
-            parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
+            parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
+            + parameter.drain_C_(self.g_ip, self.g_tp, self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
-        ) * parameter.tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
+        ) * parameter.tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1)
         rt = (
             parameter.horowitz(self.g_ip, 
                 0,
@@ -260,10 +260,10 @@ class Wire(Component):
             / self.deviceType.Vth
         )
         timeconst = (
-            parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
+            parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
+            + parameter.drain_C_(self.g_ip, self.g_tp, self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.gate_C(self.g_tp, self.min_w_pmos + self.g_tp.min_w_nmos_, 0)
-        ) * parameter.tr_R_on(self.min_w_pmos, PCH, 1)
+        ) * parameter.tr_R_on(self.g_tp, self.min_w_pmos, PCH, 1)
         ft = parameter.horowitz(self.g_ip, 
             rt,
             timeconst,
@@ -327,7 +327,7 @@ class Wire(Component):
 
     def low_swing_model(self):
         len_ = self.wire_length
-        beta = parameter.pmos_to_nmos_sz_ratio()
+        beta = parameter.pmos_to_nmos_sz_ratio(self.g_tp,)
 
         inputrise = self.in_rise_time if self.in_rise_time != 0 else self.signal_rise_time()
 
@@ -336,7 +336,7 @@ class Wire(Component):
 
         RES_ADJ = 8.6
         driver_res = (-8 * self.g_tp.FO4 / (math.log(0.5) * cwire)) / RES_ADJ
-        nsize = parameter.R_to_w(driver_res, NCH)
+        nsize = parameter.R_to_w(self.g_tp, driver_res, NCH)
 
         # CHANGE: MAX - can ignore to reduce expression length
         # nsize = sp.Min(nsize, self.g_tp.max_w_nmos_)
@@ -368,10 +368,10 @@ class Wire(Component):
         # CHANGE: MAX - can ignore to reduce expression size
         inv_size = parameter.symbolic_convex_max(inv_size, 1)
 
-        res_eq = 2 * parameter.tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
+        res_eq = 2 * parameter.tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1)
         cap_eq = (
-            2 * parameter.drain_C_(self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.drain_C_(2 * self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
+            2 * parameter.drain_C_(self.g_ip, self.g_tp, self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
+            + parameter.drain_C_(self.g_ip, self.g_tp, 2 * self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.gate_C(self.g_tp, inv_size * self.g_tp.min_w_nmos_, 0)
             + parameter.gate_C(self.g_tp, inv_size * self.min_w_pmos, 0)
         )
@@ -388,10 +388,10 @@ class Wire(Component):
 
         inputrise = self.delay / (self.deviceType.Vdd - self.deviceType.Vth)
 
-        res_eq = parameter.tr_R_on(inv_size * self.min_w_pmos, PCH, 1)
+        res_eq = parameter.tr_R_on(self.g_tp, inv_size * self.min_w_pmos, PCH, 1)
         cap_eq = (
-            parameter.drain_C_(inv_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.drain_C_(
+            parameter.drain_C_(self.g_ip, self.g_tp, inv_size * self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def)
+            + parameter.drain_C_(self.g_ip, self.g_tp, 
                 inv_size * self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def
             )
             + parameter.gate_C(self.g_tp, nsize, 0)
@@ -411,28 +411,28 @@ class Wire(Component):
         self.transmitter.power.readOp.dynamic = temp_power * 2
         self.transmitter.power.readOp.leakage = self.deviceType.Vdd * (
             4
-            * parameter.cmos_Isub_leakage(self.g_tp.min_w_nmos_, self.min_w_pmos, 2, "nand")
+            * parameter.cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_, self.min_w_pmos, 2, "nand")
             + 4
-            * parameter.cmos_Isub_leakage(self.g_tp.min_w_nmos_, self.min_w_pmos, 1, "inv")
+            * parameter.cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_, self.min_w_pmos, 1, "inv")
         )
 
         self.transmitter.power.readOp.gate_leakage = self.deviceType.Vdd * (
-            4 * parameter.cmos_Ig_leakage(self.g_tp.min_w_nmos_, self.min_w_pmos, 2, "nand")
-            + 4 * parameter.cmos_Ig_leakage(self.g_tp.min_w_nmos_, self.min_w_pmos, 1, "inv")
+            4 * parameter.cmos_Ig_leakage(self.g_tp, self.g_tp.min_w_nmos_, self.min_w_pmos, 2, "nand")
+            + 4 * parameter.cmos_Ig_leakage(self.g_tp, self.g_tp.min_w_nmos_, self.min_w_pmos, 1, "inv")
         )
 
         inputrise = self.delay / self.deviceType.Vth
 
         cap_eq = (
             cwire
-            + 2 * parameter.drain_C_(nsize, NCH, 1, 1, self.g_tp.cell_h_def)
+            + 2 * parameter.drain_C_(self.g_ip, self.g_tp, nsize, NCH, 1, 1, self.g_tp.cell_h_def)
             + self.nsense * self.sense_amp_input_cap()
         )
         timeconst = (
-            (parameter.tr_R_on(nsize, NCH, 1) * RES_ADJ)
-            * (cwire + 2 * parameter.drain_C_(nsize, NCH, 1, 1, self.g_tp.cell_h_def))
+            (parameter.tr_R_on(self.g_tp, nsize, NCH, 1) * RES_ADJ)
+            * (cwire + 2 * parameter.drain_C_(self.g_ip, self.g_tp, nsize, NCH, 1, 1, self.g_tp.cell_h_def))
             + rwire * cwire / 2
-            + (parameter.tr_R_on(nsize, NCH, 1) * RES_ADJ + rwire)
+            + (parameter.tr_R_on(self.g_tp, nsize, NCH, 1) * RES_ADJ + rwire)
             * self.nsense
             * self.sense_amp_input_cap()
         )
@@ -447,11 +447,11 @@ class Wire(Component):
         self.l_wire.delay = self.delay - self.transmitter.delay
         self.l_wire.power.readOp.dynamic = temp_power - self.transmitter.power.readOp.dynamic
         self.l_wire.power.readOp.leakage = self.deviceType.Vdd * (
-            4 * parameter.cmos_Isub_leakage(nsize, 0, 1, nmos)
+            4 * parameter.cmos_Isub_leakage(self.g_tp, nsize, 0, 1, nmos)
         )
 
         self.l_wire.power.readOp.gate_leakage = self.deviceType.Vdd * (
-            4 * parameter.cmos_Ig_leakage(nsize, 0, 1, nmos)
+            4 * parameter.cmos_Ig_leakage(self.g_tp, nsize, 0, 1, nmos)
         )
 
         self.delay += self.g_tp.sense_delay
@@ -472,25 +472,25 @@ class Wire(Component):
 
     def sense_amp_input_cap(self):
         return (
-            parameter.drain_C_(self.g_tp.w_iso, PCH, 1, 1, self.g_tp.cell_h_def)
+            parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.w_iso, PCH, 1, 1, self.g_tp.cell_h_def)
             + parameter.gate_C(self.g_tp, self.g_tp.w_sense_en + self.g_tp.w_sense_n, 0)
-            + parameter.drain_C_(self.g_tp.w_sense_n, NCH, 1, 1, self.g_tp.cell_h_def)
-            + parameter.drain_C_(self.g_tp.w_sense_p, PCH, 1, 1, self.g_tp.cell_h_def)
+            + parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.w_sense_n, NCH, 1, 1, self.g_tp.cell_h_def)
+            + parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.w_sense_p, PCH, 1, 1, self.g_tp.cell_h_def)
         )
 
     def delay_optimal_wire(self):
         len_ = self.wire_length
-        beta = parameter.pmos_to_nmos_sz_ratio()
+        beta = parameter.pmos_to_nmos_sz_ratio(self.g_tp, )
         switching = 0
         short_ckt = 0
         tc = 0
         input_cap = parameter.gate_C(self.g_tp, self.g_tp.min_w_nmos_ + self.min_w_pmos, 0)
-        out_cap = parameter.drain_C_(
-            self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def
-        ) + parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
+        out_cap = parameter.drain_C_( 
+            self.g_ip, self.g_tp, self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def
+        ) + parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
         out_res = (
-            parameter.tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
-            + parameter.tr_R_on(self.min_w_pmos, PCH, 1)
+            parameter.tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1)
+            + parameter.tr_R_on(self.g_tp, self.min_w_pmos, PCH, 1)
         ) / 2
         wr = self.wire_res(len_)
         wc = self.wire_cap(len_)
@@ -536,7 +536,7 @@ class Wire(Component):
         self.power.readOp.leakage = (
             (len_ / self.repeater_spacing)
             * self.deviceType.Vdd
-            * parameter.cmos_Isub_leakage(
+            * parameter.cmos_Isub_leakage(self.g_tp, 
                 self.g_tp.min_w_nmos_ * repeater_scaling,
                 beta * self.g_tp.min_w_nmos_ * repeater_scaling,
                 1,
@@ -546,7 +546,7 @@ class Wire(Component):
         self.power.readOp.gate_leakage = (
             (len_ / self.repeater_spacing)
             * self.deviceType.Vdd
-            * parameter.cmos_Ig_leakage(
+            * parameter.cmos_Ig_leakage(self.g_tp, 
                 self.g_tp.min_w_nmos_ * repeater_scaling,
                 beta * self.g_tp.min_w_nmos_ * repeater_scaling,
                 1,
@@ -637,17 +637,17 @@ class Wire(Component):
     def wire_model(self, space, size):
         ptemp = PowerDef()
         len_ = 1
-        beta = parameter.pmos_to_nmos_sz_ratio()
+        beta = parameter.pmos_to_nmos_sz_ratio(self.g_tp,)
         switching = 0
         short_ckt = 0
         tc = 0
         input_cap = parameter.gate_C(self.g_tp, self.g_tp.min_w_nmos_ + self.min_w_pmos, 0)
-        out_cap = parameter.drain_C_(
+        out_cap = parameter.drain_C_(self.g_ip, self.g_tp, 
             self.min_w_pmos, PCH, 1, 1, self.g_tp.cell_h_def
-        ) + parameter.drain_C_(self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
+        ) + parameter.drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def)
         out_res = (
-            parameter.tr_R_on(self.g_tp.min_w_nmos_, NCH, 1)
-            + parameter.tr_R_on(self.min_w_pmos, PCH, 1)
+            parameter.tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1)
+            + parameter.tr_R_on(self.g_tp, self.min_w_pmos, PCH, 1)
         ) / 2
         wr = self.wire_res(len_)
         wc = self.wire_cap(len_)
@@ -672,13 +672,13 @@ class Wire(Component):
         ptemp.readOp.dynamic = (len_ / self.repeater_spacing) * (switching + short_ckt)
         ptemp.readOp.leakage = (len_ / self.repeater_spacing) * \
                                self.deviceType.Vdd * \
-                               parameter.cmos_Isub_leakage(self.g_tp.min_w_nmos_ * self.repeater_size,
+                               parameter.cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_ * self.repeater_size,
                                                       beta * self.g_tp.min_w_nmos_ * self.repeater_size, 1, inv)
 
         ptemp.readOp.gate_leakage = (
             (len_ / self.repeater_spacing)
             * self.deviceType.Vdd
-            * parameter.cmos_Ig_leakage(
+            * parameter.cmos_Ig_leakage(self.g_tp, 
                 self.g_tp.min_w_nmos_ * self.repeater_size,
                 beta * self.g_tp.min_w_nmos_ * self.repeater_size,
                 1,

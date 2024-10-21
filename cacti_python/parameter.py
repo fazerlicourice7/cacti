@@ -2333,7 +2333,7 @@ class DynamicParameter:
         if self.is_dram:
             self.deg_bl_muxing = 1
             if self.ram_cell_tech_type == comm_dram:
-                Cbitrow_drain_cap = drain_C_(self.g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
+                Cbitrow_drain_cap = drain_C_(self.g_ip, self.g_tp, self.g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
                 C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
                 self.V_b_sense = (self.g_tp.dram_cell_Vdd / 2) * self.g_tp.dram_cell_C / (self.g_tp.dram_cell_C + C_bl)
                 # TODO RELATIONAL
@@ -2341,7 +2341,7 @@ class DynamicParameter:
                 #     return
                 self.dram_refresh_period = 64e-3
             else:
-                Cbitrow_drain_cap = drain_C_(self.g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
+                Cbitrow_drain_cap = drain_C_(self.g_ip, self.g_tp, self.g_tp.dram.cell_a_w, NCH, 1, 0, self.cell.w, True, True) / 2.0
                 C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
                 self.V_b_sense = (self.g_tp.dram_cell_Vdd / 2) * self.g_tp.dram_cell_C / (self.g_tp.dram_cell_C + C_bl)
                 if self.V_b_sense < VBITSENSEMIN:
@@ -2351,7 +2351,7 @@ class DynamicParameter:
         else:
             self.V_b_sense = symbolic_convex_max(0.05 * self.g_tp.sram_cell.Vdd, VBITSENSEMIN)
             self.deg_bl_muxing = self.Ndcm
-            Cbitrow_drain_cap = drain_C_(self.g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
+            Cbitrow_drain_cap = drain_C_(self.g_ip, self.g_tp, self.g_tp.sram.cell_a_w, NCH, 1, 0, self.cell.w, False, True) / 2.0
             C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
             self.dram_refresh_period = 0
 
@@ -2486,7 +2486,7 @@ class DynamicParameter:
         self.V_b_sense = max(0.05 * self.g_tp.sram_cell.Vdd, VBITSENSEMIN)
         self.deg_bl_muxing = 1
 
-        Cbitrow_drain_cap = drain_C_(self.g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
+        Cbitrow_drain_cap = drain_C_(self.g_ip, self.g_tp, self.g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0
         self.dram_refresh_period = 0
 
         if self.Ndbl == 0:
@@ -3125,10 +3125,10 @@ def cmos_Ig_p(g_tp: InputParameter, pWidth, _is_dram=False, _is_cell=False, _is_
 
     return pWidth * dt.I_g_on_p
 
-def cmos_Isub_leakage(nWidth, pWidth, fanin, g_type, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False, topo=series):
+def cmos_Isub_leakage(g_tp: TechnologyParameter, nWidth, pWidth, fanin, g_type, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False, topo=series):
     assert fanin >= 1
-    nmos_leak = simplified_nmos_leakage(nWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
-    pmos_leak = simplified_pmos_leakage(pWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
+    nmos_leak = simplified_nmos_leakage(g_tp, nWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
+    pmos_leak = simplified_pmos_leakage(g_tp, pWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
     Isub = 0
     num_states = int(sp.Pow(2.0, fanin))
 
@@ -3182,10 +3182,10 @@ def cmos_Isub_leakage(nWidth, pWidth, fanin, g_type, _is_dram=False, _is_cell=Fa
 
     return Isub
 
-def cmos_Ig_leakage(nWidth, pWidth, fanin, g_type, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False, topo=series):
+def cmos_Ig_leakage(g_tp: TechnologyParameter, nWidth, pWidth, fanin, g_type, _is_dram=False, _is_cell=False, _is_wl_tr=False, _is_sleep_tx=False, topo=series):
     assert fanin >= 1
-    nmos_leak = cmos_Ig_n(nWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
-    pmos_leak = cmos_Ig_p(pWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
+    nmos_leak = cmos_Ig_n(g_tp, nWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
+    pmos_leak = cmos_Ig_p(g_tp, pWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx)
     Ig_on = 0
     
     num_states = int(sp.Pow(2.0, fanin))

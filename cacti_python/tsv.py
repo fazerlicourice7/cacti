@@ -80,8 +80,8 @@ class TSV(Component):
             cumulative_area += compute_gate_area(self.g_ip, INV, 1, self.w_TSV_p[i], self.w_TSV_n[i], self.Buffer_area.h)
             if self.g_ip.print_detail_debug:
                 print(f"\n\tArea up to the {i+1} stages is: {cumulative_area} um2")
-            cumulative_curr += parameter.cmos_Isub_leakage(self.w_TSV_n[i], self.w_TSV_p[i], 1, inv, self.is_dram)
-            cumulative_curr_Ig += parameter.cmos_Ig_leakage(self.w_TSV_n[i], self.w_TSV_p[i], 1, inv, self.is_dram)
+            cumulative_curr += parameter.cmos_Isub_leakage(self.g_tp, self.w_TSV_n[i], self.w_TSV_p[i], 1, inv, self.is_dram)
+            cumulative_curr_Ig += parameter.cmos_Ig_leakage(self.g_tp, self.w_TSV_n[i], self.w_TSV_p[i], 1, inv, self.is_dram)
         
         self.power = PowerDef()
         self.power.readOp.leakage = cumulative_curr * Vdd
@@ -101,8 +101,8 @@ class TSV(Component):
     def compute_delay(self):
         rd = parameter.tr_R_on(self.g_tp, self.w_TSV_n[0], NCH, 1, self.is_dram, False, self.is_wl_tr)
         c_load = parameter.gate_C(self.g_tp, self.w_TSV_n[1] + self.w_TSV_p[1], 0.0, self.is_dram, False, self.is_wl_tr)
-        c_intrinsic = parameter.drain_C_(self.w_TSV_p[0], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
-                      parameter.drain_C_(self.w_TSV_n[0], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
+        c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp, self.w_TSV_p[0], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
+                      parameter.drain_C_(self.g_ip, self.g_tp, self.w_TSV_n[0], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         tf = rd * (c_intrinsic + c_load)
         self.delay = parameter.horowitz(self.g_ip, 0, tf, 0.5, 0.5, RISE)
         inrisetime = self.delay / (1.0 - 0.5)
@@ -111,10 +111,10 @@ class TSV(Component):
         self.power.readOp.dynamic = (c_load + c_intrinsic) * Vdd * Vdd
 
         for i in range(1, self.num_gates - 1):
-            rd = parameter.tr_R_on(self.w_TSV_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
+            rd = parameter.tr_R_on(self.g_tp, self.w_TSV_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
             c_load = parameter.gate_C(self.w_TSV_p[i + 1] + self.w_TSV_n[i + 1], 0.0, self.is_dram, False, self.is_wl_tr)
-            c_intrinsic = parameter.drain_C_(self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
-                          parameter.drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
+            c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp, self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
+                          parameter.drain_C_(self.g_ip, self.g_tp, self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
             tf = rd * (c_intrinsic + c_load)
             self.delay += parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
             inrisetime = self.delay / (1.0 - 0.5)
@@ -122,9 +122,9 @@ class TSV(Component):
 
         i = self.num_gates - 1
         c_load = self.C_load_TSV
-        rd = parameter.tr_R_on(self.w_TSV_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
-        c_intrinsic = parameter.drain_C_(self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
-                      parameter.drain_C_(self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
+        rd = parameter.tr_R_on(self.g_tp, self.w_TSV_n[i], NCH, 1, self.is_dram, False, self.is_wl_tr)
+        c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp, self.w_TSV_p[i], PCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr) + \
+                      parameter.drain_C_(self.g_ip, self.g_tp, self.w_TSV_n[i], NCH, 1, 1, self.area.h, self.is_dram, False, self.is_wl_tr)
         R_TSV_out = self.res
         tf = rd * (c_intrinsic + c_load) + R_TSV_out * c_load / 2
         self.delay += parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
