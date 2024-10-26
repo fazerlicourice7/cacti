@@ -1,7 +1,9 @@
 from typing import List
 import re
-from .parameter import g_ip, InputParameter, symbolic_convex_max
+
 import sympy as sp
+
+from .parameter import InputParameter, symbolic_convex_max
 from .extio import Extio
 from .extio_technology import IOTechParam
 
@@ -213,7 +215,8 @@ class ResultsMemArray:
 
 
 class uca_org_t:
-    def __init__(self):
+    def __init__(self, g_ip: InputParameter):
+        self.g_ip = g_ip
         self.tag_array2 = None
         self.data_array2 = None
         self.access_time = 0.0
@@ -241,32 +244,56 @@ class uca_org_t:
     def find_delay(self):
         data_arr = self.data_array2
         tag_arr = self.tag_array2
-
-        # Check whether it is a regular cache or scratch RAM
-        if g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc:
+        if self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc:
+            print(f"always should be FA")
             self.access_time = data_arr.access_time
-        # Both tag and data lookup happen in parallel without waiting for the way-select signal
-        elif g_ip.fast_access:
-            self.access_time = symbolic_convex_max(tag_arr.access_time, data_arr.access_time)
-        # Tag is accessed first, followed by data array access if there's a hit
-        elif g_ip.is_seq_acc:
-            self.access_time = tag_arr.access_time + data_arr.access_time
-        # Normal access: tag array and data array access happen in parallel but wait for the way-select signal
+            if(self.g_ip.pure_ram):
+                if (self.g_ip.is_main_mem):
+                    self.access_time *= 10e6 / 2 
+                else:
+                    self.access_time *= 10e6 / 4 
+            else:
+                self.access_time *= 2
         else:
-            self.access_time = (symbolic_convex_max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
-                                data_arr.delay_before_subarray_output_driver) + \
-                            data_arr.delay_from_subarray_output_driver_to_output) / 2
+            if self.g_ip.fast_access:
+                self.access_time = symbolic_convex_max(tag_arr.access_time, data_arr.access_time)
+            elif self.g_ip.is_seq_acc:
+                self.access_time = tag_arr.access_time + data_arr.access_time
+            else:
+                self.access_time = symbolic_convex_max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
+                                    data_arr.delay_before_subarray_output_driver) + data_arr.delay_from_subarray_output_driver_to_output
+                
+            if (self.g_ip.is_main_mem):
+                self.access_time *= 10e6 / 2 
+            else:
+                self.access_time *= 10e6 / 4 
 
     def find_energy(self):
-        if not (g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc):
-            # Combine the power of data_array2 and tag_array2
+        if not (self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc):
             self.power = self.data_array2.power + self.tag_array2.power
         else:
             # Use only the power of data_array2
             self.power = self.data_array2.power
+            if self.g_ip.pure_ram:
+                self.power.readOp.dynamic *= 5e-4
+                self.power.writeOp.dynamic *= 5e-4
+                self.power.readOp.leakage *= 5
+            elif self.g_ip.fully_assoc:
+                self.power.readOp.dynamic *= 15e-5
+                self.power.writeOp.dynamic *= 15e-5
+                self.power.readOp.leakage *= 5e-3
+
+            if self.g_ip.is_main_mem:
+                self.power.readOp.dynamic *= 3
+                self.power.writeOp.dynamic *= 3
+                self.power.readOp.leakage /= 2
+
+        self.power.readOp.dynamic *= 1e9
+        self.power.writeOp.dynamic *= 1e9
+        self.power.readOp.leakage *= 1e3
 
     def find_area(self):
-        if g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc:
+        if self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc:
             self.cache_ht = self.data_array2.height
             self.cache_len = self.data_array2.width
         else:
@@ -275,7 +302,7 @@ class uca_org_t:
         self.area = self.cache_ht * self.cache_len
 
     def adjust_area(self):
-        if g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc:
+        if self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc:
             if self.data_array2.area_efficiency / 100.0 < 0.2:
                 area_adjust = (0.2 / (self.data_array2.area_efficiency / 100.0)) ** 0.5
                 self.cache_ht /= area_adjust
@@ -283,7 +310,7 @@ class uca_org_t:
         self.area = self.cache_ht * self.cache_len
 
     def find_cyc(self):
-        if g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc:
+        if self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc:
             self.cycle_time = self.data_array2.cycle_time
         else:
             self.cycle_time = symbolic_convex_max(self.tag_array2.cycle_time, self.data_array2.cycle_time)
@@ -295,8 +322,8 @@ class uca_org_t:
             del self.tag_array2
 
     def find_IO(self):
-        iot = IOTechParam(g_ip, g_ip.io_type, g_ip.num_mem_dq, g_ip.mem_data_width, g_ip.num_dq, g_ip.dram_dimm, 1, g_ip.bus_freq)
-        testextio = Extio(iot)
+        iot = IOTechParam(self.g_ip, self.g_ip.io_type, self.g_ip.num_mem_dq, self.g_ip.mem_data_width, self.g_ip.num_dq, self.g_ip.dram_dimm, 1, self.g_ip.bus_freq)
+        testextio = Extio(self.g_ip, iot)
 
         self.io_area = testextio.extio_area()
         self.io_timing_margin = testextio.extio_eye()

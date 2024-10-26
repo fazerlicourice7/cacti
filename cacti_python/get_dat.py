@@ -1,9 +1,9 @@
 import re
-from .const import *
-tech_params = {}
 import sys
 import os
 import time
+
+from .const import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from hw_symbols import *
@@ -320,9 +320,10 @@ def scan_input_double_tsv_type(line, name, unit_name, proj_type, tsv_type, print
         return temp[index]
     else:
         raise ValueError("Line does not match the expected format")
-    
+
 
 if __name__ == "__main__" :
+    tech_params = {}
     file = "../tech_params/180nm.dat"
     scan_dat(tech_params, file, 0, 0, 360)
     print(tech_params)

@@ -1,19 +1,21 @@
 import math
 from typing import List
-from threading import Thread
-from .cacti_interface import *
-from .cacti_interface import MemArray
-from .nuca import NucaOrgT
-from .parameter import g_ip, g_tp
-from .parameter import *
-from .uca import UCA
-from .parameter import _log2
+
 import sympy as sp
 
-import time
+from .cacti_interface import MemArray, uca_org_t
+from .nuca import NucaOrgT
+from .parameter import (
+    DynamicParameter,
+    _log2,
+    symbolic_convex_max,
+    InputParameter,
+    TechnologyParameter,
+)
+from .uca import UCA
 
 
-BIGNUM = float('inf')
+BIGNUM = float("inf")
 NTHREADS = 4
 MAXDATAN = 4
 MAX_COL_MUX = 4
@@ -51,23 +53,29 @@ class MinValuesT:
         self.min_cyc = sp.Min(self.min_cyc, res.nuca_pda.cycle_time)
 
     def update_min_values_from_mem_array(self, res: MemArray):
-        if(not contains_any_symbol(self.min_delay) and math.isnan(self.min_delay)):
+        if not contains_any_symbol(self.min_delay) and math.isnan(self.min_delay):
             self.min_delay = res.access_time
-        elif(not contains_any_symbol(res.access_time) and math.isnan(res.access_time)):
+        elif not contains_any_symbol(res.access_time) and math.isnan(res.access_time):
             self.min_delay = self.min_delay
         else:
             self.min_delay = sp.Min(self.min_delay, res.access_time)
 
         if not sp.contains_any_symbol(self.min_dyn) and math.isnan(self.min_dyn):
             self.min_dyn = res.power.readOp.dynamic
-        elif not sp.contains_any_symbol(res.power.readOp.dynamic) and math.isnan(res.power.readOp.dynamic):
+        elif not sp.contains_any_symbol(res.power.readOp.dynamic) and math.isnan(
+            res.power.readOp.dynamic
+        ):
             self.min_dyn = self.min_dyn
         else:
             self.min_dyn = sp.Min(self.min_dyn, res.power.readOp.dynamic)
 
-        if not sp.contains_any_symbol(self.min_leakage) and math.isnan(self.min_leakage):
+        if not sp.contains_any_symbol(self.min_leakage) and math.isnan(
+            self.min_leakage
+        ):
             self.min_leakage = res.power.readOp.leakage
-        elif not sp.contains_any_symbol(res.power.readOp.leakage) and math.isnan(res.power.readOp.leakage):
+        elif not sp.contains_any_symbol(res.power.readOp.leakage) and math.isnan(
+            res.power.readOp.leakage
+        ):
             self.min_leakage = self.min_leakage
         else:
             self.min_leakage = sp.Min(self.min_leakage, res.power.readOp.leakage)
@@ -91,6 +99,7 @@ class MinValuesT:
         # self.min_area = sp.Min(self.min_area, res.area)
         # self.min_cyc = sp.Min(self.min_cyc, res.cycle_time)
 
+
 class CalcTimeMtWrapperStruct:
     def __init__(self):
         self.tid = 0
@@ -103,6 +112,7 @@ class CalcTimeMtWrapperStruct:
         self.tag_res = None  # Assuming min_values_t is another class or type, set to None by default
         self.data_arr = []  # list<mem_array *> is translated to a list in Python
         self.tag_arr = []  # list<mem_array *> is translated to a list in Python
+
 
 def calc_time_mt_wrapper(void_obj):
     calc_obj = void_obj
@@ -132,86 +142,86 @@ def calc_time_mt_wrapper(void_obj):
     wt_max = 0
 
     if g_ip.force_wiretype:
-        if g_ip.wt == 'Full_swing':
-            wt_min = 'Global'
-            wt_max = 'Low_swing'-1
+        if g_ip.wt == "Full_swing":
+            wt_min = "Global"
+            wt_max = "Low_swing" - 1
         else:
-            if g_ip.wt == 'Global':
-                wt_min = wt_max = 'Global'
-            elif g_ip.wt == 'Global_5':
-                wt_min = wt_max = 'Global_5'
-            elif g_ip.wt == 'Global_10':
-                wt_min = wt_max = 'Global_10'
-            elif g_ip.wt == 'Global_20':
-                wt_min = wt_max = 'Global_20'
-            elif g_ip.wt == 'Global_30':
-                wt_min = wt_max = 'Global_30'
-            elif g_ip.wt == 'Low_swing':
-                wt_min = wt_max = 'Low_swing'
+            if g_ip.wt == "Global":
+                wt_min = wt_max = "Global"
+            elif g_ip.wt == "Global_5":
+                wt_min = wt_max = "Global_5"
+            elif g_ip.wt == "Global_10":
+                wt_min = wt_max = "Global_10"
+            elif g_ip.wt == "Global_20":
+                wt_min = wt_max = "Global_20"
+            elif g_ip.wt == "Global_30":
+                wt_min = wt_max = "Global_30"
+            elif g_ip.wt == "Low_swing":
+                wt_min = wt_max = "Low_swing"
             else:
                 raise ValueError("Unknown wire type!")
     else:
-        wt_min = 'Global'
-        wt_max = 'Low_swing'
+        wt_min = "Global"
+        wt_max = "Low_swing"
 
-    # Check Npsd_min 
-    for Nspd in range(int(Nspd_min), int(MAXDATASPD), int(math.ceil(Nspd_min*2))):
+    # Check Npsd_min
+    for Nspd in range(int(Nspd_min), int(MAXDATASPD), int(math.ceil(Nspd_min * 2))):
         # replace with proper enum
-        if(wt_min == "Global"):
+        if wt_min == "Global":
             wt_min = 0
-        elif(wt_min == "Global_5"):
+        elif wt_min == "Global_5":
             wt_min = 1
-        elif(wt_min == "Global_10"):
+        elif wt_min == "Global_10":
             wt_min = 2
-        elif(wt_min == "Global_20"):
+        elif wt_min == "Global_20":
             wt_min = 3
-        elif(wt_min == "Global_30"):
+        elif wt_min == "Global_30":
             wt_min = 4
-        elif(wt_min == "Low_swing"):
+        elif wt_min == "Low_swing":
             wt_min = 5
-        elif(wt_min == "Semi_global"):
+        elif wt_min == "Semi_global":
             wt_min = 6
-        elif(wt_min == "Full_swing"):
+        elif wt_min == "Full_swing":
             wt_min = 7
-        elif(wt_min == "Transmission"):
+        elif wt_min == "Transmission":
             wt_min = 8
-        elif(wt_min == "Optical"):
+        elif wt_min == "Optical":
             wt_min = 9
         else:
             wt_min = 10
 
-        if(wt_max == "Global"):
+        if wt_max == "Global":
             wt_max = 0
-        elif(wt_max == "Global_5"):
+        elif wt_max == "Global_5":
             wt_max = 1
-        elif(wt_max == "Global_10"):
+        elif wt_max == "Global_10":
             wt_max = 2
-        elif(wt_max == "Global_20"):
+        elif wt_max == "Global_20":
             wt_max = 3
-        elif(wt_max == "Global_30"):
+        elif wt_max == "Global_30":
             wt_max = 4
-        elif(wt_max == "Low_swing"):
+        elif wt_max == "Low_swing":
             wt_max = 5
-        elif(wt_max == "Semi_global"):
+        elif wt_max == "Semi_global":
             wt_max = 6
-        elif(wt_max == "Full_swing"):
+        elif wt_max == "Full_swing":
             wt_max = 7
-        elif(wt_max == "Transmission"):
+        elif wt_max == "Transmission":
             wt_max = 8
-        elif(wt_max == "Optical"):
+        elif wt_max == "Optical":
             wt_max = 9
         else:
             wt_max = 10
 
-        for wr in range(wt_min, wt_max+1):
+        for wr in range(wt_min, wt_max + 1):
             for iter in range(tid, niter, NTHREADS):
                 Ndwl = 1 << (iter // (Ndbl_niter * Ndcm_niter))
                 Ndbl = 1 << ((iter // Ndcm_niter) % Ndbl_niter)
                 Ndcm = 1 << (iter % Ndcm_niter)
                 Ndsam_lev_1 = 1
                 Ndsam_lev_2 = 1
-                for Ndsam_lev_1 in range(1, MAX_COL_MUX+1, Ndsam_lev_1*2):
-                    for Ndsam_lev_2 in range(1, MAX_COL_MUX+1, Ndsam_lev_2*2):
+                for Ndsam_lev_1 in range(1, MAX_COL_MUX + 1, Ndsam_lev_1 * 2):
+                    for Ndsam_lev_2 in range(1, MAX_COL_MUX + 1, Ndsam_lev_2 * 2):
                         if g_ip.force_cache_config and not is_tag:
                             wr = g_ip.wt
                             Ndwl = g_ip.ndwl
@@ -224,16 +234,44 @@ def calc_time_mt_wrapper(void_obj):
                                 Ndsam_lev_2 = g_ip.ndsam2
 
                         if is_tag:
-                            is_valid_partition = calculate_time(is_tag, pure_ram, pure_cam, Nspd, Ndwl,
-                                                                Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2,
-                                                                tag_arr[-1], 0, None, None, wr, is_main_mem)
+                            is_valid_partition = calculate_time(
+                                is_tag,
+                                pure_ram,
+                                pure_cam,
+                                Nspd,
+                                Ndwl,
+                                Ndbl,
+                                Ndcm,
+                                Ndsam_lev_1,
+                                Ndsam_lev_2,
+                                tag_arr[-1],
+                                0,
+                                None,
+                                None,
+                                wr,
+                                is_main_mem,
+                            )
                         if not is_tag or g_ip.fully_assoc:
-                            is_valid_partition = calculate_time(is_tag, pure_ram, pure_cam, Nspd, Ndwl,
-                                                                Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2,
-                                                                data_arr[-1], 0, None, None, wr, is_main_mem)
+                            is_valid_partition = calculate_time(
+                                is_tag,
+                                pure_ram,
+                                pure_cam,
+                                Nspd,
+                                Ndwl,
+                                Ndbl,
+                                Ndcm,
+                                Ndsam_lev_1,
+                                Ndsam_lev_2,
+                                data_arr[-1],
+                                0,
+                                None,
+                                None,
+                                wr,
+                                is_main_mem,
+                            )
                             if g_ip.is_3d_mem:
-                                Ndsam_lev_1 = MAX_COL_MUX+1
-                                Ndsam_lev_2 = MAX_COL_MUX+1
+                                Ndsam_lev_1 = MAX_COL_MUX + 1
+                                Ndsam_lev_2 = MAX_COL_MUX + 1
 
                         if is_valid_partition:
                             if is_tag:
@@ -251,13 +289,14 @@ def calc_time_mt_wrapper(void_obj):
                             if g_ip.nspd != 0:
                                 Nspd = MAXDATASPD
                             if g_ip.ndsam1 != 0:
-                                Ndsam_lev_1 = MAX_COL_MUX+1
-                                Ndsam_lev_2 = MAX_COL_MUX+1
+                                Ndsam_lev_1 = MAX_COL_MUX + 1
+                                Ndsam_lev_2 = MAX_COL_MUX + 1
                     # Ndsam_lev_1 += 1
                     # Ndsam_lev_1 += 1
 
     data_arr.pop()
     tag_arr.pop()
+
 
 def calculate_time(
     is_tag,
@@ -274,9 +313,21 @@ def calculate_time(
     ptr_results,
     ptr_fin_res,
     wt,
-    is_main_mem
+    is_main_mem,
 ):
-    dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam_in, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
+    dyn_p = DynamicParameter(
+        is_tag,
+        pure_ram,
+        pure_cam,
+        Nspd,
+        Ndwl,
+        Ndbl,
+        Ndcm,
+        Ndsam_lev_1,
+        Ndsam_lev_2,
+        wt,
+        is_main_mem,
+    )
 
     if not dyn_p.is_valid:
         return False
@@ -300,7 +351,9 @@ def calculate_time(
         ptr_array.Ndsam_lev_2 = Ndsam_lev_2
         ptr_array.access_time = uca.access_time
         ptr_array.cycle_time = uca.cycle_time
-        ptr_array.multisubbank_interleave_cycle_time = uca.multisubbank_interleave_cycle_time
+        ptr_array.multisubbank_interleave_cycle_time = (
+            uca.multisubbank_interleave_cycle_time
+        )
         ptr_array.area_ram_cells = uca.area_all_dataramcells
         ptr_array.area = uca.area.get_area()
 
@@ -318,12 +371,18 @@ def calculate_time(
         ptr_array.power = uca.power
 
         # CHANGE: MAX - can ignore to reduce expression size
-        ptr_array.delay_senseamp_mux_decoder = symbolic_convex_max(uca.delay_array_to_sa_mux_lev_1_decoder, uca.delay_array_to_sa_mux_lev_2_decoder)
+        ptr_array.delay_senseamp_mux_decoder = symbolic_convex_max(
+            uca.delay_array_to_sa_mux_lev_1_decoder,
+            uca.delay_array_to_sa_mux_lev_2_decoder,
+        )
         # ptr_array.delay_senseamp_mux_decoder = uca.delay_array_to_sa_mux_lev_1_decoder
 
-        ptr_array.delay_before_subarray_output_driver = uca.delay_before_subarray_output_driver
-        ptr_array.delay_from_subarray_output_driver_to_output = uca.delay_from_subarray_out_drv_to_out
-
+        ptr_array.delay_before_subarray_output_driver = (
+            uca.delay_before_subarray_output_driver
+        )
+        ptr_array.delay_from_subarray_output_driver_to_output = (
+            uca.delay_from_subarray_out_drv_to_out
+        )
         ptr_array.delay_route_to_bank = uca.htree_in_add.delay
         ptr_array.delay_input_htree = uca.bank.htree_in_add.delay
         ptr_array.delay_row_predecode_driver_and_block = uca.bank.mat.r_predec.delay
@@ -331,13 +390,17 @@ def calculate_time(
         ptr_array.delay_bitlines = uca.bank.mat.delay_bitline
         ptr_array.delay_matchlines = uca.bank.mat.delay_matchchline
         ptr_array.delay_sense_amp = uca.bank.mat.delay_sa
-        ptr_array.delay_subarray_output_driver = uca.bank.mat.delay_subarray_out_drv_htree
+        ptr_array.delay_subarray_output_driver = (
+            uca.bank.mat.delay_subarray_out_drv_htree
+        )
         ptr_array.delay_dout_htree = uca.bank.htree_out_data.delay
         ptr_array.delay_comparator = uca.bank.mat.delay_comparator
 
         if g_ip.is_3d_mem:
             ptr_array.delay_row_activate_net = uca.membus_RAS.delay_bus
-            ptr_array.delay_row_predecode_driver_and_block = uca.membus_RAS.delay_add_predecoder
+            ptr_array.delay_row_predecode_driver_and_block = (
+                uca.membus_RAS.delay_add_predecoder
+            )
             ptr_array.delay_row_decoder = uca.membus_RAS.delay_add_decoder
             ptr_array.delay_local_wordline = uca.membus_RAS.delay_lwl_drv
             ptr_array.delay_column_access_net = uca.membus_CAS.delay_bus
@@ -350,21 +413,41 @@ def calculate_time(
             ptr_array.delay_data_buffer = uca.membus_data.delay_data_buffer
 
             ptr_array.energy_row_activate_net = uca.membus_RAS.power_bus.readOp.dynamic
-            ptr_array.energy_row_predecode_driver_and_block = uca.membus_RAS.power_add_predecoder.readOp.dynamic
-            ptr_array.energy_row_decoder = uca.membus_RAS.power_add_decoders.readOp.dynamic
-            ptr_array.energy_local_wordline = uca.membus_RAS.power_lwl_drv.readOp.dynamic
-            ptr_array.energy_bitlines = dyn_p.Ndwl * uca.bank.mat.power_bitline.readOp.dynamic
-            ptr_array.energy_sense_amp = dyn_p.Ndwl * uca.bank.mat.power_sa.readOp.dynamic
-
+            ptr_array.energy_row_predecode_driver_and_block = (
+                uca.membus_RAS.power_add_predecoder.readOp.dynamic
+            )
+            ptr_array.energy_row_decoder = (
+                uca.membus_RAS.power_add_decoders.readOp.dynamic
+            )
+            ptr_array.energy_local_wordline = (
+                uca.membus_RAS.power_lwl_drv.readOp.dynamic
+            )
+            ptr_array.energy_bitlines = (
+                dyn_p.Ndwl * uca.bank.mat.power_bitline.readOp.dynamic
+            )
+            ptr_array.energy_sense_amp = (
+                dyn_p.Ndwl * uca.bank.mat.power_sa.readOp.dynamic
+            )
             ptr_array.energy_column_access_net = uca.membus_CAS.power_bus.readOp.dynamic
-            ptr_array.energy_column_predecoder = uca.membus_CAS.power_add_predecoder.readOp.dynamic
-            ptr_array.energy_column_decoder = uca.membus_CAS.power_add_decoders.readOp.dynamic
-            ptr_array.energy_column_selectline = uca.membus_CAS.power_col_sel.readOp.dynamic
-
+            ptr_array.energy_column_predecoder = (
+                uca.membus_CAS.power_add_predecoder.readOp.dynamic
+            )
+            ptr_array.energy_column_decoder = (
+                uca.membus_CAS.power_add_decoders.readOp.dynamic
+            )
+            ptr_array.energy_column_selectline = (
+                uca.membus_CAS.power_col_sel.readOp.dynamic
+            )
             ptr_array.energy_datapath_net = uca.membus_data.power_bus.readOp.dynamic
-            ptr_array.energy_global_data = uca.membus_data.power_global_data.readOp.dynamic
-            ptr_array.energy_local_data_and_drv = uca.membus_data.power_local_data.readOp.dynamic
-            ptr_array.energy_subarray_output_driver = uca.bank.mat.power_subarray_out_drv.readOp.dynamic
+            ptr_array.energy_global_data = (
+                uca.membus_data.power_global_data.readOp.dynamic
+            )
+            ptr_array.energy_local_data_and_drv = (
+                uca.membus_data.power_local_data.readOp.dynamic
+            )
+            ptr_array.energy_subarray_output_driver = (
+                uca.bank.mat.power_subarray_out_drv.readOp.dynamic
+            )
             ptr_array.energy_data_buffer = 0
 
             ptr_array.area_lwl_drv = uca.area_lwl_drv
@@ -400,52 +483,104 @@ def calculate_time(
         ptr_array.power_row_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_bit_mux_predecoder_drivers = uca.bank.mat.b_mux_predec.driver_power
-        ptr_array.power_bit_mux_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_bit_mux_predecoder_blocks = uca.bank.mat.b_mux_predec.block_power
+        ptr_array.power_bit_mux_predecoder_drivers = (
+            uca.bank.mat.b_mux_predec.driver_power
+        )
+        ptr_array.power_bit_mux_predecoder_drivers.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_drivers.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_drivers.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_blocks = (
+            uca.bank.mat.b_mux_predec.block_power
+        )
         ptr_array.power_bit_mux_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
-
+        ptr_array.power_bit_mux_predecoder_blocks.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_blocks.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
         ptr_array.power_bit_mux_decoders = uca.bank.mat.power_bit_mux_decoders
         ptr_array.power_bit_mux_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers = uca.bank.mat.sa_mux_lev_1_predec.driver_power
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks = uca.bank.mat.sa_mux_lev_1_predec.block_power
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_1_decoders = uca.bank.mat.power_sa_mux_lev_1_decoders
-        ptr_array.power_senseamp_mux_lev_1_decoders.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_decoders.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers = uca.bank.mat.sa_mux_lev_2_predec.driver_power
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks = uca.bank.mat.sa_mux_lev_2_predec.block_power
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_2_decoders = uca.bank.mat.power_sa_mux_lev_2_decoders
-        ptr_array.power_senseamp_mux_lev_2_decoders.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_decoders.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers = (
+            uca.bank.mat.sa_mux_lev_1_predec.driver_power
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks = (
+            uca.bank.mat.sa_mux_lev_1_predec.block_power
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders = (
+            uca.bank.mat.power_sa_mux_lev_1_decoders
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers = (
+            uca.bank.mat.sa_mux_lev_2_predec.driver_power
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks = (
+            uca.bank.mat.sa_mux_lev_2_predec.block_power
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders = (
+            uca.bank.mat.power_sa_mux_lev_2_decoders
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
         ptr_array.power_bitlines = uca.bank.mat.power_bitline
         ptr_array.power_bitlines.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bitlines.writeOp.dynamic *= num_act_mats_hor_dir
@@ -462,10 +597,15 @@ def calculate_time(
         ptr_array.power_prechg_eq_drivers.searchOp.dynamic *= num_act_mats_hor_dir
 
         ptr_array.power_output_drivers_at_subarray = uca.bank.mat.power_subarray_out_drv
-        ptr_array.power_output_drivers_at_subarray.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_output_drivers_at_subarray.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_output_drivers_at_subarray.searchOp.dynamic *= num_act_mats_hor_dir
-
+        ptr_array.power_output_drivers_at_subarray.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_output_drivers_at_subarray.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_output_drivers_at_subarray.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
         ptr_array.power_comparators = uca.bank.mat.power_comparator
         ptr_array.power_comparators.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_comparators.writeOp.dynamic *= num_act_mats_hor_dir
@@ -477,13 +617,17 @@ def calculate_time(
             ptr_array.power_searchline = uca.bank.mat.power_searchline
 
             ptr_array.power_searchline.searchOp.dynamic *= num_mats
-            ptr_array.power_searchline_precharge = uca.bank.mat.power_searchline_precharge
+            ptr_array.power_searchline_precharge = (
+                uca.bank.mat.power_searchline_precharge
+            )
             ptr_array.power_searchline_precharge.searchOp.dynamic *= num_mats
             ptr_array.power_matchlines = uca.bank.mat.power_matchline
             ptr_array.power_matchlines.searchOp.dynamic *= num_mats
             ptr_array.power_matchline_precharge = uca.bank.mat.power_matchline_precharge
             ptr_array.power_matchline_precharge.searchOp.dynamic *= num_mats
-            ptr_array.power_matchline_to_wordline_drv = uca.bank.mat.power_ml_to_ram_wl_drv
+            ptr_array.power_matchline_to_wordline_drv = (
+                uca.bank.mat.power_ml_to_ram_wl_drv
+            )
 
         ptr_array.activate_energy = uca.activate_energy
         ptr_array.read_energy = uca.read_energy
@@ -492,8 +636,9 @@ def calculate_time(
         ptr_array.refresh_power = uca.refresh_power
         ptr_array.leak_power_subbank_closed_page = uca.leak_power_subbank_closed_page
         ptr_array.leak_power_subbank_open_page = uca.leak_power_subbank_open_page
-        ptr_array.leak_power_request_and_reply_networks = uca.leak_power_request_and_reply_networks
-
+        ptr_array.leak_power_request_and_reply_networks = (
+            uca.leak_power_request_and_reply_networks
+        )
         ptr_array.precharge_delay = uca.precharge_delay
 
         if g_ip.is_3d_mem:
@@ -512,8 +657,9 @@ def calculate_time(
             ptr_array.activate_power = uca.activate_power
             ptr_array.read_power = uca.read_power
             ptr_array.write_power = uca.write_power
-            ptr_array.peak_read_power = uca.read_energy / ((g_ip.burst_depth) / (g_ip.sys_freq_MHz * 1e6) / 2)
-
+            ptr_array.peak_read_power = uca.read_energy / (
+                (g_ip.burst_depth) / (g_ip.sys_freq_MHz * 1e6) / 2
+            )
             ptr_array.num_row_subarray = dyn_p.num_r_subarray
             ptr_array.num_col_subarray = dyn_p.num_c_subarray
 
@@ -527,16 +673,18 @@ def calculate_time(
             ptr_array.sram_sleep_tx_width = uca.bank.mat.sram_sleep_tx.width
             ptr_array.sram_sleep_tx_area = uca.bank.mat.array_sleep_tx_area
             ptr_array.sram_sleep_wakeup_latency = uca.bank.mat.array_wakeup_t
-            ptr_array.sram_sleep_wakeup_energy = uca.bank.mat.array_wakeup_e.readOp.dynamic
-
+            ptr_array.sram_sleep_wakeup_energy = (
+                uca.bank.mat.array_wakeup_e.readOp.dynamic
+            )
             ptr_array.wl_sleep_tx_width = uca.bank.mat.row_dec.sleeptx.width
             ptr_array.wl_sleep_tx_area = uca.bank.mat.wl_sleep_tx_area
             ptr_array.wl_sleep_wakeup_latency = uca.bank.mat.wl_wakeup_t
             ptr_array.wl_sleep_wakeup_energy = uca.bank.mat.wl_wakeup_e.readOp.dynamic
 
             ptr_array.bl_floating_wakeup_latency = uca.bank.mat.blfloating_wakeup_t
-            ptr_array.bl_floating_wakeup_energy = uca.bank.mat.blfloating_wakeup_e.readOp.dynamic
-
+            ptr_array.bl_floating_wakeup_energy = (
+                uca.bank.mat.blfloating_wakeup_e.readOp.dynamic
+            )
             ptr_array.array_leakage = uca.bank.array_leakage
             ptr_array.wl_leakage = uca.bank.wl_leakage
             ptr_array.cl_leakage = uca.bank.cl_leakage
@@ -550,9 +698,13 @@ def calculate_time(
 def check_uca_org(u: uca_org_t, minval: MinValuesT):
     if ((u.access_time - minval.min_delay) * 100 / minval.min_delay) > g_ip.delay_dev:
         return False
-    if ((u.power.readOp.dynamic - minval.min_dyn) / minval.min_dyn) * 100 > g_ip.dynamic_power_dev:
+    if (
+        (u.power.readOp.dynamic - minval.min_dyn) / minval.min_dyn
+    ) * 100 > g_ip.dynamic_power_dev:
         return False
-    if ((u.power.readOp.leakage - minval.min_leakage) / minval.min_leakage) * 100 > g_ip.leakage_power_dev:
+    if (
+        (u.power.readOp.leakage - minval.min_leakage) / minval.min_leakage
+    ) * 100 > g_ip.leakage_power_dev:
         return False
     if ((u.cycle_time - minval.min_cyc) / minval.min_cyc) * 100 > g_ip.cycle_time_dev:
         return False
@@ -563,9 +715,13 @@ def check_uca_org(u: uca_org_t, minval: MinValuesT):
 def check_mem_org(u: MemArray, minval: MinValuesT):
     if ((u.access_time - minval.min_delay) * 100 / minval.min_delay) > g_ip.delay_dev:
         return False
-    if ((u.power.readOp.dynamic - minval.min_dyn) / minval.min_dyn) * 100 > g_ip.dynamic_power_dev:
+    if (
+        (u.power.readOp.dynamic - minval.min_dyn) / minval.min_dyn
+    ) * 100 > g_ip.dynamic_power_dev:
         return False
-    if ((u.power.readOp.leakage - minval.min_leakage) / minval.min_leakage) * 100 > g_ip.leakage_power_dev:
+    if (
+        (u.power.readOp.leakage - minval.min_leakage) / minval.min_leakage
+    ) * 100 > g_ip.leakage_power_dev:
         return False
     if ((u.cycle_time - minval.min_cyc) / minval.min_cyc) * 100 > g_ip.cycle_time_dev:
         return False
@@ -589,23 +745,27 @@ def find_optimal_uca(res: uca_org_t, minval: MinValuesT, ulist):
 
     for niter in ulist:
         if g_ip.ed == 1:
-            cost = (niter.access_time / minval.min_delay) * (niter.power.readOp.dynamic / minval.min_dyn)
+            cost = (niter.access_time / minval.min_delay) * (
+                niter.power.readOp.dynamic / minval.min_dyn
+            )
             if min_cost > cost:
                 min_cost = cost
                 res.update(niter)
         elif g_ip.ed == 2:
-            cost = ((niter.access_time / minval.min_delay) ** 2) * (niter.power.readOp.dynamic / minval.min_dyn)
+            cost = ((niter.access_time / minval.min_delay) ** 2) * (
+                niter.power.readOp.dynamic / minval.min_dyn
+            )
             if min_cost > cost:
                 min_cost = cost
                 res.update(niter)
         else:
             if check_uca_org(niter, minval):
                 cost = (
-                    d * (niter.access_time / minval.min_delay) +
-                    c * (niter.cycle_time / minval.min_cyc) +
-                    dp * (niter.power.readOp.dynamic / minval.min_dyn) +
-                    lp * (niter.power.readOp.leakage / minval.min_leakage) +
-                    a * (niter.area / minval.min_area)
+                    d * (niter.access_time / minval.min_delay)
+                    + c * (niter.cycle_time / minval.min_cyc)
+                    + dp * (niter.power.readOp.dynamic / minval.min_dyn)
+                    + lp * (niter.power.readOp.leakage / minval.min_leakage)
+                    + a * (niter.area / minval.min_area)
                 )
                 if min_cost > cost:
                     min_cost = cost
@@ -636,13 +796,15 @@ def filter_tag_arr(min_val: MinValuesT, mem_list):
         print(len(mem_list))
         v = check_mem_org(mem_list[-1], min_val)
         if v:
-            cur_cost = (wt_delay * (mem_list[-1].access_time / min_val.min_delay) +
-                        wt_dyn * (mem_list[-1].power.readOp.dynamic / min_val.min_dyn) +
-                        wt_leakage * (mem_list[-1].power.readOp.leakage / min_val.min_leakage) +
-                        wt_area * (mem_list[-1].area / min_val.min_area) +
-                        wt_cyc * (mem_list[-1].cycle_time / min_val.min_cyc))
+            cur_cost = (
+                wt_delay * (mem_list[-1].access_time / min_val.min_delay)
+                + wt_dyn * (mem_list[-1].power.readOp.dynamic / min_val.min_dyn)
+                + wt_leakage * (mem_list[-1].power.readOp.leakage / min_val.min_leakage)
+                + wt_area * (mem_list[-1].area / min_val.min_area)
+                + wt_cyc * (mem_list[-1].cycle_time / min_val.min_cyc)
+            )
         else:
-            cur_cost = float('inf')
+            cur_cost = float("inf")
 
         if cur_cost < cost:
             if res is not None:
@@ -651,8 +813,8 @@ def filter_tag_arr(min_val: MinValuesT, mem_list):
             res = mem_list[-1]
         else:
             del mem_list[-1]
-        
-        if(len(mem_list) > 0):
+
+        if len(mem_list) > 0:
             mem_list.pop()
 
     if not res:
@@ -661,21 +823,6 @@ def filter_tag_arr(min_val: MinValuesT, mem_list):
 
     mem_list.append(res)
 
-# def filter_data_arr(curr_list):
-#     if not curr_list:
-#         print("ERROR: no valid data array organizations found")
-#         exit(1)
-
-#     iter_list = list(curr_list)
-
-#     for m in iter_list:
-#         if m is None:
-#             exit(1)
-
-#         if (((m.access_time - m.arr_min.min_delay) / m.arr_min.min_delay > 0.5) and
-#             ((m.power.readOp.dynamic - m.arr_min.min_dyn) / m.arr_min.min_dyn > 0.5)):
-#             del m
-#             curr_list.remove(m)
 
 def filter_data_arr(curr_list):
     if not curr_list:
@@ -689,164 +836,182 @@ def filter_data_arr(curr_list):
             exit(1)
 
         # ISSUE: should this even be here?
-        if (math.isnan(m.access_time) or math.isnan(m.arr_min.min_delay) or
-            math.isnan(m.power.readOp.dynamic) or math.isnan(m.arr_min.min_dyn)):
+        if (
+            math.isnan(m.access_time)
+            or math.isnan(m.arr_min.min_delay)
+            or math.isnan(m.power.readOp.dynamic)
+            or math.isnan(m.arr_min.min_dyn)
+        ):
             continue  # Skip this iteration if any relevant value is NaN
 
-        if (((m.access_time - m.arr_min.min_delay) / m.arr_min.min_delay > 0.5) and
-            ((m.power.readOp.dynamic - m.arr_min.min_dyn) / m.arr_min.min_dyn > 0.5)):
+        if ((m.access_time - m.arr_min.min_delay) / m.arr_min.min_delay > 0.5) and (
+            (m.power.readOp.dynamic - m.arr_min.min_dyn) / m.arr_min.min_dyn > 0.5
+        ):
             curr_list.remove(m)
+
 
 import threading
 from functools import cmp_to_key
 
-def solve(fin_res: uca_org_t):
-    pure_ram = g_ip.pure_ram
-    pure_cam = g_ip.pure_cam
 
-    g_tp.init(g_ip.F_sz_um, False)
-    g_ip.print_detail_debug = 0
+# def solve(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
+#     pure_ram = g_ip.pure_ram
+#     pure_cam = g_ip.pure_cam
 
-    tag_arr = []
-    data_arr = []
-    sol_list = [uca_org_t()]
+#     g_tp.init(g_ip.F_sz_um, False)
+#     g_ip.print_detail_debug = 0
 
-    fin_res.tag_array.access_time = 0
-    fin_res.tag_array.Ndwl = 0
-    fin_res.tag_array.Ndbl = 0
-    fin_res.tag_array.Nspd = 0
-    fin_res.tag_array.deg_bl_muxing = 0
-    fin_res.tag_array.Ndsam_lev_1 = 0
-    fin_res.tag_array.Ndsam_lev_2 = 0
+#     tag_arr = []
+#     data_arr = []
+#     sol_list = [uca_org_t(g_ip)]
 
-    calc_array = [CalcTimeMtWrapperStruct() for _ in range(NTHREADS)]
-    threads = [None] * NTHREADS
+#     fin_res.tag_array.access_time = 0
+#     fin_res.tag_array.Ndwl = 0
+#     fin_res.tag_array.Ndbl = 0
+#     fin_res.tag_array.Nspd = 0
+#     fin_res.tag_array.deg_bl_muxing = 0
+#     fin_res.tag_array.Ndsam_lev_1 = 0
+#     fin_res.tag_array.Ndsam_lev_2 = 0
 
-    for t in range(NTHREADS):
-        calc_array[t].tid = t
-        calc_array[t].pure_ram = pure_ram
-        calc_array[t].pure_cam = pure_cam
-        calc_array[t].data_res = MinValuesT()
-        calc_array[t].tag_res = MinValuesT()
+#     calc_array = [CalcTimeMtWrapperStruct() for _ in range(NTHREADS)]
+#     threads = [None] * NTHREADS
 
-    if not (pure_ram or pure_cam or g_ip.fully_assoc):
-        is_tag = True
-        # ISSUE: Could be in init and init_tech_params
-        g_tp.init(g_ip.F_sz_um, is_tag)
+#     for t in range(NTHREADS):
+#         calc_array[t].tid = t
+#         calc_array[t].pure_ram = pure_ram
+#         calc_array[t].pure_cam = pure_cam
+#         calc_array[t].data_res = MinValuesT()
+#         calc_array[t].tag_res = MinValuesT()
 
-        for t in range(NTHREADS):
-            calc_array[t].is_tag = is_tag
-            calc_array[t].is_main_mem = False
-            calc_array[t].Nspd_min = 0.125
-            threads[t] = threading.Thread(target=calc_time_mt_wrapper, args=(calc_array[t],))
-            threads[t].start()
+#     if not (pure_ram or pure_cam or g_ip.fully_assoc):
+#         is_tag = True
+#         g_tp.init(g_ip.F_sz_um, is_tag)
 
-        for t in range(NTHREADS):
-            threads[t].join()
+#         for t in range(NTHREADS):
+#             calc_array[t].is_tag = is_tag
+#             calc_array[t].is_main_mem = False
+#             calc_array[t].Nspd_min = 0.125
+#             threads[t] = threading.Thread(
+#                 target=calc_time_mt_wrapper, args=(calc_array[t],)
+#             )
+#             threads[t].start()
 
-        for t in range(NTHREADS):
-            calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
-            data_arr.extend(calc_array[t].data_arr)
-            calc_array[t].tag_arr.sort(key=cmp_to_key(MemArray.lt))
-            tag_arr.extend(calc_array[t].tag_arr)
+#         for t in range(NTHREADS):
+#             threads[t].join()
 
-    is_tag = False
-    g_tp.init(g_ip.F_sz_um, is_tag)
+#         for t in range(NTHREADS):
+#             calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
+#             data_arr.extend(calc_array[t].data_arr)
+#             calc_array[t].tag_arr.sort(key=cmp_to_key(MemArray.lt))
+#             tag_arr.extend(calc_array[t].tag_arr)
 
-    for t in range(NTHREADS):
-        calc_array[t].is_tag = is_tag
-        calc_array[t].is_main_mem = g_ip.is_main_mem
-        if not (pure_cam or g_ip.fully_assoc):
-            calc_array[t].Nspd_min = g_ip.out_w / (g_ip.block_sz * 8)
-        else:
-            calc_array[t].Nspd_min = 1
+#     is_tag = False
+#     g_tp.init(g_ip.F_sz_um, is_tag)
 
-        threads[t] = threading.Thread(target=calc_time_mt_wrapper, args=(calc_array[t],))
-        threads[t].start()
+#     for t in range(NTHREADS):
+#         calc_array[t].is_tag = is_tag
+#         calc_array[t].is_main_mem = g_ip.is_main_mem
+#         if not (pure_cam or g_ip.fully_assoc):
+#             calc_array[t].Nspd_min = g_ip.out_w / (g_ip.block_sz * 8)
+#         else:
+#             calc_array[t].Nspd_min = 1
 
-    for t in range(NTHREADS):
-        threads[t].join()
+#         threads[t] = threading.Thread(
+#             target=calc_time_mt_wrapper, args=(calc_array[t],)
+#         )
+#         threads[t].start()
 
-    data_arr.clear()
-    for t in range(NTHREADS):
-        calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
-        data_arr.extend(calc_array[t].data_arr)
+#     for t in range(NTHREADS):
+#         threads[t].join()
 
-    d_min = MinValuesT()
-    t_min = MinValuesT()
-    cache_min = MinValuesT()
+#     data_arr.clear()
+#     for t in range(NTHREADS):
+#         calc_array[t].data_arr.sort(key=cmp_to_key(MemArray.lt))
+#         data_arr.extend(calc_array[t].data_arr)
 
-    for t in range(NTHREADS):
-        d_min.update_min_values(calc_array[t].data_res)
-        t_min.update_min_values(calc_array[t].tag_res)
+#     d_min = MinValuesT()
+#     t_min = MinValuesT()
+#     cache_min = MinValuesT()
 
-    for m in data_arr:
-        m.arr_min = d_min
+#     for t in range(NTHREADS):
+#         d_min.update_min_values(calc_array[t].data_res)
+#         t_min.update_min_values(calc_array[t].tag_res)
 
-    filter_data_arr(data_arr)
-    if not (pure_ram or pure_cam or g_ip.fully_assoc):
-        filter_tag_arr(t_min, tag_arr)
+#     for m in data_arr:
+#         m.arr_min = d_min
 
-    if pure_ram or pure_cam or g_ip.fully_assoc:
-        for m in data_arr:
-            curr_org = sol_list[-1]
-            curr_org.tag_array2 = None
-            curr_org.data_array2 = m
+#     filter_data_arr(data_arr)
+#     if not (pure_ram or pure_cam or g_ip.fully_assoc):
+#         filter_tag_arr(t_min, tag_arr)
 
-            curr_org.find_delay()
-            curr_org.find_energy()
-            curr_org.find_area()
-            curr_org.find_cyc()
+#     if pure_ram or pure_cam or g_ip.fully_assoc:
+#         for m in data_arr:
+#             curr_org = sol_list[-1]
+#             curr_org.tag_array2 = None
+#             curr_org.data_array2 = m
 
-            cache_min.update_min_values_from_uca(curr_org)
+#             curr_org.find_delay()
+#             curr_org.find_energy()
+#             curr_org.find_area()
+#             curr_org.find_cyc()
 
-            sol_list.append(uca_org_t())
-    else:
-        while tag_arr:
-            arr_temp = tag_arr.pop()
-            for m in data_arr:
-                curr_org = sol_list[-1]
-                curr_org.tag_array2 = arr_temp
-                curr_org.data_array2 = m
+#             cache_min.update_min_values_from_uca(curr_org)
 
-                curr_org.find_delay()
-                curr_org.find_energy()
-                curr_org.find_area()
-                curr_org.find_cyc()
+#             sol_list.append(uca_org_t(g_ip))
+#     else:
+#         while tag_arr:
+#             arr_temp = tag_arr.pop()
+#             for m in data_arr:
+#                 curr_org = sol_list[-1]
+#                 curr_org.tag_array2 = arr_temp
+#                 curr_org.data_array2 = m
 
-                cache_min.update_min_values_from_uca(curr_org)
+#                 curr_org.find_delay()
+#                 curr_org.find_energy()
+#                 curr_org.find_area()
+#                 curr_org.find_cyc()
 
-                sol_list.append(uca_org_t())
+#                 cache_min.update_min_values_from_uca(curr_org)
 
-    sol_list.pop()
+#                 sol_list.append(uca_org_t(g_ip))
 
-    find_optimal_uca(fin_res, cache_min, sol_list)
+#     sol_list.pop()
 
-    sol_list.clear()
+#     find_optimal_uca(fin_res, cache_min, sol_list)
 
-    for m in data_arr:
-        if m != fin_res.data_array2:
-            del m
-    data_arr.clear()
+#     sol_list.clear()
 
-    for t in range(NTHREADS):
-        del calc_array[t].data_res
-        del calc_array[t].tag_res
+#     for m in data_arr:
+#         if m != fin_res.data_array2:
+#             del m
+#     data_arr.clear()
 
-    del calc_array
-    del cache_min
-    del d_min
-    del t_min
+#     for t in range(NTHREADS):
+#         del calc_array[t].data_res
+#         del calc_array[t].tag_res
 
-def update(fin_res):
+#     del calc_array
+#     del cache_min
+#     del d_min
+#     del t_min
+
+
+def update(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
+
     if fin_res.tag_array2:
         g_tp.init(g_ip.F_sz_um, True)
         tag_arr_dyn_p = DynamicParameter(
-            True, g_ip.pure_ram, g_ip.pure_cam, 
-            fin_res.tag_array2.Nspd, fin_res.tag_array2.Ndwl, 
-            fin_res.tag_array2.Ndbl, fin_res.tag_array2.Ndcm, 
-            fin_res.tag_array2.Ndsam_lev_1, fin_res.tag_array2.Ndsam_lev_2, 
-            fin_res.data_array2.wt, g_ip.is_main_mem
+            True,
+            g_ip.pure_ram,
+            g_ip.pure_cam,
+            fin_res.tag_array2.Nspd,
+            fin_res.tag_array2.Ndwl,
+            fin_res.tag_array2.Ndbl,
+            fin_res.tag_array2.Ndcm,
+            fin_res.tag_array2.Ndsam_lev_1,
+            fin_res.tag_array2.Ndsam_lev_2,
+            fin_res.data_array2.wt,
+            g_ip.is_main_mem,
         )
         if tag_arr_dyn_p.is_valid:
             tag_arr = UCA(tag_arr_dyn_p)
@@ -857,11 +1022,17 @@ def update(fin_res):
 
     g_tp.init(g_ip.F_sz_um, False)
     data_arr_dyn_p = DynamicParameter(
-        False, g_ip.pure_ram, g_ip.pure_cam, 
-        fin_res.data_array2.Nspd, fin_res.data_array2.Ndwl, 
-        fin_res.data_array2.Ndbl, fin_res.data_array2.Ndcm, 
-        fin_res.data_array2.Ndsam_lev_1, fin_res.data_array2.Ndsam_lev_2, 
-        fin_res.data_array2.wt, g_ip.is_main_mem
+        False,
+        g_ip.pure_ram,
+        g_ip.pure_cam,
+        fin_res.data_array2.Nspd,
+        fin_res.data_array2.Ndwl,
+        fin_res.data_array2.Ndbl,
+        fin_res.data_array2.Ndcm,
+        fin_res.data_array2.Ndsam_lev_1,
+        fin_res.data_array2.Ndsam_lev_2,
+        fin_res.data_array2.wt,
+        g_ip.is_main_mem,
     )
     if data_arr_dyn_p.is_valid:
         data_arr = UCA(data_arr_dyn_p)
@@ -872,11 +1043,13 @@ def update(fin_res):
 
     fin_res.find_energy()
 
+
 ##### SINGLE SOLVE
 
 
-
-def calculate_time_single(
+def calculate_all_results_single(
+    g_ip,
+    g_tp,
     is_tag,
     pure_ram,
     pure_cam_in,
@@ -886,19 +1059,37 @@ def calculate_time_single(
     Ndcm,
     Ndsam_lev_1,
     Ndsam_lev_2,
-    ptr_array: MemArray,
+    ptr_array, 
     flag_results_populate,
     ptr_results,
     ptr_fin_res,
     wt,
-    is_main_mem
+    is_main_mem,
 ):
-    dyn_p = DynamicParameter(is_tag, pure_ram, pure_cam_in, Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, wt, is_main_mem)
+    """"
+    All the bulk of the calculation happens here. 
+    """
+    dyn_p = DynamicParameter(
+        g_ip,
+        g_tp,
+        is_tag,
+        pure_ram,
+        pure_cam,
+        Nspd,
+        Ndwl,
+        Ndbl,
+        Ndcm,
+        Ndsam_lev_1,
+        Ndsam_lev_2,
+        wt,
+        is_main_mem,
+    )
+
+    # if not dyn_p.is_valid:
+    #     return False
 
     # Issue? Check DYnamic Parameter...
-    if not dyn_p.is_valid:
-        return False
-    uca = UCA(dyn_p)
+    uca = UCA(dyn_p, g_ip, g_tp)
 
     if flag_results_populate:
         # For the final solution, populate the ptr_results data structure -- TODO: copy only necessary variables
@@ -917,7 +1108,9 @@ def calculate_time_single(
         ptr_array.Ndsam_lev_2 = Ndsam_lev_2
         ptr_array.access_time = uca.access_time
         ptr_array.cycle_time = uca.cycle_time
-        ptr_array.multisubbank_interleave_cycle_time = uca.multisubbank_interleave_cycle_time
+        ptr_array.multisubbank_interleave_cycle_time = (
+            uca.multisubbank_interleave_cycle_time
+        )
         ptr_array.area_ram_cells = uca.area_all_dataramcells
         ptr_array.area = uca.area.get_area()
 
@@ -934,11 +1127,17 @@ def calculate_time_single(
         ptr_array.subarray_length = uca.bank.mat.subarray.area.w
         ptr_array.power = uca.power
 
-        ptr_array.delay_senseamp_mux_decoder = symbolic_convex_max(uca.delay_array_to_sa_mux_lev_1_decoder, uca.delay_array_to_sa_mux_lev_2_decoder)
+        ptr_array.delay_senseamp_mux_decoder = symbolic_convex_max(
+            uca.delay_array_to_sa_mux_lev_1_decoder,
+            uca.delay_array_to_sa_mux_lev_2_decoder,
+        )
 
-        ptr_array.delay_before_subarray_output_driver = uca.delay_before_subarray_output_driver
-        ptr_array.delay_from_subarray_output_driver_to_output = uca.delay_from_subarray_out_drv_to_out
-
+        ptr_array.delay_before_subarray_output_driver = (
+            uca.delay_before_subarray_output_driver
+        )
+        ptr_array.delay_from_subarray_output_driver_to_output = (
+            uca.delay_from_subarray_out_drv_to_out
+        )
         ptr_array.delay_route_to_bank = uca.htree_in_add.delay
         ptr_array.delay_input_htree = uca.bank.htree_in_add.delay
         ptr_array.delay_row_predecode_driver_and_block = uca.bank.mat.r_predec.delay
@@ -946,13 +1145,17 @@ def calculate_time_single(
         ptr_array.delay_bitlines = uca.bank.mat.delay_bitline
         ptr_array.delay_matchlines = uca.bank.mat.delay_matchchline
         ptr_array.delay_sense_amp = uca.bank.mat.delay_sa
-        ptr_array.delay_subarray_output_driver = uca.bank.mat.delay_subarray_out_drv_htree
+        ptr_array.delay_subarray_output_driver = (
+            uca.bank.mat.delay_subarray_out_drv_htree
+        )
         ptr_array.delay_dout_htree = uca.bank.htree_out_data.delay
         ptr_array.delay_comparator = uca.bank.mat.delay_comparator
 
         if g_ip.is_3d_mem:
             ptr_array.delay_row_activate_net = uca.membus_RAS.delay_bus
-            ptr_array.delay_row_predecode_driver_and_block = uca.membus_RAS.delay_add_predecoder
+            ptr_array.delay_row_predecode_driver_and_block = (
+                uca.membus_RAS.delay_add_predecoder
+            )
             ptr_array.delay_row_decoder = uca.membus_RAS.delay_add_decoder
             ptr_array.delay_local_wordline = uca.membus_RAS.delay_lwl_drv
             ptr_array.delay_column_access_net = uca.membus_CAS.delay_bus
@@ -966,21 +1169,41 @@ def calculate_time_single(
             ptr_array.delay_data_buffer = uca.membus_data.delay_data_buffer
 
             ptr_array.energy_row_activate_net = uca.membus_RAS.power_bus.readOp.dynamic
-            ptr_array.energy_row_predecode_driver_and_block = uca.membus_RAS.power_add_predecoder.readOp.dynamic
-            ptr_array.energy_row_decoder = uca.membus_RAS.power_add_decoders.readOp.dynamic
-            ptr_array.energy_local_wordline = uca.membus_RAS.power_lwl_drv.readOp.dynamic
-            ptr_array.energy_bitlines = dyn_p.Ndwl * uca.bank.mat.power_bitline.readOp.dynamic
-            ptr_array.energy_sense_amp = dyn_p.Ndwl * uca.bank.mat.power_sa.readOp.dynamic
-
+            ptr_array.energy_row_predecode_driver_and_block = (
+                uca.membus_RAS.power_add_predecoder.readOp.dynamic
+            )
+            ptr_array.energy_row_decoder = (
+                uca.membus_RAS.power_add_decoders.readOp.dynamic
+            )
+            ptr_array.energy_local_wordline = (
+                uca.membus_RAS.power_lwl_drv.readOp.dynamic
+            )
+            ptr_array.energy_bitlines = (
+                dyn_p.Ndwl * uca.bank.mat.power_bitline.readOp.dynamic
+            )
+            ptr_array.energy_sense_amp = (
+                dyn_p.Ndwl * uca.bank.mat.power_sa.readOp.dynamic
+            )
             ptr_array.energy_column_access_net = uca.membus_CAS.power_bus.readOp.dynamic
-            ptr_array.energy_column_predecoder = uca.membus_CAS.power_add_predecoder.readOp.dynamic
-            ptr_array.energy_column_decoder = uca.membus_CAS.power_add_decoders.readOp.dynamic
-            ptr_array.energy_column_selectline = uca.membus_CAS.power_col_sel.readOp.dynamic
-
+            ptr_array.energy_column_predecoder = (
+                uca.membus_CAS.power_add_predecoder.readOp.dynamic
+            )
+            ptr_array.energy_column_decoder = (
+                uca.membus_CAS.power_add_decoders.readOp.dynamic
+            )
+            ptr_array.energy_column_selectline = (
+                uca.membus_CAS.power_col_sel.readOp.dynamic
+            )
             ptr_array.energy_datapath_net = uca.membus_data.power_bus.readOp.dynamic
-            ptr_array.energy_global_data = uca.membus_data.power_global_data.readOp.dynamic
-            ptr_array.energy_local_data_and_drv = uca.membus_data.power_local_data.readOp.dynamic
-            ptr_array.energy_subarray_output_driver = uca.bank.mat.power_subarray_out_drv.readOp.dynamic
+            ptr_array.energy_global_data = (
+                uca.membus_data.power_global_data.readOp.dynamic
+            )
+            ptr_array.energy_local_data_and_drv = (
+                uca.membus_data.power_local_data.readOp.dynamic
+            )
+            ptr_array.energy_subarray_output_driver = (
+                uca.bank.mat.power_subarray_out_drv.readOp.dynamic
+            )
             ptr_array.energy_data_buffer = 0
 
             ptr_array.area_lwl_drv = uca.area_lwl_drv
@@ -1018,52 +1241,104 @@ def calculate_time_single(
         ptr_array.power_row_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_row_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_bit_mux_predecoder_drivers = uca.bank.mat.b_mux_predec.driver_power
-        ptr_array.power_bit_mux_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_bit_mux_predecoder_blocks = uca.bank.mat.b_mux_predec.block_power
+        ptr_array.power_bit_mux_predecoder_drivers = (
+            uca.bank.mat.b_mux_predec.driver_power
+        )
+        ptr_array.power_bit_mux_predecoder_drivers.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_drivers.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_drivers.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_blocks = (
+            uca.bank.mat.b_mux_predec.block_power
+        )
         ptr_array.power_bit_mux_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_bit_mux_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
-
+        ptr_array.power_bit_mux_predecoder_blocks.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_bit_mux_predecoder_blocks.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
         ptr_array.power_bit_mux_decoders = uca.bank.mat.power_bit_mux_decoders
         ptr_array.power_bit_mux_decoders.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.writeOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bit_mux_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers = uca.bank.mat.sa_mux_lev_1_predec.driver_power
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks = uca.bank.mat.sa_mux_lev_1_predec.block_power
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_1_decoders = uca.bank.mat.power_sa_mux_lev_1_decoders
-        ptr_array.power_senseamp_mux_lev_1_decoders.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_decoders.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_1_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers = uca.bank.mat.sa_mux_lev_2_predec.driver_power
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks = uca.bank.mat.sa_mux_lev_2_predec.block_power
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.searchOp.dynamic *= num_act_mats_hor_dir
-
-        ptr_array.power_senseamp_mux_lev_2_decoders = uca.bank.mat.power_sa_mux_lev_2_decoders
-        ptr_array.power_senseamp_mux_lev_2_decoders.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_decoders.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_senseamp_mux_lev_2_decoders.searchOp.dynamic *= num_act_mats_hor_dir
-
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers = (
+            uca.bank.mat.sa_mux_lev_1_predec.driver_power
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_drivers.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks = (
+            uca.bank.mat.sa_mux_lev_1_predec.block_power
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_predecoder_blocks.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders = (
+            uca.bank.mat.power_sa_mux_lev_1_decoders
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_1_decoders.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers = (
+            uca.bank.mat.sa_mux_lev_2_predec.driver_power
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_drivers.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks = (
+            uca.bank.mat.sa_mux_lev_2_predec.block_power
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_predecoder_blocks.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders = (
+            uca.bank.mat.power_sa_mux_lev_2_decoders
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_senseamp_mux_lev_2_decoders.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
         ptr_array.power_bitlines = uca.bank.mat.power_bitline
         ptr_array.power_bitlines.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_bitlines.writeOp.dynamic *= num_act_mats_hor_dir
@@ -1080,10 +1355,15 @@ def calculate_time_single(
         ptr_array.power_prechg_eq_drivers.searchOp.dynamic *= num_act_mats_hor_dir
 
         ptr_array.power_output_drivers_at_subarray = uca.bank.mat.power_subarray_out_drv
-        ptr_array.power_output_drivers_at_subarray.readOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_output_drivers_at_subarray.writeOp.dynamic *= num_act_mats_hor_dir
-        ptr_array.power_output_drivers_at_subarray.searchOp.dynamic *= num_act_mats_hor_dir
-
+        ptr_array.power_output_drivers_at_subarray.readOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_output_drivers_at_subarray.writeOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
+        ptr_array.power_output_drivers_at_subarray.searchOp.dynamic *= (
+            num_act_mats_hor_dir
+        )
         ptr_array.power_comparators = uca.bank.mat.power_comparator
         ptr_array.power_comparators.readOp.dynamic *= num_act_mats_hor_dir
         ptr_array.power_comparators.writeOp.dynamic *= num_act_mats_hor_dir
@@ -1094,13 +1374,17 @@ def calculate_time_single(
             ptr_array.power_htree_out_search = uca.bank.htree_out_search.power
             ptr_array.power_searchline = uca.bank.mat.power_searchline
             ptr_array.power_searchline.searchOp.dynamic *= num_mats
-            ptr_array.power_searchline_precharge = uca.bank.mat.power_searchline_precharge
+            ptr_array.power_searchline_precharge = (
+                uca.bank.mat.power_searchline_precharge
+            )
             ptr_array.power_searchline_precharge.searchOp.dynamic *= num_mats
             ptr_array.power_matchlines = uca.bank.mat.power_matchline
             ptr_array.power_matchlines.searchOp.dynamic *= num_mats
             ptr_array.power_matchline_precharge = uca.bank.mat.power_matchline_precharge
             ptr_array.power_matchline_precharge.searchOp.dynamic *= num_mats
-            ptr_array.power_matchline_to_wordline_drv = uca.bank.mat.power_ml_to_ram_wl_drv
+            ptr_array.power_matchline_to_wordline_drv = (
+                uca.bank.mat.power_ml_to_ram_wl_drv
+            )
 
         ptr_array.activate_energy = uca.activate_energy
         ptr_array.read_energy = uca.read_energy
@@ -1109,7 +1393,9 @@ def calculate_time_single(
         ptr_array.refresh_power = uca.refresh_power
         ptr_array.leak_power_subbank_closed_page = uca.leak_power_subbank_closed_page
         ptr_array.leak_power_subbank_open_page = uca.leak_power_subbank_open_page
-        ptr_array.leak_power_request_and_reply_networks = uca.leak_power_request_and_reply_networks
+        ptr_array.leak_power_request_and_reply_networks = (
+            uca.leak_power_request_and_reply_networks
+        )
         ptr_array.precharge_delay = uca.precharge_delay
 
         if g_ip.is_3d_mem:
@@ -1126,7 +1412,9 @@ def calculate_time_single(
             ptr_array.activate_power = uca.activate_power
             ptr_array.read_power = uca.read_power
             ptr_array.write_power = uca.write_power
-            ptr_array.peak_read_power = uca.read_energy / ((g_ip.burst_depth) / (g_ip.sys_freq_MHz * 1e6) / 2)
+            ptr_array.peak_read_power = uca.read_energy / (
+                (g_ip.burst_depth) / (g_ip.sys_freq_MHz * 1e6) / 2
+            )
             ptr_array.num_row_subarray = dyn_p.num_r_subarray
             ptr_array.num_col_subarray = dyn_p.num_c_subarray
             ptr_array.delay_TSV_tot = uca.delay_TSV_tot
@@ -1139,13 +1427,17 @@ def calculate_time_single(
             ptr_array.sram_sleep_tx_width = uca.bank.mat.sram_sleep_tx.width
             ptr_array.sram_sleep_tx_area = uca.bank.mat.array_sleep_tx_area
             ptr_array.sram_sleep_wakeup_latency = uca.bank.mat.array_wakeup_t
-            ptr_array.sram_sleep_wakeup_energy = uca.bank.mat.array_wakeup_e.readOp.dynamic
+            ptr_array.sram_sleep_wakeup_energy = (
+                uca.bank.mat.array_wakeup_e.readOp.dynamic
+            )
             ptr_array.wl_sleep_tx_width = uca.bank.mat.row_dec.sleeptx.width
             ptr_array.wl_sleep_tx_area = uca.bank.mat.wl_sleep_tx_area
             ptr_array.wl_sleep_wakeup_latency = uca.bank.mat.wl_wakeup_t
             ptr_array.wl_sleep_wakeup_energy = uca.bank.mat.wl_wakeup_e.readOp.dynamic
             ptr_array.bl_floating_wakeup_latency = uca.bank.mat.blfloating_wakeup_t
-            ptr_array.bl_floating_wakeup_energy = uca.bank.mat.blfloating_wakeup_e.readOp.dynamic
+            ptr_array.bl_floating_wakeup_energy = (
+                uca.bank.mat.blfloating_wakeup_e.readOp.dynamic
+            )
             ptr_array.array_leakage = uca.bank.array_leakage
             ptr_array.wl_leakage = uca.bank.wl_leakage
             ptr_array.cl_leakage = uca.bank.cl_leakage
@@ -1156,50 +1448,72 @@ def calculate_time_single(
     return ptr_array
 
 
-
-def solve_single():
+def solve_single(g_ip: InputParameter):
     pure_ram = g_ip.pure_ram
     pure_cam = g_ip.pure_cam
 
-    g_tp.init(g_ip.F_sz_um, False)
-    g_ip.print_detail_debug = 0
+    g_tp = TechnologyParameter(g_ip)
+    g_tp.init(g_ip, g_ip.F_sz_um, False)
+    g_ip.print_detail_debug = False
 
     tag_arr = MemArray()
     data_arr = MemArray()
-    sol = uca_org_t()
+    sol = uca_org_t(g_ip)
 
-    print(f"pure_ram: {pure_ram}")
-    print(f"pure_cam: {pure_cam}")
-    print(f"nspd: {g_ip.nspd}")
-    print(f"ndwl: {g_ip.ndwl}")
-    print(f"ndbl: {g_ip.ndbl}")
-    print(f"ndcm: {g_ip.ndcm}")
-    print(f"ndsam1: {g_ip.ndsam1}")
-    print(f"ndsam2: {g_ip.ndsam2}")
-    print(f"wt (wire type): {g_ip.wt}")
-    print(f"is_main_mem: {g_ip.is_main_mem}")
-    print(f"{g_ip.F_sz_um}")
-    time.sleep(10)
+    # if not (pure_ram or pure_cam or g_ip.fully_assoc):
+    #     is_tag = True
+    #     g_tp.init(g_ip, g_ip.F_sz_um, is_tag)
 
-    if not (pure_ram or pure_cam or g_ip.fully_assoc):
-        is_tag = True
-        # ISSUE: is init even correct?
-        # Check calc_time_mt_wrapper
-        g_tp.init(g_ip.F_sz_um, is_tag)
-        
-        calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
-                                        g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
-                                            tag_arr, False, None, None, g_ip.wt, g_ip.is_main_mem)
+    #     calculate_all_results_single(
+    #         g_ip,
+    #         g_tp,
+    #         is_tag,
+    #         pure_ram,
+    #         pure_cam,
+    #         g_ip.nspd,
+    #         g_ip.ndwl,
+    #         g_ip.ndbl,
+    #         g_ip.ndcm,
+    #         g_ip.ndsam1,
+    #         g_ip.ndsam2,
+    #         tag_arr,
+    #         0,
+    #         None,
+    #         None,
+    #         wr,
+    #         g_ip.is_main_mem,
+    #     )
 
     is_tag = False
-    g_tp.init(g_ip.F_sz_um, is_tag)
+    g_tp.init(g_ip, g_ip.F_sz_um, is_tag)
 
-    # ISSUE: ndwl maybe need to treat wt like ndbl
-    calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
-                                g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
-                                data_arr, False, None, None, g_ip.wt, g_ip.is_main_mem)
-    
+    data_arr = calculate_all_results_single(
+        g_ip,
+        g_tp,
+        is_tag,
+        pure_ram,
+        pure_cam,
+        g_ip.nspd,
+        g_ip.ndwl,
+        g_ip.ndbl,
+        g_ip.ndcm,
+        g_ip.ndsam1,
+        g_ip.ndsam2,
+        data_arr,
+        0,
+        None,
+        None,
+        wr,
+        g_ip.is_main_mem,
+    )
+
+    # # ISSUE: ndwl maybe need to treat wt like ndbl 
+    # calculate_time_single(is_tag, pure_ram, pure_cam, g_ip.nspd, g_ip.ndwl,
+    #                             g_ip.ndbl, g_ip.ndcm, g_ip.ndsam1, g_ip.ndsam2,
+    #                             data_arr, False, None, None, g_ip.wt, g_ip.is_main_mem)
+
     if pure_ram or pure_cam or g_ip.fully_assoc:
+        print(f"Should always be FA 2")
         curr_org = sol
         curr_org.tag_array2 = None
         curr_org.data_array2 = data_arr
@@ -1208,6 +1522,7 @@ def solve_single():
         curr_org.tag_array2 = tag_arr
         curr_org.data_array2 = data_arr
 
+    # curr_org is of type uca_org_t
     curr_org.find_delay()
     curr_org.find_energy()
     # curr_org.find_area()
@@ -1224,4 +1539,3 @@ def solve_single():
     # time.sleep(60)
 
     return curr_org
-
