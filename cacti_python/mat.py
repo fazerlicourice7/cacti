@@ -233,7 +233,8 @@ class Mat(Component):
         self.b_mux_predec = Predec(self.b_mux_predec_blk_drv1, self.b_mux_predec_blk_drv2)
         self.sa_mux_lev_1_predec = Predec(self.sa_mux_lev_1_predec_blk_drv1, self.sa_mux_lev_1_predec_blk_drv2)
         self.sa_mux_lev_2_predec = Predec(self.sa_mux_lev_2_predec_blk_drv1, self.sa_mux_lev_2_predec_blk_drv2)
-
+        
+        print(f"WT PROBLEM HTREE Mat init subarray wire self.wt: {self.dp.wtype}")
         self.subarray_out_wire = Wire(
             self.g_ip,
             self.g_tp,

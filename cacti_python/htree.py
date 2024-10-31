@@ -22,12 +22,6 @@ class WireType(enum.Enum):
     SemiGlobal = 2
     Local = 3
 
-class DeviceType:
-    def __init__(self, n_to_p_eff_curr_drv_ratio, Vth, Vdd):
-        self.n_to_p_eff_curr_drv_ratio = n_to_p_eff_curr_drv_ratio
-        self.Vth = Vth
-        self.Vdd = Vdd
-
 class Htree2(Component):
     def __init__(self, g_ip, g_tp, wire_model, mat_w, mat_h, a_bits, d_inbits, search_data_in, d_outbits, search_data_out, bl, wl, htree_type, uca_tree_=False, search_tree_=False, dt=None):
         super().__init__()
@@ -86,6 +80,7 @@ class Htree2(Component):
         # assert self.power.readOp.leakage >= 0
 
     def input_nand(self, s1, s2, l_eff):
+        print(f"WT PROBLEM HTREE NAND self.wt: {self.wt}")
         w1 = Wire(self.g_ip, self.g_tp, self.wt, l_eff)
         pton_size = self.deviceType.n_to_p_eff_curr_drv_ratio
         nsize = s1 * (1 + pton_size) / (2 + pton_size)
@@ -119,6 +114,7 @@ class Htree2(Component):
         ) * self.deviceType.Vdd
 
     def output_buffer(self, s1, s2, l_eff):
+        print(f"WT PROBLEM HTREE ouput buffer self.wt: {self.wt}")
         w1 = Wire(self.g_ip, self.g_tp, self.wt, l_eff)
         pton_size = self.deviceType.n_to_p_eff_curr_drv_ratio
         size = s1 * (1 + pton_size) / (2 + pton_size + 1 + 2 * pton_size)
@@ -305,6 +301,7 @@ class Htree2(Component):
             if wtemp3:
                 del wtemp3
 
+            print(f"WT PROBLEM HTREE in_htree self.wt: {self.wt}")
             if h > v:
                 wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, len_)  # hor
                 wtemp2 = Wire(self.g_ip, self.g_tp, self.wt, len_ / 2)  # ver
@@ -496,6 +493,7 @@ class Htree2(Component):
             if wtemp3:
                 del wtemp3
 
+            print(f"WT PROBLEM HTREE out_htree self.wt: {self.wt}")
             if h > v:
                 # the iteration considers only one horizontal link
                 wtemp1 = Wire(self.g_ip, self.g_tp, self.wt, len)  # hor

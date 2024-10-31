@@ -12,6 +12,20 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from hw_symbols import symbol_table as sympy_var
 from src import CACTI_DIR
 
+WIRE_TYPE_MAP = {
+    0: "Global",
+    1: "Global_5",
+    2: "Global_10",
+    3: "Global_20",
+    4: "Global_30",
+    5: "Low_swing",
+    6: "Semi_global",
+    7: "Full_swing",
+    8: "Transmission",
+    9: "Optical",
+    10: "Invalid_wtype"
+}
+
 def contains_any_symbol(expr):
     # Extract all the symbols from the dictionary
     symbols = sympy_var.values()
@@ -172,6 +186,10 @@ class InputParameter:
 
         self.repeater_spacing = 0.0
         self.repeater_size = 0.0
+
+        self.tag_wire_type = "Global"
+        self.data_wire_type = "Global"
+
         self.config_has_been_parsed = False
 
     def parse_cfg(self, in_file):
@@ -2237,7 +2255,7 @@ class ScalingFactor:
 #     w: float = 0.0
 
 class DynamicParameter:
-    def __init__(self, g_ip: InputParameter, g_tp: TechnologyParameter, is_tag_=False, pure_ram_=0, pure_cam_=0, Nspd_=1.0, Ndwl_=1, Ndbl_=1, Ndcm_=1, Ndsam_lev_1_=1, Ndsam_lev_2_=1, wt=None, is_main_mem_=False):
+    def __init__(self, g_ip: InputParameter, g_tp: TechnologyParameter, is_tag_=False, pure_ram_=0, pure_cam_=0, Nspd_=1.0, Ndwl_=1, Ndbl_=1, Ndcm_=1, Ndsam_lev_1_=1, Ndsam_lev_2_=1, wt="Global_30", is_main_mem_=False):
         self.g_ip = g_ip
         self.g_tp = g_tp
 
@@ -2256,7 +2274,10 @@ class DynamicParameter:
         self.deg_senseamp_muxing_non_associativity = 0
         self.Ndsam_lev_1 = Ndsam_lev_1_
         self.Ndsam_lev_2 = Ndsam_lev_2_
+
         self.wtype = wt
+        print(f"IN INIT DP, wt is {self.wtype}")
+
         self.number_addr_bits_mat = 0
         self.number_subbanks_decode = 0
         self.num_di_b_bank_per_port = 0

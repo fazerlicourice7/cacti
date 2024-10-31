@@ -318,6 +318,7 @@ def calculate_time(
     wt,
     is_main_mem,
 ):
+    print(f"IN INIT calculate time, wt is {wt}")
     dyn_p = DynamicParameter(
         is_tag,
         pure_ram,
@@ -991,6 +992,7 @@ def update(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
 
     if fin_res.tag_array2:
         g_tp.init(g_ip.F_sz_um, True)
+        print(f"IN INIT update tag, wt is {fin_res.data_array2.wt}")
         tag_arr_dyn_p = DynamicParameter(
             True,
             g_ip.pure_ram,
@@ -1012,6 +1014,7 @@ def update(fin_res, g_ip: InputParameter, g_tp: TechnologyParameter):
             exit(1)
 
     g_tp.init(g_ip.F_sz_um, False)
+    print(f"IN INIT update data, wt is {fin_res.data_array2.wt}")
     data_arr_dyn_p = DynamicParameter(
         False,
         g_ip.pure_ram,
@@ -1060,6 +1063,7 @@ def calculate_all_results_single(
     """"
     All the bulk of the calculation happens here. 
     """
+    print(f"IN INIT calculate_all_results_single, wt is {wt}")
     dyn_p = DynamicParameter(
         g_ip,
         g_tp,
@@ -1465,6 +1469,7 @@ def solve_single(g_ip: InputParameter):
     is_tag = False
     g_tp.init(g_ip, g_ip.F_sz_um, is_tag)
 
+    wr = g_ip.data_wire_type
     data_arr = calculate_all_results_single(
         g_ip,
         g_tp,

@@ -19,7 +19,7 @@ class Wire(Component):
     wire_width_init = None
     wire_spacing_init = None
 
-    def __init__(self, g_ip, g_tp, wire_model=0, wl=1, n=1, w_s=1, s_s=1, wp=parameter.outside_mat, resistivity=CU_RESISTIVITY, dt=None):
+    def __init__(self, g_ip, g_tp, wire_model="Global_30", wl=1, n=1, w_s=1, s_s=1, wp=parameter.outside_mat, resistivity=CU_RESISTIVITY, dt=None):
         super().__init__()
         self.g_ip = g_ip
         self.g_tp = g_tp
@@ -52,6 +52,7 @@ class Wire(Component):
 
         self.calculate_wire_stats()
 
+        # ISSUE? -> might need to delete -> rpeater spacing is probably messed up
         self.repeater_spacing *= 1e6
         self.wire_length *= 1e6
         self.wire_width *= 1e6
@@ -88,6 +89,12 @@ class Wire(Component):
         pass
 
     def calculate_wire_stats(self):
+        # Issue
+        print(f"CALC WIRE STATS self.wt: {self.wt}")
+        self.print_wire()
+        print()
+        import time
+        time.sleep(20)
         if self.wire_placement == parameter.outside_mat:
             self.wire_width = self.g_tp.wire_outside_mat.pitch / 2
         elif self.wire_placement == parameter.inside_mat:
@@ -202,25 +209,27 @@ class Wire(Component):
                     )
                 )
             else: # Check wr wire type
-                self.delay = Wire.global_.delay * self.wire_length
-                self.power.readOp.dynamic = Wire.global_.power.readOp.dynamic * self.wire_length
-                self.power.readOp.leakage = Wire.global_.power.readOp.leakage * self.wire_length
-                self.power.readOp.gate_leakage = Wire.global_.power.readOp.gate_leakage * self.wire_length
-                self.repeater_spacing = Wire.global_.area.w
-                self.repeater_size = Wire.global_.area.h
+                print(f"Oop self.wt is {self.wt}")
+                raise AssertionError()
+                # self.delay = Wire.global_.delay * self.wire_length
+                # self.power.readOp.dynamic = Wire.global_.power.readOp.dynamic * self.wire_length
+                # self.power.readOp.leakage = Wire.global_.power.readOp.leakage * self.wire_length
+                # self.power.readOp.gate_leakage = Wire.global_.power.readOp.gate_leakage * self.wire_length
+                # self.repeater_spacing = Wire.global_.area.w
+                # self.repeater_size = Wire.global_.area.h
 
-                self.area.set_area(
-                    (self.wire_length / self.repeater_spacing)
-                    * compute_gate_area(
-                        self.g_ip,
-                        self.g_tp,
-                        INV,
-                        1,
-                        self.min_w_pmos * self.repeater_size,
-                        self.g_tp.min_w_nmos_ * self.repeater_size,
-                        self.g_tp.cell_h_def,
-                    )
-                )
+                # self.area.set_area(
+                #     (self.wire_length / self.repeater_spacing)
+                #     * compute_gate_area(
+                #         self.g_ip,
+                #         self.g_tp,
+                #         INV,
+                #         1,
+                #         self.min_w_pmos * self.repeater_size,
+                #         self.g_tp.min_w_nmos_ * self.repeater_size,
+                #         self.g_tp.cell_h_def,
+                #     )
+                # )
             self.out_rise_time = self.delay * self.repeater_spacing / self.deviceType.Vth
         elif self.wt == 'Low_swing':
             self.low_swing_model()
@@ -689,34 +698,72 @@ class Wire(Component):
 
     def print_wire(self):
         print("\nWire Properties:\n")
-        print(f"  Delay Optimal\n\tRepeater size - {self.global_.area.h}"
-              f" \n\tRepeater spacing - {self.global_.area.w * 1e3} (mm)"
-              f" \n\tDelay - {self.global_.delay * 1e6} (ns/mm)"
-              f" \n\tPowerD - {self.global_.power.readOp.dynamic * 1e6} (nJ/mm)"
-              f" \n\tPowerL - {self.global_.power.readOp.leakage} (mW/mm)"
-              f" \n\tPowerLgate - {self.global_.power.readOp.gate_leakage} (mW/mm)")
-        print(f"\tWire width - {self.wire_width_init * 1e6} microns")
-        print(f"\tWire spacing - {self.wire_spacing_init * 1e6} microns\n")
 
-        for overhead, global_comp in zip(["5%", "10%", "20%", "30%"],
-                                         [self.global_5, self.global_10, self.global_20, self.global_30]):
-            print(f"  {overhead} Overhead\n\tRepeater size - {global_comp.area.h}"
-                  f" \n\tRepeater spacing - {global_comp.area.w * 1e3} (mm)"
-                  f" \n\tDelay - {global_comp.delay * 1e6} (ns/mm)"
-                  f" \n\tPowerD - {global_comp.power.readOp.dynamic * 1e6} (nJ/mm)"
-                  f" \n\tPowerL - {global_comp.power.readOp.leakage} (mW/mm)"
-                  f" \n\tPowerLgate - {global_comp.power.readOp.gate_leakage} (mW/mm)")
-            print(f"\tWire width - {self.wire_width_init * 1e6} microns")
-            print(f"\tWire spacing - {self.wire_spacing_init * 1e6} microns\n")
+        # Delay Optimal
+        print("  Delay Optimal")
+        print(f"\tRepeater size - {self.global_.area.h}")
+        print(f"\tRepeater spacing - {self.global_.area.w * 1e3} (mm)")
+        print(f"\tDelay - {self.global_.delay * 1e6} (ns/mm)")
+        print(f"\tPowerD - {self.global_.power.readOp.dynamic * 1e6} (nJ/mm)")
+        print(f"\tPowerL - {self.global_.power.readOp.leakage} (mW/mm)")
+        print(f"\tPowerLgate - {self.global_.power.readOp.gate_leakage} (mW/mm)")
 
-        print("  Low-swing wire (1 mm) - Note: Unlike repeated wires, \n\tdelay and power "
-              "values of low-swing wires do not\n\thave a linear relationship with length."
-              f" \n\tdelay - {self.low_swing.delay * 1e9} (ns)"
-              f" \n\tpowerD - {self.low_swing.power.readOp.dynamic * 1e9} (nJ)"
-              f" \n\tPowerL - {self.low_swing.power.readOp.leakage} (mW)"
-              f" \n\tPowerLgate - {self.low_swing.power.readOp.gate_leakage} (mW)")
-        print(f"\tWire width - {self.wire_width_init * 2} microns")
-        print(f"\tWire spacing - {self.wire_spacing_init * 2} microns\n\n")
+        # ISSUE! These two is none for some reason
+        # print(f"\tWire width - {self.wire_width_init * 1e6} microns")
+        # print(f"\tWire spacing - {self.wire_spacing_init * 1e6} microns\n")
+
+        # 5% Overhead
+        print("  5% Overhead")
+        print(f"\tRepeater size - {self.global_5.area.h}")
+        print(f"\tRepeater spacing - {self.global_5.area.w * 1e3} (mm)")
+        print(f"\tDelay - {self.global_5.delay * 1e6} (ns/mm)")
+        print(f"\tPowerD - {self.global_5.power.readOp.dynamic * 1e6} (nJ/mm)")
+        print(f"\tPowerL - {self.global_5.power.readOp.leakage} (mW/mm)")
+        print(f"\tPowerLgate - {self.global_5.power.readOp.gate_leakage} (mW/mm)")
+        # print(f"\tWire width - {self.wire_width_init * 1e6} microns")
+        # print(f"\tWire spacing - {self.wire_spacing_init * 1e6} microns\n")
+
+        # 10% Overhead
+        print("  10% Overhead")
+        print(f"\tRepeater size - {self.global_10.area.h}")
+        print(f"\tRepeater spacing - {self.global_10.area.w * 1e3} (mm)")
+        print(f"\tDelay - {self.global_10.delay * 1e6} (ns/mm)")
+        print(f"\tPowerD - {self.global_10.power.readOp.dynamic * 1e6} (nJ/mm)")
+        print(f"\tPowerL - {self.global_10.power.readOp.leakage} (mW/mm)")
+        print(f"\tPowerLgate - {self.global_10.power.readOp.gate_leakage} (mW/mm)")
+        # print(f"\tWire width - {self.wire_width_init * 1e6} microns")
+        # print(f"\tWire spacing - {self.wire_spacing_init * 1e6} microns\n")
+
+        # 20% Overhead
+        print("  20% Overhead")
+        print(f"\tRepeater size - {self.global_20.area.h}")
+        print(f"\tRepeater spacing - {self.global_20.area.w * 1e3} (mm)")
+        print(f"\tDelay - {self.global_20.delay * 1e6} (ns/mm)")
+        print(f"\tPowerD - {self.global_20.power.readOp.dynamic * 1e6} (nJ/mm)")
+        print(f"\tPowerL - {self.global_20.power.readOp.leakage} (mW/mm)")
+        print(f"\tPowerLgate - {self.global_20.power.readOp.gate_leakage} (mW/mm)")
+        # print(f"\tWire width - {self.wire_width_init * 1e6} microns")
+        # print(f"\tWire spacing - {self.wire_spacing_init * 1e6} microns\n")
+
+        # 30% Overhead
+        print("  30% Overhead")
+        print(f"\tRepeater size - {self.global_30.area.h}")
+        print(f"\tRepeater spacing - {self.global_30.area.w * 1e3} (mm)")
+        print(f"\tDelay - {self.global_30.delay * 1e6} (ns/mm)")
+        print(f"\tPowerD - {self.global_30.power.readOp.dynamic * 1e6} (nJ/mm)")
+        print(f"\tPowerL - {self.global_30.power.readOp.leakage} (mW/mm)")
+        print(f"\tPowerLgate - {self.global_30.power.readOp.gate_leakage} (mW/mm)")
+        # print(f"\tWire width - {self.wire_width_init * 1e6} microns")
+        # print(f"\tWire spacing - {self.wire_spacing_init * 1e6} microns\n")
+
+        # Low-swing wire
+        print("  Low-swing wire (1 mm) - Note: Unlike repeated wires, delay and power values of low-swing wires do not have a linear relationship with length.")
+        print(f"\tDelay - {self.low_swing.delay * 1e9} (ns)")
+        print(f"\tPowerD - {self.low_swing.power.readOp.dynamic * 1e9} (nJ)")
+        print(f"\tPowerL - {self.low_swing.power.readOp.leakage} (mW)")
+        print(f"\tPowerLgate - {self.low_swing.power.readOp.gate_leakage} (mW)")
+        # print(f"\tWire width - {self.wire_width_init * 2} microns")
+        # print(f"\tWire spacing - {self.wire_spacing_init * 2} microns\n")
 
     def set_in_rise_time(self, rt):
         self.in_rise_time = rt
