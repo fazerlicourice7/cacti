@@ -1,5 +1,3 @@
-import math
-
 # Constants
 ADDRESS_BITS = 42
 EXTRA_TAG_BITS = 5
@@ -138,6 +136,36 @@ nand = "nand"
 nor = "nor"
 tri = "tri"
 tg = "tg"
+
+
+outside_mat = "outside_mat"
+inside_mat = "inside_mat"
+local_wires = "local_wires"
+
+
+Add_htree = "Add_htree"
+Data_in_htree = "Data_in_htree"
+Data_out_htree = "Data_out_htree"
+Search_in_htree = "Search_in_htree"
+Search_out_htree = "Search_out_htree"
+
+
+Row_add_path = "Row_add_path"
+Col_add_path = "Col_add_path"
+Data_path = "Data_path"
+
+
+nmos = "nmos"
+pmos = "pmos"
+inv = "inv"
+nand = "nand"
+nor = "nor"
+tri = "tri"
+tg = "tg"
+
+parallel = "parallel"
+series = "series"
+
 
 Ilinear_to_Isat_ratio = 2.0
 
