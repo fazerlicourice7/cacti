@@ -383,6 +383,7 @@ class Mat(Component):
                 outrisetime_search = self.compute_bitline_delay(outrisetime_search)
                 outrisetime_search = self.compute_sa_delay(outrisetime_search)
 
+            # check the ourise times before subarray out computation
             outrisetime_search = self.compute_subarray_out_drv(outrisetime_search)
             self.subarray_out_wire.set_in_rise_time(outrisetime_search)
             outrisetime_search = self.subarray_out_wire.signal_rise_time()
@@ -868,59 +869,130 @@ class Mat(Component):
 
         outrisetime = 0
         return outrisetime
+    
 
     def compute_subarray_out_drv(self, inrisetime):
+        import os
+        # Define the output directory
+        output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+        os.makedirs(output_dir, exist_ok=True)
+
+        expressions = {
+            # Individual components for leakage power
+            "compute_subarray_out_drv_INRISETIME": inrisetime,
+        }
+        # Write the values of each expression to a separate file
+        for expr_name, value in expressions.items():
+            file_path = os.path.join(output_dir, f"{expr_name}.txt")
+            
+            # Write the value of the expression to the file
+            with open(file_path, "w") as file:
+                file.write(str(value))
+
         p_to_n_sz_r = pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram)
 
         # Delay of signal through pass-transistor of first level of sense-amp mux to input of inverter-buffer.
         rd = tr_R_on(self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
-        C_ld = self.dp.Ndsam_lev_1 * drain_C_(self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
-               gate_C(self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
+        C_ld = self.dp.Ndsam_lev_1 * drain_C_(
+            self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
+            self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP),
+            self.is_dram
+        ) + gate_C(
+            self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += 0  # For now, let leakage of the pass transistor be 0
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos
+        ) * self.g_tp.peri_global.Vdd
 
         # Delay of signal through inverter-buffer to second level of sense-amp mux.
         rd = tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, self.is_dram)
-        C_ld = drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               drain_C_(self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               gate_C(self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
+        C_ld = (
+            drain_C_(
+                self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + drain_C_(
+                self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + gate_C(
+                self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram
+            )
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv, self.is_dram) * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv, self.is_dram
+        ) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
+        ) * self.g_tp.peri_global.Vdd
 
         # Inverter driving drain of pass transistor of second level of sense-amp mux.
         rd = tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, self.is_dram)
-        C_ld = drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               drain_C_(self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               drain_C_(self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP), self.is_dram)
+        C_ld = (
+            drain_C_(
+                self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + drain_C_(
+                self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + drain_C_(
+                self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
+                self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP),
+                self.is_dram
+            )
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv) * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
+        ) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
+        ) * self.g_tp.peri_global.Vdd
 
         # Delay of signal through pass-transistor to input of subarray output driver.
         rd = tr_R_on(self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
-        C_ld = self.dp.Ndsam_lev_2 * drain_C_(self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
-               gate_C(self.g_tp, self.subarray_out_wire.repeater_size * (self.subarray_out_wire.wire_length / self.subarray_out_wire.repeater_spacing) * self.g_tp.min_w_nmos_ * (1 + p_to_n_sz_r), 0.0, self.is_dram)
+        C_ld = self.dp.Ndsam_lev_2 * drain_C_(
+            self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
+            self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP),
+            self.is_dram
+        ) + gate_C(
+            self.g_tp,
+            self.subarray_out_wire.repeater_size
+            * (self.subarray_out_wire.wire_length / self.subarray_out_wire.repeater_spacing)
+            * self.g_tp.min_w_nmos_
+            * (1 + p_to_n_sz_r),
+            0.0,
+            self.is_dram
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += 0  # For now, let leakage of the pass transistor be 0
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos
+        ) * self.g_tp.peri_global.Vdd
 
         return inrisetime
+
 
     def compute_comparator_delay(self, inrisetime):
         A = self.g_ip.tag_assoc
@@ -1002,6 +1074,10 @@ class Mat(Component):
         return Tcomparatorni / (1.0 - VTHMUXNAND)
 
     def compute_power_energy(self):
+        import os
+        # Define the output directory
+        output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+        os.makedirs(output_dir, exist_ok=True)
         # For cam and FA, power.readOp is the plain read power, power.searchOp is the associative search related power
         # When search all subarrays and all mats are fully active
         # When plain read/write only one subarray in a single mat is active.
@@ -1031,6 +1107,31 @@ class Mat(Component):
                 self.power_subarray_out_drv.readOp.dynamic
             )
 
+            # Define each expression with "thismat_" prefix
+            expressions = {
+                "thismat_subarray_num_cols_a": self.subarray.num_cols,
+                "thismat_power_bl_precharge_eq_drv_readOp_dynamic": self.bl_precharge_eq_drv.power.readOp.dynamic,
+                "thismat_power_sa_readOp_dynamic_mul_num_cols": self.power_sa.readOp.dynamic * self.subarray.num_cols,
+                "thismat_power_bitline_readOp_dynamic_mul_num_cols": self.power_bitline.readOp.dynamic * self.subarray.num_cols,
+                "thismat_power_subarray_out_drv_readOp_dynamic_mul_io_width_burst_depth": (
+                    self.power_subarray_out_drv.readOp.dynamic * self.g_ip.io_width * self.g_ip.burst_depth
+                ),
+                "thismat_total_power_readOp_dynamic": (
+                    self.power_bl_precharge_eq_drv.readOp.dynamic +
+                    self.power_sa.readOp.dynamic * self.subarray.num_cols +
+                    self.power_bitline.readOp.dynamic * self.subarray.num_cols +
+                    self.power_subarray_out_drv.readOp.dynamic * self.g_ip.io_width * self.g_ip.burst_depth
+                )
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+
         else:  # is_3d_mem
             self.power.readOp.dynamic += (
                 self.r_predec.power.readOp.dynamic +
@@ -1041,11 +1142,54 @@ class Mat(Component):
 
             # Add energy consumed in decoders
             self.power_row_decoders.readOp.dynamic = self.row_dec.power.readOp.dynamic
+
+            expressions = {
+                # Dynamic power components with "thismat_" prefix
+                "thismat_r_predec_power_readOp_dynamic": self.r_predec.power.readOp.dynamic,
+                "thismat_b_mux_predec_power_readOp_dynamic": self.b_mux_predec.power.readOp.dynamic,
+                "thismat_sa_mux_lev_1_predec_power_readOp_dynamic": self.sa_mux_lev_1_predec.power.readOp.dynamic,
+                "thismat_sa_mux_lev_2_predec_power_readOp_dynamic": self.sa_mux_lev_2_predec.power.readOp.dynamic,
+                
+                # Total power readOp dynamic, including all components
+                "thismat_total_power_readOp_dynamic": (
+                    self.r_predec.power.readOp.dynamic +
+                    self.b_mux_predec.power.readOp.dynamic +
+                    self.sa_mux_lev_1_predec.power.readOp.dynamic +
+                    self.sa_mux_lev_2_predec.power.readOp.dynamic
+                ),
+                
+                # Energy consumed in row decoders
+                "thismat_power_row_decoders_readOp_dynamic": self.row_dec.power.readOp.dynamic
+            }
+
+            # Write the values of each expression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
             if not (self.is_fa or self.pure_cam):
+                print("IN THIS WEIRD 1 FA AND PURE CAM NOT THING!!!!!!!!!!!!")
                 self.power_row_decoders.readOp.dynamic *= self.num_subarrays_per_mat
+                expressions = {
+                    # Energy consumed in row decoders, adjusted by num_subarrays_per_mat
+                    "thismat_power_row_decoders_readOp_dynamic_mul_num_subarrays_per_mat": self.power_row_decoders.readOp.dynamic * self.num_subarrays_per_mat,
+                    "thismat_num_subarrays_per_mat_1": self.num_subarrays_per_mat
+                }
+
+                # Write the values of each expression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
 
             # Add energy consumed in bitline prechargers, SAs, and bitlines
             if not (self.is_fa or self.pure_cam):
+                print("IN WEIRD 2!!!!")
                 # Add energy consumed in bitline prechargers
                 self.power_bl_precharge_eq_drv.readOp.dynamic = self.bl_precharge_eq_drv.power.readOp.dynamic
                 self.power_bl_precharge_eq_drv.readOp.dynamic *= self.num_subarrays_per_mat
@@ -1077,6 +1221,44 @@ class Mat(Component):
                     self.sa_mux_lev_2_dec.power.readOp.dynamic +
                     self.power_comparator.readOp.dynamic
                 )
+                expressions = {
+                    # Energy consumed in bitline prechargers
+                    "thismat_power_bl_precharge_eq_drv_readOp_dynamic": self.bl_precharge_eq_drv.power.readOp.dynamic * self.num_subarrays_per_mat,
+
+                    # Sense amps energy
+                    "thismat_num_sa_subarray": self.subarray.num_cols / self.deg_bl_muxing,
+                    "thismat_power_sa_readOp_dynamic": self.power_sa.readOp.dynamic * (self.subarray.num_cols / self.deg_bl_muxing) * self.num_subarrays_per_mat,
+
+                    # Bitline energy
+                    "thismat_power_bitline_readOp_dynamic": self.power_bitline.readOp.dynamic * self.num_subarrays_per_mat * self.subarray.num_cols,
+                    "thismat_power_bitline_writeOp_dynamic": self.power_bitline.writeOp.dynamic * self.num_subarrays_per_mat * self.subarray.num_cols,
+
+                    # Subarray output energy
+                    "thismat_power_subarray_out_drv_readOp_dynamic": (
+                        (self.power_subarray_out_drv.readOp.dynamic + self.subarray_out_wire.power.readOp.dynamic) * self.num_do_b_mat
+                    ),
+
+                    # Total power readOp dynamic, summing various components
+                    "thismat_total_power_readOp_dynamic": (
+                        self.power_bl_precharge_eq_drv.readOp.dynamic +
+                        self.power_sa.readOp.dynamic +
+                        self.power_bitline.readOp.dynamic +
+                        self.power_subarray_out_drv.readOp.dynamic +
+                        self.power_row_decoders.readOp.dynamic +
+                        self.bit_mux_dec.power.readOp.dynamic +
+                        self.sa_mux_lev_1_dec.power.readOp.dynamic +
+                        self.sa_mux_lev_2_dec.power.readOp.dynamic +
+                        self.power_comparator.readOp.dynamic
+                    )
+                }
+
+                # Write the values of each expression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
 
             elif self.is_fa:
                 # For plain read/write only one subarray in a mat is active
@@ -1121,6 +1303,54 @@ class Mat(Component):
                     self.power_comparator.readOp.dynamic
                 )
 
+                expressions = {
+                    # Bitline precharger energy
+                    "thismat_power_bl_precharge_eq_drv_readOp_dynamic": (
+                        self.bl_precharge_eq_drv.power.readOp.dynamic + self.cam_bl_precharge_eq_drv.power.readOp.dynamic
+                    ),
+                    "thismat_power_bl_precharge_eq_drv_searchOp_dynamic": self.bl_precharge_eq_drv.power.readOp.dynamic,
+
+                    # Sense amps energy
+                    "thismat_num_sa_subarray": (self.subarray.num_cols_fa_cam + self.subarray.num_cols_fa_ram) / self.deg_bl_muxing,
+                    "thismat_num_sa_subarray_search": self.subarray.num_cols_fa_ram / self.deg_bl_muxing,
+                    "thismat_power_sa_searchOp_dynamic": self.power_sa.readOp.dynamic * (self.subarray.num_cols_fa_ram / self.deg_bl_muxing),
+                    "thismat_power_sa_readOp_dynamic": self.power_sa.readOp.dynamic * ((self.subarray.num_cols_fa_cam + self.subarray.num_cols_fa_ram) / self.deg_bl_muxing),
+
+                    # Bitline energy
+                    "thismat_power_bitline_searchOp_dynamic": self.power_bitline.readOp.dynamic * self.subarray.num_cols_fa_ram,
+                    "thismat_power_bitline_readOp_dynamic": self.power_bitline.readOp.dynamic * (self.subarray.num_cols_fa_cam + self.subarray.num_cols_fa_ram),
+                    "thismat_power_bitline_writeOp_dynamic": self.power_bitline.writeOp.dynamic * (self.subarray.num_cols_fa_cam + self.subarray.num_cols_fa_ram),
+
+                    # Subarray output energy
+                    "thismat_power_subarray_out_drv_searchOp_dynamic": (
+                        (self.power_subarray_out_drv.readOp.dynamic + self.subarray_out_wire.power.readOp.dynamic) * self.num_so_b_mat
+                    ),
+                    "thismat_power_subarray_out_drv_readOp_dynamic_FA": (
+                        (self.power_subarray_out_drv.readOp.dynamic + self.subarray_out_wire.power.readOp.dynamic) * self.num_do_b_mat
+                    ),
+
+                    # Total power readOp dynamic, summing various components
+                    "thismat_total_power_readOp_dynamic_FA": (
+                        self.power_bl_precharge_eq_drv.readOp.dynamic +
+                        self.power_sa.readOp.dynamic +
+                        self.power_bitline.readOp.dynamic +
+                        self.power_subarray_out_drv.readOp.dynamic +
+                        self.power_row_decoders.readOp.dynamic +
+                        self.bit_mux_dec.power.readOp.dynamic +
+                        self.sa_mux_lev_1_dec.power.readOp.dynamic +
+                        self.sa_mux_lev_2_dec.power.readOp.dynamic +
+                        self.power_comparator.readOp.dynamic
+                    )
+                }
+
+                # Write the values of each expression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
+
                 # Add energy consumed inside cam
                 self.power_matchline.searchOp.dynamic *= self.num_subarrays_per_mat
                 self.power_searchline_precharge = self.sl_precharge_eq_drv.power
@@ -1138,6 +1368,59 @@ class Mat(Component):
                 self.power_cam_all_active.searchOp.dynamic += self.power_matchline_precharge.searchOp.dynamic
 
                 self.power.searchOp.dynamic += self.power_cam_all_active.searchOp.dynamic
+
+                expressions = {
+                    # Matchline energy, scaled by num_subarrays_per_mat
+                    "thismat_power_matchline_searchOp_dynamic": self.power_matchline.searchOp.dynamic,
+                    "thismat_num_subarrays_per_mat": self.num_subarrays_per_mat,
+                    "thismat_power_matchline_searchOp_dynamic_scaled": self.power_matchline.searchOp.dynamic * self.num_subarrays_per_mat,
+
+                    # Searchline precharge energy
+                    "thismat_power_searchline_precharge_readOp_dynamic": self.sl_precharge_eq_drv.power.readOp.dynamic,
+                    "thismat_power_searchline_precharge_searchOp_dynamic_scaled": self.sl_precharge_eq_drv.power.readOp.dynamic * self.num_subarrays_per_mat,
+
+                    # Searchline energy, scaled by subarray columns and num_subarrays_per_mat
+                    "thismat_power_searchline_readOp_dynamic": self.sl_data_drv.power.readOp.dynamic,
+                    "thismat_subarray_num_cols_fa_cam": self.subarray.num_cols_fa_cam,
+                    "thismat_power_searchline_searchOp_dynamic_scaled": (
+                        self.sl_data_drv.power.readOp.dynamic * self.subarray.num_cols_fa_cam * self.num_subarrays_per_mat
+                    ),
+
+                    # Matchline precharge energy
+                    "thismat_power_matchline_precharge_readOp_dynamic": self.ml_precharge_drv.power.readOp.dynamic,
+                    "thismat_power_matchline_precharge_searchOp_dynamic_scaled": self.ml_precharge_drv.power.readOp.dynamic * self.num_subarrays_per_mat,
+
+                    # ML to RAM WL driver energy
+                    "thismat_power_ml_to_ram_wl_drv_readOp_dynamic": self.ml_to_ram_wl_drv.power.readOp.dynamic,
+                    "thismat_power_ml_to_ram_wl_drv_searchOp_dynamic": self.ml_to_ram_wl_drv.power.readOp.dynamic,
+
+                    # Total CAM all-active dynamic search operation power
+                    "thismat_power_cam_all_active_searchOp_dynamic": (
+                        self.power_matchline.searchOp.dynamic * self.num_subarrays_per_mat +
+                        self.sl_precharge_eq_drv.power.readOp.dynamic * self.num_subarrays_per_mat +
+                        self.sl_data_drv.power.readOp.dynamic * self.subarray.num_cols_fa_cam * self.num_subarrays_per_mat +
+                        self.ml_precharge_drv.power.readOp.dynamic * self.num_subarrays_per_mat
+                    ),
+
+                    # Overall search operation dynamic power, including CAM all-active dynamic power
+                    "thismat_total_power_searchOp_dynamic": (
+                        self.power.searchOp.dynamic + (
+                            self.power_matchline.searchOp.dynamic * self.num_subarrays_per_mat +
+                            self.sl_precharge_eq_drv.power.readOp.dynamic * self.num_subarrays_per_mat +
+                            self.sl_data_drv.power.readOp.dynamic * self.subarray.num_cols_fa_cam * self.num_subarrays_per_mat +
+                            self.ml_precharge_drv.power.readOp.dynamic * self.num_subarrays_per_mat
+                        )
+                    )
+                }
+
+                # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
+
 
             else:
                 # Add energy consumed in bitline prechargers
@@ -1171,6 +1454,63 @@ class Mat(Component):
                     self.sa_mux_lev_2_dec.power.readOp.dynamic +
                     self.power_comparator.readOp.dynamic
                 )
+                expressions = {
+                    # Individual bitline precharger dynamic power
+                    "thismat_cam_bl_precharge_eq_drv_power_readOp_dynamic": self.cam_bl_precharge_eq_drv.power.readOp.dynamic,
+                    "thismat_power_bl_precharge_eq_drv_readOp_dynamic": self.power_bl_precharge_eq_drv.readOp.dynamic,
+
+                    # Sense amps energy with subexpression components
+                    "thismat_power_sa_readOp_dynamic": self.power_sa.readOp.dynamic,
+                    "thismat_num_sa_subarray": self.subarray.num_cols_fa_cam / self.deg_bl_muxing,
+                    "thismat_power_sa_readOp_dynamic_scaled": self.power_sa.readOp.dynamic * (self.subarray.num_cols_fa_cam / self.deg_bl_muxing),
+
+                    # Bitline dynamic energy for read and write with subexpressions
+                    "thismat_power_bitline_readOp_dynamic": self.power_bitline.readOp.dynamic,
+                    "thismat_power_bitline_readOp_dynamic_scaled": self.power_bitline.readOp.dynamic * self.subarray.num_cols_fa_cam,
+                    "thismat_power_bitline_writeOp_dynamic": self.power_bitline.writeOp.dynamic,
+                    "thismat_power_bitline_writeOp_dynamic_scaled": self.power_bitline.writeOp.dynamic * self.subarray.num_cols_fa_cam,
+
+                    # Subarray output energy for searchOp and readOp with individual components
+                    "thismat_power_subarray_out_drv_readOp_dynamic": self.power_subarray_out_drv.readOp.dynamic,
+                    "thismat_subarray_out_wire_power_readOp_dynamic": self.subarray_out_wire.power.readOp.dynamic,
+                    "thismat_num_so_b_mat": self.num_so_b_mat,
+                    "thismat_num_do_b_mat": self.num_do_b_mat,
+                    "thismat_power_subarray_out_drv_searchOp_dynamic": (
+                        (self.power_subarray_out_drv.readOp.dynamic + self.subarray_out_wire.power.readOp.dynamic) * self.num_so_b_mat
+                    ),
+                    "thismat_power_subarray_out_drv_readOp_dynamic_scaled": (
+                        (self.power_subarray_out_drv.readOp.dynamic + self.subarray_out_wire.power.readOp.dynamic) * self.num_do_b_mat
+                    ),
+
+                    # Components for total dynamic power readOp
+                    "thismat_power_row_decoders_readOp_dynamic": self.power_row_decoders.readOp.dynamic,
+                    "thismat_bit_mux_dec_power_readOp_dynamic": self.bit_mux_dec.power.readOp.dynamic,
+                    "thismat_sa_mux_lev_1_dec_power_readOp_dynamic": self.sa_mux_lev_1_dec.power.readOp.dynamic,
+                    "thismat_sa_mux_lev_2_dec_power_readOp_dynamic": self.sa_mux_lev_2_dec.power.readOp.dynamic,
+                    "thismat_power_comparator_readOp_dynamic": self.power_comparator.readOp.dynamic,
+
+                    # Final total power readOp dynamic, summing all components
+                    "thismat_total_power_readOp_dynamic": (
+                        self.power_bl_precharge_eq_drv.readOp.dynamic +
+                        self.power_sa.readOp.dynamic * (self.subarray.num_cols_fa_cam / self.deg_bl_muxing) +
+                        self.power_bitline.readOp.dynamic * self.subarray.num_cols_fa_cam +
+                        self.power_subarray_out_drv.readOp.dynamic * self.num_do_b_mat +
+                        self.power_row_decoders.readOp.dynamic +
+                        self.bit_mux_dec.power.readOp.dynamic +
+                        self.sa_mux_lev_1_dec.power.readOp.dynamic +
+                        self.sa_mux_lev_2_dec.power.readOp.dynamic +
+                        self.power_comparator.readOp.dynamic
+                    )
+                }
+
+                # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
+
 
                 # Add energy consumed inside cam
                 self.power_matchline.searchOp.dynamic *= self.num_subarrays_per_mat
@@ -1190,8 +1530,60 @@ class Mat(Component):
 
                 self.power.searchOp.dynamic += self.power_cam_all_active.searchOp.dynamic
 
+                expressions = {
+                    # Energy consumed inside CAM with subexpressions
+                    "thismat_power_matchline_searchOp_dynamic": self.power_matchline.searchOp.dynamic,
+                    "thismat_num_subarrays_per_mat": self.num_subarrays_per_mat,
+                    "thismat_power_matchline_searchOp_dynamic_scaled": self.power_matchline.searchOp.dynamic * self.num_subarrays_per_mat,
+
+                    # Searchline precharge energy
+                    "thismat_power_searchline_precharge_readOp_dynamic": self.sl_precharge_eq_drv.power.readOp.dynamic,
+                    "thismat_power_searchline_precharge_searchOp_dynamic_scaled": self.sl_precharge_eq_drv.power.readOp.dynamic * self.num_subarrays_per_mat,
+
+                    # Searchline energy with subarray column scaling
+                    "thismat_power_searchline_readOp_dynamic": self.sl_data_drv.power.readOp.dynamic,
+                    "thismat_subarray_num_cols_fa_cam": self.subarray.num_cols_fa_cam,
+                    "thismat_power_searchline_searchOp_dynamic_scaled": (
+                        self.sl_data_drv.power.readOp.dynamic * self.subarray.num_cols_fa_cam * self.num_subarrays_per_mat
+                    ),
+
+                    # Matchline precharge energy
+                    "thismat_power_matchline_precharge_readOp_dynamic": self.ml_precharge_drv.power.readOp.dynamic,
+                    "thismat_power_matchline_precharge_searchOp_dynamic_scaled": self.ml_precharge_drv.power.readOp.dynamic * self.num_subarrays_per_mat,
+
+                    # ML to RAM WL driver energy
+                    "thismat_power_ml_to_ram_wl_drv_readOp_dynamic": self.ml_to_ram_wl_drv.power.readOp.dynamic,
+                    "thismat_power_ml_to_ram_wl_drv_searchOp_dynamic": self.ml_to_ram_wl_drv.power.readOp.dynamic,
+
+                    # Total CAM all-active dynamic search operation power
+                    "thismat_power_cam_all_active_searchOp_dynamic": (
+                        self.power_matchline.searchOp.dynamic * self.num_subarrays_per_mat +
+                        self.sl_precharge_eq_drv.power.readOp.dynamic * self.num_subarrays_per_mat +
+                        self.sl_data_drv.power.readOp.dynamic * self.subarray.num_cols_fa_cam * self.num_subarrays_per_mat +
+                        self.ml_precharge_drv.power.readOp.dynamic * self.num_subarrays_per_mat
+                    ),
+
+                    # Overall search operation dynamic power, including CAM all-active dynamic power
+                    "thismat_total_power_searchOp_dynamic": self.power.searchOp.dynamic + (
+                        self.power_matchline.searchOp.dynamic * self.num_subarrays_per_mat +
+                        self.sl_precharge_eq_drv.power.readOp.dynamic * self.num_subarrays_per_mat +
+                        self.sl_data_drv.power.readOp.dynamic * self.subarray.num_cols_fa_cam * self.num_subarrays_per_mat +
+                        self.ml_precharge_drv.power.readOp.dynamic * self.num_subarrays_per_mat
+                    )
+                }
+
+                # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
+
+
         # Calculate leakage power
         if not (self.is_fa or self.pure_cam):
+            print("IN WEIRD 3!!!!")
             self.number_output_drivers_subarray = self.num_sa_subarray / (self.dp.Ndsam_lev_1 * self.dp.Ndsam_lev_2)
 
             self.power_bitline.readOp.leakage *= self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
@@ -1222,11 +1614,119 @@ class Mat(Component):
                 self.power_comparator.readOp.leakage
             )
 
+            expressions = {
+                # Calculation of number of output drivers in the subarray
+                "thismat_num_sa_subarray": self.num_sa_subarray,
+                "thismat_dp_Ndsam_lev_1": self.dp.Ndsam_lev_1,
+                "thismat_dp_Ndsam_lev_2": self.dp.Ndsam_lev_2,
+                "thismat_number_output_drivers_subarray": self.num_sa_subarray / (self.dp.Ndsam_lev_1 * self.dp.Ndsam_lev_2),
+
+                # Bitline leakage power
+                "thismat_power_bitline_readOp_leakage": self.power_bitline.readOp.leakage,
+                "thismat_power_bitline_readOp_leakage_scaled": (
+                    self.power_bitline.readOp.leakage * self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
+                ),
+
+                # Bitline precharge leakage power
+                "thismat_bl_precharge_eq_drv_power_readOp_leakage": self.bl_precharge_eq_drv.power.readOp.leakage,
+                "thismat_power_bl_precharge_eq_drv_readOp_leakage_scaled": (
+                    self.bl_precharge_eq_drv.power.readOp.leakage * self.num_subarrays_per_mat
+                ),
+
+                # Sense amp leakage power
+                "thismat_power_sa_readOp_leakage": self.power_sa.readOp.leakage,
+                "thismat_power_sa_readOp_leakage_scaled": (
+                    self.power_sa.readOp.leakage * self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
+                ),
+
+                # Subarray output driver leakage power
+                "thismat_power_subarray_out_drv_readOp_leakage": self.power_subarray_out_drv.readOp.leakage,
+                "thismat_subarray_out_wire_power_readOp_leakage": self.subarray_out_wire.power.readOp.leakage,
+                "thismat_power_subarray_out_drv_readOp_leakage_scaled": (
+                    (self.power_subarray_out_drv.readOp.leakage + self.subarray_out_wire.power.readOp.leakage) *
+                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
+                ),
+
+                # Total readOp leakage power
+                "thismat_total_power_readOp_leakage": (
+                    self.power_bitline.readOp.leakage +
+                    self.power_bl_precharge_eq_drv.readOp.leakage +
+                    self.power_sa.readOp.leakage +
+                    self.power_subarray_out_drv.readOp.leakage
+                ),
+
+                # Comparator leakage power
+                "thismat_power_comparator_readOp_leakage_scaled": (
+                    self.power_comparator.readOp.leakage * self.num_do_b_mat * (self.RWP + self.ERP)
+                ),
+                "thismat_total_power_readOp_leakage_including_comparator": (
+                    self.power.readOp.leakage + self.power_comparator.readOp.leakage
+                ),
+
+                # Array leakage
+                "thismat_array_leakage": self.power_bitline.readOp.leakage,
+
+                # CL leakage
+                "thismat_cl_leakage": (
+                    self.power_bl_precharge_eq_drv.readOp.leakage +
+                    self.power_sa.readOp.leakage +
+                    self.power_subarray_out_drv.readOp.leakage +
+                    self.power_comparator.readOp.leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
+
             # Decoder blocks
             self.power_row_decoders.readOp.leakage = self.row_dec.power.readOp.leakage * self.subarray.num_rows * self.num_subarrays_per_mat
             self.power_bit_mux_decoders.readOp.leakage = self.bit_mux_dec.power.readOp.leakage * self.deg_bl_muxing
             self.power_sa_mux_lev_1_decoders.readOp.leakage = self.sa_mux_lev_1_dec.power.readOp.leakage * self.dp.Ndsam_lev_1
             self.power_sa_mux_lev_2_decoders.readOp.leakage = self.sa_mux_lev_2_dec.power.readOp.leakage * self.dp.Ndsam_lev_2
+            expressions = {
+                # Row decoder leakage power, scaled by subarray rows and number of subarrays per mat
+                "thismat_row_dec_power_readOp_leakage": self.row_dec.power.readOp.leakage,
+                "thismat_subarray_num_rows": self.subarray.num_rows,
+                "thismat_power_row_decoders_readOp_leakage_scaled": (
+                    self.row_dec.power.readOp.leakage * self.subarray.num_rows * self.num_subarrays_per_mat
+                ),
+
+                # Bit mux decoder leakage power, scaled by degree of bitline muxing
+                "thismat_bit_mux_dec_power_readOp_leakage": self.bit_mux_dec.power.readOp.leakage,
+                "thismat_deg_bl_muxing": self.deg_bl_muxing,
+                "thismat_power_bit_mux_decoders_readOp_leakage_scaled": (
+                    self.bit_mux_dec.power.readOp.leakage * self.deg_bl_muxing
+                ),
+
+                # Sense amp level 1 mux decoder leakage power, scaled by dp.Ndsam_lev_1
+                "thismat_sa_mux_lev_1_dec_power_readOp_leakage": self.sa_mux_lev_1_dec.power.readOp.leakage,
+                "thismat_dp_Ndsam_lev_1": self.dp.Ndsam_lev_1,
+                "thismat_power_sa_mux_lev_1_decoders_readOp_leakage_scaled": (
+                    self.sa_mux_lev_1_dec.power.readOp.leakage * self.dp.Ndsam_lev_1
+                ),
+
+                # Sense amp level 2 mux decoder leakage power, scaled by dp.Ndsam_lev_2
+                "thismat_sa_mux_lev_2_dec_power_readOp_leakage": self.sa_mux_lev_2_dec.power.readOp.leakage,
+                "thismat_dp_Ndsam_lev_2": self.dp.Ndsam_lev_2,
+                "thismat_power_sa_mux_lev_2_decoders_readOp_leakage_scaled": (
+                    self.sa_mux_lev_2_dec.power.readOp.leakage * self.dp.Ndsam_lev_2
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
 
             if not self.g_ip.wl_power_gated:
                 self.power.readOp.leakage += (
@@ -1239,6 +1739,37 @@ class Mat(Component):
                     self.power_sa_mux_lev_1_decoders.readOp.leakage +
                     self.power_sa_mux_lev_2_decoders.readOp.leakage
                 )
+                expressions = {
+                    # Individual components for leakage power
+                    "thismat_r_predec_power_readOp_leakage": self.r_predec.power.readOp.leakage,
+                    "thismat_b_mux_predec_power_readOp_leakage": self.b_mux_predec.power.readOp.leakage,
+                    "thismat_sa_mux_lev_1_predec_power_readOp_leakage": self.sa_mux_lev_1_predec.power.readOp.leakage,
+                    "thismat_sa_mux_lev_2_predec_power_readOp_leakage": self.sa_mux_lev_2_predec.power.readOp.leakage,
+                    "thismat_power_row_decoders_readOp_leakage": self.power_row_decoders.readOp.leakage,
+                    "thismat_power_bit_mux_decoders_readOp_leakage": self.power_bit_mux_decoders.readOp.leakage,
+                    "thismat_power_sa_mux_lev_1_decoders_readOp_leakage": self.power_sa_mux_lev_1_decoders.readOp.leakage,
+                    "thismat_power_sa_mux_lev_2_decoders_readOp_leakage": self.power_sa_mux_lev_2_decoders.readOp.leakage,
+
+                    # Total leakage power for readOp, summing all components
+                    "thismat_total_power_readOp_leakage": (
+                        self.r_predec.power.readOp.leakage +
+                        self.b_mux_predec.power.readOp.leakage +
+                        self.sa_mux_lev_1_predec.power.readOp.leakage +
+                        self.sa_mux_lev_2_predec.power.readOp.leakage +
+                        self.power_row_decoders.readOp.leakage +
+                        self.power_bit_mux_decoders.readOp.leakage +
+                        self.power_sa_mux_lev_1_decoders.readOp.leakage +
+                        self.power_sa_mux_lev_2_decoders.readOp.leakage
+                    )
+                }
+
+                # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
             else:
                 self.power.readOp.leakage += (
                     (self.r_predec.power.readOp.leakage +
@@ -1250,6 +1781,42 @@ class Mat(Component):
                      self.power_sa_mux_lev_1_decoders.readOp.leakage +
                      self.power_sa_mux_lev_2_decoders.readOp.leakage) / self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vcc_min
                 )
+                expressions = {
+                    # Individual components for leakage power
+                    "thismat_r_predec_power_readOp_leakage": self.r_predec.power.readOp.leakage,
+                    "thismat_b_mux_predec_power_readOp_leakage": self.b_mux_predec.power.readOp.leakage,
+                    "thismat_sa_mux_lev_1_predec_power_readOp_leakage": self.sa_mux_lev_1_predec.power.readOp.leakage,
+                    "thismat_sa_mux_lev_2_predec_power_readOp_leakage": self.sa_mux_lev_2_predec.power.readOp.leakage,
+                    "thismat_power_row_decoders_readOp_leakage": self.power_row_decoders.readOp.leakage,
+                    "thismat_power_bit_mux_decoders_readOp_leakage": self.power_bit_mux_decoders.readOp.leakage,
+                    "thismat_power_sa_mux_lev_1_decoders_readOp_leakage": self.power_sa_mux_lev_1_decoders.readOp.leakage,
+                    "thismat_power_sa_mux_lev_2_decoders_readOp_leakage": self.power_sa_mux_lev_2_decoders.readOp.leakage,
+
+                    # Voltage parameters
+                    "thismat_peri_global_Vdd": self.g_tp.peri_global.Vdd,
+                    "thismat_peri_global_Vcc_min": self.g_tp.peri_global.Vcc_min,
+
+                    # Scaled total leakage power for readOp, summing all components and scaling by Vdd and Vcc_min
+                    "thismat_total_power_readOp_leakage_scaled": (
+                        (self.r_predec.power.readOp.leakage +
+                        self.b_mux_predec.power.readOp.leakage +
+                        self.sa_mux_lev_1_predec.power.readOp.leakage +
+                        self.sa_mux_lev_2_predec.power.readOp.leakage +
+                        self.power_row_decoders.readOp.leakage +
+                        self.power_bit_mux_decoders.readOp.leakage +
+                        self.power_sa_mux_lev_1_decoders.readOp.leakage +
+                        self.power_sa_mux_lev_2_decoders.readOp.leakage) / self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vcc_min
+                    )
+                }
+
+                # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
+
 
             self.wl_leakage = (
                 self.r_predec.power.readOp.leakage +
@@ -1261,6 +1828,38 @@ class Mat(Component):
                 self.power_sa_mux_lev_1_decoders.readOp.leakage +
                 self.power_sa_mux_lev_2_decoders.readOp.leakage
             )
+            expressions = {
+                # Individual components for wordline leakage power
+                "thismat_r_predec_power_readOp_leakage": self.r_predec.power.readOp.leakage,
+                "thismat_b_mux_predec_power_readOp_leakage": self.b_mux_predec.power.readOp.leakage,
+                "thismat_sa_mux_lev_1_predec_power_readOp_leakage": self.sa_mux_lev_1_predec.power.readOp.leakage,
+                "thismat_sa_mux_lev_2_predec_power_readOp_leakage": self.sa_mux_lev_2_predec.power.readOp.leakage,
+                "thismat_power_row_decoders_readOp_leakage": self.power_row_decoders.readOp.leakage,
+                "thismat_power_bit_mux_decoders_readOp_leakage": self.power_bit_mux_decoders.readOp.leakage,
+                "thismat_power_sa_mux_lev_1_decoders_readOp_leakage": self.power_sa_mux_lev_1_decoders.readOp.leakage,
+                "thismat_power_sa_mux_lev_2_decoders_readOp_leakage": self.power_sa_mux_lev_2_decoders.readOp.leakage,
+
+                # Total wordline leakage power, summing all components
+                "thismat_wl_leakage": (
+                    self.r_predec.power.readOp.leakage +
+                    self.b_mux_predec.power.readOp.leakage +
+                    self.sa_mux_lev_1_predec.power.readOp.leakage +
+                    self.sa_mux_lev_2_predec.power.readOp.leakage +
+                    self.power_row_decoders.readOp.leakage +
+                    self.power_bit_mux_decoders.readOp.leakage +
+                    self.power_sa_mux_lev_1_decoders.readOp.leakage +
+                    self.power_sa_mux_lev_2_decoders.readOp.leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
 
             # Gate leakage
             self.power_bitline.readOp.gate_leakage *= self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
@@ -1279,8 +1878,79 @@ class Mat(Component):
                 self.power_subarray_out_drv.readOp.gate_leakage
             )
 
+            expressions = {
+                # Bitline gate leakage, scaled by subarray rows, columns, and number of subarrays per mat
+                "thismat_power_bitline_readOp_gate_leakage": self.power_bitline.readOp.gate_leakage,
+                "thismat_power_bitline_readOp_gate_leakage_scaled": (
+                    self.power_bitline.readOp.gate_leakage * self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
+                ),
+
+                # Bitline precharge gate leakage, scaled by number of subarrays per mat
+                "thismat_bl_precharge_eq_drv_power_readOp_gate_leakage": self.bl_precharge_eq_drv.power.readOp.gate_leakage,
+                "thismat_power_bl_precharge_eq_drv_readOp_gate_leakage_scaled": (
+                    self.bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
+                ),
+
+                # Sense amp gate leakage, scaled by number of sense amps, subarrays, and read/write ports
+                "thismat_power_sa_readOp_gate_leakage": self.power_sa.readOp.gate_leakage,
+                "thismat_num_sa_subarray": self.num_sa_subarray,
+                "thismat_power_sa_readOp_gate_leakage_scaled": (
+                    self.power_sa.readOp.gate_leakage * self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
+                ),
+
+                # Subarray output driver gate leakage, including subarray out wire power, scaled by output drivers and read/write ports
+                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
+                "thismat_number_output_drivers_subarray": self.number_output_drivers_subarray,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
+                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
+                ),
+
+                # Total gate leakage power for readOp, summing all components
+                "thismat_total_power_readOp_gate_leakage": (
+                    self.power_bitline.readOp.gate_leakage +
+                    self.power_bl_precharge_eq_drv.readOp.gate_leakage +
+                    self.power_sa.readOp.gate_leakage +
+                    self.power_subarray_out_drv.readOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
+
             self.power_comparator.readOp.gate_leakage *= self.num_do_b_mat * (self.RWP + self.ERP)
             self.power.readOp.gate_leakage += self.power_comparator.readOp.gate_leakage
+
+            expressions = {
+                # Comparator gate leakage, scaled by num_do_b_mat and (RWP + ERP)
+                "thismat_power_comparator_readOp_gate_leakage": self.power_comparator.readOp.gate_leakage,
+                "thismat_num_do_b_mat": self.num_do_b_mat,
+                "thismat_RWP_plus_ERP": self.RWP + self.ERP,
+                "thismat_power_comparator_readOp_gate_leakage_scaled": (
+                    self.power_comparator.readOp.gate_leakage * self.num_do_b_mat * (self.RWP + self.ERP)
+                ),
+
+                # Updated total gate leakage for readOp, including comparator leakage
+                "thismat_total_power_readOp_gate_leakage_including_comparator": (
+                    self.power.readOp.gate_leakage + self.power_comparator.readOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
 
             if self.g_ip.power_gating:
                 self.array_sleep_tx_area = self.sram_sleep_tx.area.get_area() * self.subarray.num_cols * self.num_subarrays_per_mat * self.dp.num_mats
@@ -1290,6 +1960,53 @@ class Mat(Component):
                 self.wl_sleep_tx_area = self.row_dec.sleeptx.area.get_area() * self.subarray.num_rows * self.num_subarrays_per_mat * self.dp.num_mats
                 self.wl_wakeup_e.readOp.dynamic = self.row_dec.sleeptx.wakeup_power.readOp.dynamic * self.num_subarrays_per_mat * self.subarray.num_rows * self.dp.num_act_mats_hor_dir
                 self.wl_wakeup_t = self.row_dec.sleeptx.wakeup_delay
+
+                expressions = {
+                    # Array sleep transistor area
+                    "thismat_sram_sleep_tx_area": self.sram_sleep_tx.area.get_area(),
+                    "thismat_subarray_num_rows": self.subarray.num_rows,
+                    "thismat_subarray_num_cols": self.subarray.num_cols,
+                    "thismat_num_subarrays_per_mat": self.num_subarrays_per_mat,
+                    "thismat_dp_num_mats": self.dp.num_mats,
+                    "thismat_array_sleep_tx_area": (
+                        self.sram_sleep_tx.area.get_area() * self.subarray.num_cols * self.num_subarrays_per_mat * self.dp.num_mats
+                    ),
+
+                    # Array wakeup energy (dynamic) for readOp, scaled by number of subarrays, columns, and horizontal active mats
+                    "thismat_sram_sleep_tx_wakeup_power_readOp_dynamic": self.sram_sleep_tx.wakeup_power.readOp.dynamic,
+                    "thismat_dp_num_act_mats_hor_dir": self.dp.num_act_mats_hor_dir,
+                    "thismat_array_wakeup_e_readOp_dynamic": (
+                        self.sram_sleep_tx.wakeup_power.readOp.dynamic * self.num_subarrays_per_mat * self.subarray.num_cols * self.dp.num_act_mats_hor_dir
+                    ),
+
+                    # Array wakeup time
+                    "thismat_array_wakeup_t": self.sram_sleep_tx.wakeup_delay,
+
+                    # Wordline sleep transistor area
+                    "thismat_row_dec_sleeptx_area": self.row_dec.sleeptx.area.get_area(),
+                    "thismat_subarray_num_rows": self.subarray.num_rows,
+                    "thismat_wl_sleep_tx_area": (
+                        self.row_dec.sleeptx.area.get_area() * self.subarray.num_rows * self.num_subarrays_per_mat * self.dp.num_mats
+                    ),
+
+                    # Wordline wakeup energy (dynamic) for readOp, scaled by number of subarrays, rows, and horizontal active mats
+                    "thismat_row_dec_sleeptx_wakeup_power_readOp_dynamic": self.row_dec.sleeptx.wakeup_power.readOp.dynamic,
+                    "thismat_wl_wakeup_e_readOp_dynamic": (
+                        self.row_dec.sleeptx.wakeup_power.readOp.dynamic * self.num_subarrays_per_mat * self.subarray.num_rows * self.dp.num_act_mats_hor_dir
+                    ),
+
+                    # Wordline wakeup time
+                    "thismat_wl_wakeup_t": self.row_dec.sleeptx.wakeup_delay
+                }
+
+                # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+                for expr_name, value in expressions.items():
+                    unique_file_path = get_unique_filepath(output_dir, expr_name)
+                    
+                    # Write the value of the expression to the file
+                    with open(unique_file_path, "w") as file:
+                        file.write(str(value))
+
 
             self.power_row_decoders.readOp.gate_leakage = self.row_dec.power.readOp.gate_leakage * self.subarray.num_rows * self.num_subarrays_per_mat
             self.power_bit_mux_decoders.readOp.gate_leakage = self.bit_mux_dec.power.readOp.gate_leakage * self.deg_bl_muxing
@@ -1307,7 +2024,66 @@ class Mat(Component):
                 self.power_sa_mux_lev_2_decoders.readOp.gate_leakage
             )
 
+            expressions = {
+                # Row decoder gate leakage power, scaled by subarray rows and number of subarrays per mat
+                "thismat_row_dec_power_readOp_gate_leakage": self.row_dec.power.readOp.gate_leakage,
+                "thismat_subarray_num_rows": self.subarray.num_rows,
+                "thismat_num_subarrays_per_mat": self.num_subarrays_per_mat,
+                "thismat_power_row_decoders_readOp_gate_leakage_scaled": (
+                    self.row_dec.power.readOp.gate_leakage * self.subarray.num_rows * self.num_subarrays_per_mat
+                ),
+
+                # Bit mux decoder gate leakage power, scaled by degree of bitline muxing
+                "thismat_bit_mux_dec_power_readOp_gate_leakage": self.bit_mux_dec.power.readOp.gate_leakage,
+                "thismat_deg_bl_muxing": self.deg_bl_muxing,
+                "thismat_power_bit_mux_decoders_readOp_gate_leakage_scaled": (
+                    self.bit_mux_dec.power.readOp.gate_leakage * self.deg_bl_muxing
+                ),
+
+                # Sense amp level 1 mux decoder gate leakage power, scaled by dp.Ndsam_lev_1
+                "thismat_sa_mux_lev_1_dec_power_readOp_gate_leakage": self.sa_mux_lev_1_dec.power.readOp.gate_leakage,
+                "thismat_dp_Ndsam_lev_1": self.dp.Ndsam_lev_1,
+                "thismat_power_sa_mux_lev_1_decoders_readOp_gate_leakage_scaled": (
+                    self.sa_mux_lev_1_dec.power.readOp.gate_leakage * self.dp.Ndsam_lev_1
+                ),
+
+                # Sense amp level 2 mux decoder gate leakage power, scaled by dp.Ndsam_lev_2
+                "thismat_sa_mux_lev_2_dec_power_readOp_gate_leakage": self.sa_mux_lev_2_dec.power.readOp.gate_leakage,
+                "thismat_dp_Ndsam_lev_2": self.dp.Ndsam_lev_2,
+                "thismat_power_sa_mux_lev_2_decoders_readOp_gate_leakage_scaled": (
+                    self.sa_mux_lev_2_dec.power.readOp.gate_leakage * self.dp.Ndsam_lev_2
+                ),
+
+                # Predecoder and mux predecoder gate leakage power
+                "thismat_r_predec_power_readOp_gate_leakage": self.r_predec.power.readOp.gate_leakage,
+                "thismat_b_mux_predec_power_readOp_gate_leakage": self.b_mux_predec.power.readOp.gate_leakage,
+                "thismat_sa_mux_lev_1_predec_power_readOp_gate_leakage": self.sa_mux_lev_1_predec.power.readOp.gate_leakage,
+                "thismat_sa_mux_lev_2_predec_power_readOp_gate_leakage": self.sa_mux_lev_2_predec.power.readOp.gate_leakage,
+
+                # Total gate leakage power for readOp, summing all components
+                "thismat_total_power_readOp_gate_leakage": (
+                    self.r_predec.power.readOp.gate_leakage +
+                    self.b_mux_predec.power.readOp.gate_leakage +
+                    self.sa_mux_lev_1_predec.power.readOp.gate_leakage +
+                    self.sa_mux_lev_2_predec.power.readOp.gate_leakage +
+                    self.power_row_decoders.readOp.gate_leakage +
+                    self.power_bit_mux_decoders.readOp.gate_leakage +
+                    self.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
+                    self.power_sa_mux_lev_2_decoders.readOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
+
         elif self.is_fa:
+            print("I'm HERE IN FA!!!!!!!!")
             self.number_output_drivers_subarray = self.num_sa_subarray
 
             self.power_bitline.readOp.leakage *= self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
@@ -1333,6 +2109,77 @@ class Mat(Component):
                 self.r_predec.power.readOp.leakage +
                 self.power_row_decoders.readOp.leakage
             )
+
+            expressions = {
+                # Number of output drivers in subarray
+                "thismat_num_sa_subarray": self.num_sa_subarray,
+                "thismat_number_output_drivers_subarray": self.num_sa_subarray,
+
+                "thismat_subarray_num_rows_6": self.subarray.num_rows,
+                "thismat_subarray_num_cols": self.subarray.num_cols,
+                "thismat_num_subarrays_per_mat":self.num_subarrays_per_mat,
+
+                # Bitline leakage power, scaled by subarray rows, columns, and number of subarrays per mat
+                "thismat_power_bitline_readOp_leakage": self.power_bitline.readOp.leakage,
+                "thismat_power_bitline_readOp_leakage_scaled": (
+                    self.power_bitline.readOp.leakage * self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
+                ),
+
+                # Bitline precharge leakage for read and search operations
+                "thismat_bl_precharge_eq_drv_power_readOp_leakage": self.bl_precharge_eq_drv.power.readOp.leakage,
+                "thismat_bl_precharge_eq_drv_power_searchOp_leakage": self.cam_bl_precharge_eq_drv.power.readOp.leakage,
+                "thismat_power_bl_precharge_eq_drv_readOp_leakage_scaled": (
+                    self.bl_precharge_eq_drv.power.readOp.leakage * self.num_subarrays_per_mat
+                ),
+                "thismat_power_bl_precharge_eq_drv_searchOp_leakage_scaled": (
+                    self.cam_bl_precharge_eq_drv.power.readOp.leakage * self.num_subarrays_per_mat
+                ),
+
+                # Sense amp leakage power, scaled by number of sense amps, subarrays, and read/write/search ports
+                "thismat_power_sa_readOp_leakage": self.power_sa.readOp.leakage,
+                "thismat_RWP_plus_ERP_plus_SCHP": self.RWP + self.ERP + self.SCHP,
+                "thismat_power_sa_readOp_leakage_scaled": (
+                    self.power_sa.readOp.leakage * self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Subarray output driver leakage power, scaled by output drivers, subarrays, and read/write/search ports
+                "thismat_power_subarray_out_drv_readOp_leakage": self.power_subarray_out_drv.readOp.leakage,
+                "thismat_subarray_out_wire_power_readOp_leakage": self.subarray_out_wire.power.readOp.leakage,
+                "thismat_power_subarray_out_drv_readOp_leakage_scaled": (
+                    (self.power_subarray_out_drv.readOp.leakage + self.subarray_out_wire.power.readOp.leakage) *
+                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Total leakage for readOp, summing all components
+                "thismat_total_power_readOp_leakage": (
+                    self.power_bitline.readOp.leakage +
+                    self.power_bl_precharge_eq_drv.readOp.leakage +
+                    self.power_bl_precharge_eq_drv.searchOp.leakage +
+                    self.power_sa.readOp.leakage +
+                    self.power_subarray_out_drv.readOp.leakage
+                ),
+
+                # Row decoder leakage power, scaled by subarray rows and number of subarrays per mat
+                "thismat_row_dec_power_readOp_leakage": self.row_dec.power.readOp.leakage,
+                "thismat_power_row_decoders_readOp_leakage_scaled": (
+                    self.row_dec.power.readOp.leakage * self.subarray.num_rows * self.num_subarrays_per_mat
+                ),
+
+                # Additional leakage components from row decoders and predecoders
+                "thismat_r_predec_power_readOp_leakage": self.r_predec.power.readOp.leakage,
+                "thismat_total_power_readOp_leakage_including_row_decoders": (
+                    self.power.readOp.leakage + self.r_predec.power.readOp.leakage + self.power_row_decoders.readOp.leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
 
             self.power_cam_all_active.searchOp.leakage = self.power_matchline.searchOp.leakage
             self.power_cam_all_active.searchOp.leakage += self.sl_precharge_eq_drv.power.readOp.leakage
@@ -1360,6 +2207,76 @@ class Mat(Component):
                 self.power_subarray_out_drv.readOp.gate_leakage
             )
 
+            expressions = {
+                # CAM all-active search operation leakage
+                "thismat_power_matchline_searchOp_leakage": self.power_matchline.searchOp.leakage,
+                "thismat_sl_precharge_eq_drv_power_readOp_leakage": self.sl_precharge_eq_drv.power.readOp.leakage,
+                "thismat_sl_data_drv_power_readOp_leakage": self.sl_data_drv.power.readOp.leakage,
+                "thismat_subarray_num_cols_fa_cam": self.subarray.num_cols_fa_cam,
+                "thismat_ml_precharge_drv_power_readOp_dynamic": self.ml_precharge_drv.power.readOp.dynamic,
+                "thismat_power_cam_all_active_searchOp_leakage_scaled": (
+                    (self.power_matchline.searchOp.leakage +
+                    self.sl_precharge_eq_drv.power.readOp.leakage +
+                    self.sl_data_drv.power.readOp.leakage * self.subarray.num_cols_fa_cam +
+                    self.ml_precharge_drv.power.readOp.dynamic) * self.num_subarrays_per_mat
+                ),
+
+                # Total readOp leakage including CAM all-active leakage
+                "thismat_total_power_readOp_leakage_including_cam_all_active": (
+                    self.power.readOp.leakage + self.power_cam_all_active.searchOp.leakage
+                ),
+
+                # Bitline gate leakage, scaled by subarray rows, columns, and number of subarrays per mat
+                "thismat_power_bitline_readOp_gate_leakage": self.power_bitline.readOp.gate_leakage,
+                "thismat_power_bitline_readOp_gate_leakage_scaled": (
+                    self.power_bitline.readOp.gate_leakage * self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
+                ),
+
+                # Bitline precharge gate leakage for read and search operations
+                "thismat_bl_precharge_eq_drv_power_readOp_gate_leakage": self.bl_precharge_eq_drv.power.readOp.gate_leakage,
+                "thismat_cam_bl_precharge_eq_drv_power_readOp_gate_leakage": self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage,
+                "thismat_power_bl_precharge_eq_drv_readOp_gate_leakage_scaled": (
+                    self.bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
+                ),
+                "thismat_power_bl_precharge_eq_drv_searchOp_gate_leakage_scaled": (
+                    self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
+                ),
+
+                # Sense amp gate leakage, scaled by number of sense amps, subarrays, and read/write/search ports
+                "thismat_power_sa_readOp_gate_leakage": self.power_sa.readOp.gate_leakage,
+                "thismat_RWP_plus_ERP_plus_SCHP": self.RWP + self.ERP + self.SCHP,
+                "thismat_power_sa_readOp_gate_leakage_scaled": (
+                    self.power_sa.readOp.gate_leakage * self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Subarray output driver gate leakage, scaled by output drivers, subarrays, and read/write/search ports
+                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
+                "thismat_number_output_drivers_subarray": self.number_output_drivers_subarray,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
+                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Total gate leakage power for readOp, summing all components
+                "thismat_total_power_readOp_gate_leakage": (
+                    self.power_bitline.readOp.gate_leakage +
+                    self.power_bl_precharge_eq_drv.readOp.gate_leakage +
+                    self.power_bl_precharge_eq_drv.searchOp.gate_leakage +
+                    self.power_sa.readOp.gate_leakage +
+                    self.power_subarray_out_drv.readOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
+
             self.power_row_decoders.readOp.gate_leakage = self.row_dec.power.readOp.gate_leakage * self.subarray.num_rows * self.num_subarrays_per_mat
             self.power.readOp.gate_leakage += (
                 self.r_predec.power.readOp.gate_leakage +
@@ -1373,6 +2290,76 @@ class Mat(Component):
             self.power_cam_all_active.searchOp.gate_leakage *= self.num_subarrays_per_mat
 
             self.power.readOp.gate_leakage += self.power_cam_all_active.searchOp.gate_leakage
+
+            expressions = {
+                # CAM all-active search operation leakage
+                "thismat_power_matchline_searchOp_leakage": self.power_matchline.searchOp.leakage,
+                "thismat_sl_precharge_eq_drv_power_readOp_leakage": self.sl_precharge_eq_drv.power.readOp.leakage,
+                "thismat_sl_data_drv_power_readOp_leakage": self.sl_data_drv.power.readOp.leakage,
+                "thismat_subarray_num_cols_fa_cam": self.subarray.num_cols_fa_cam,
+                "thismat_ml_precharge_drv_power_readOp_dynamic": self.ml_precharge_drv.power.readOp.dynamic,
+                "thismat_power_cam_all_active_searchOp_leakage_scaled": (
+                    (self.power_matchline.searchOp.leakage +
+                    self.sl_precharge_eq_drv.power.readOp.leakage +
+                    self.sl_data_drv.power.readOp.leakage * self.subarray.num_cols_fa_cam +
+                    self.ml_precharge_drv.power.readOp.dynamic) * self.num_subarrays_per_mat
+                ),
+
+                # Total readOp leakage including CAM all-active leakage
+                "thismat_total_power_readOp_leakage_including_cam_all_active": (
+                    self.power.readOp.leakage + self.power_cam_all_active.searchOp.leakage
+                ),
+
+                # Bitline gate leakage, scaled by subarray rows, columns, and number of subarrays per mat
+                "thismat_power_bitline_readOp_gate_leakage": self.power_bitline.readOp.gate_leakage,
+                "thismat_power_bitline_readOp_gate_leakage_scaled": (
+                    self.power_bitline.readOp.gate_leakage * self.subarray.num_rows * self.subarray.num_cols * self.num_subarrays_per_mat
+                ),
+
+                # Bitline precharge gate leakage for read and search operations
+                "thismat_bl_precharge_eq_drv_power_readOp_gate_leakage": self.bl_precharge_eq_drv.power.readOp.gate_leakage,
+                "thismat_cam_bl_precharge_eq_drv_power_readOp_gate_leakage": self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage,
+                "thismat_power_bl_precharge_eq_drv_readOp_gate_leakage_scaled": (
+                    self.bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
+                ),
+                "thismat_power_bl_precharge_eq_drv_searchOp_gate_leakage_scaled": (
+                    self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
+                ),
+
+                # Sense amp gate leakage, scaled by number of sense amps, subarrays, and read/write/search ports
+                "thismat_power_sa_readOp_gate_leakage": self.power_sa.readOp.gate_leakage,
+                "thismat_RWP_plus_ERP_plus_SCHP": self.RWP + self.ERP + self.SCHP,
+                "thismat_power_sa_readOp_gate_leakage_scaled": (
+                    self.power_sa.readOp.gate_leakage * self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Subarray output driver gate leakage, scaled by output drivers, subarrays, and read/write/search ports
+                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
+                "thismat_number_output_drivers_subarray": self.number_output_drivers_subarray,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
+                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Total gate leakage power for readOp, summing all components
+                "thismat_total_power_readOp_gate_leakage": (
+                    self.power_bitline.readOp.gate_leakage +
+                    self.power_bl_precharge_eq_drv.readOp.gate_leakage +
+                    self.power_bl_precharge_eq_drv.searchOp.gate_leakage +
+                    self.power_sa.readOp.gate_leakage +
+                    self.power_subarray_out_drv.readOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
 
         else:
             self.number_output_drivers_subarray = self.num_sa_subarray
@@ -1403,6 +2390,76 @@ class Mat(Component):
             self.power_cam_all_active.searchOp.leakage += self.ml_precharge_drv.power.readOp.dynamic
             self.power_cam_all_active.searchOp.leakage *= self.num_subarrays_per_mat
 
+            expressions = {
+                # Number of output drivers in subarray
+                "thismat_num_sa_subarray": self.num_sa_subarray,
+                "thismat_number_output_drivers_subarray": self.num_sa_subarray,
+
+                # Bitline precharge search operation leakage for CAM
+                "thismat_cam_bl_precharge_eq_drv_power_readOp_leakage": self.cam_bl_precharge_eq_drv.power.readOp.leakage,
+                "thismat_power_bl_precharge_eq_drv_searchOp_leakage_scaled": (
+                    self.cam_bl_precharge_eq_drv.power.readOp.leakage * self.num_subarrays_per_mat
+                ),
+
+                # Sense amp leakage power, scaled by number of sense amps, subarrays, and read/write/search ports
+                "thismat_power_sa_readOp_leakage": self.power_sa.readOp.leakage,
+                "thismat_RWP_plus_ERP_plus_SCHP": self.RWP + self.ERP + self.SCHP,
+                "thismat_power_sa_readOp_leakage_scaled": (
+                    self.power_sa.readOp.leakage * self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Subarray output driver leakage, including out wire power, scaled by output drivers and read/write/search ports
+                "thismat_power_subarray_out_drv_readOp_leakage": self.power_subarray_out_drv.readOp.leakage,
+                "thismat_subarray_out_wire_power_readOp_leakage": self.subarray_out_wire.power.readOp.leakage,
+                "thismat_power_subarray_out_drv_readOp_leakage_scaled": (
+                    (self.power_subarray_out_drv.readOp.leakage + self.subarray_out_wire.power.readOp.leakage) *
+                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Total readOp leakage including searchOp and sense amps
+                "thismat_total_power_readOp_leakage_including_searchOp_and_sa": (
+                    self.power_bl_precharge_eq_drv.searchOp.leakage +
+                    self.power_sa.readOp.leakage +
+                    self.power_subarray_out_drv.readOp.leakage
+                ),
+
+                # Row decoder leakage power, scaled by subarray rows, number of subarrays, and read/write/erase ports
+                "thismat_row_dec_power_readOp_leakage": self.row_dec.power.readOp.leakage,
+                "thismat_subarray_num_rows": self.subarray.num_rows,
+                "thismat_RWP_plus_ERP_plus_EWP": self.RWP + self.ERP + self.EWP,
+                "thismat_power_row_decoders_readOp_leakage_scaled": (
+                    self.row_dec.power.readOp.leakage * self.subarray.num_rows * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.EWP)
+                ),
+
+                # Additional leakage components from predecoders and row decoders
+                "thismat_r_predec_power_readOp_leakage": self.r_predec.power.readOp.leakage,
+                "thismat_total_power_readOp_leakage_including_row_decoders": (
+                    self.r_predec.power.readOp.leakage + self.power_row_decoders.readOp.leakage
+                ),
+
+                # CAM all-active search operation leakage components
+                "thismat_power_matchline_searchOp_leakage": self.power_matchline.searchOp.leakage,
+                "thismat_sl_precharge_eq_drv_power_readOp_leakage": self.sl_precharge_eq_drv.power.readOp.leakage,
+                "thismat_sl_data_drv_power_readOp_leakage": self.sl_data_drv.power.readOp.leakage,
+                "thismat_subarray_num_cols_fa_cam": self.subarray.num_cols_fa_cam,
+                "thismat_ml_precharge_drv_power_readOp_dynamic": self.ml_precharge_drv.power.readOp.dynamic,
+                "thismat_power_cam_all_active_searchOp_leakage_scaled": (
+                    (self.power_matchline.searchOp.leakage +
+                    self.sl_precharge_eq_drv.power.readOp.leakage +
+                    self.sl_data_drv.power.readOp.leakage * self.subarray.num_cols_fa_cam +
+                    self.ml_precharge_drv.power.readOp.dynamic) * self.num_subarrays_per_mat
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
+
             self.power.readOp.leakage += self.power_cam_all_active.searchOp.leakage
 
             self.power_bl_precharge_eq_drv.searchOp.gate_leakage = self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
@@ -1425,6 +2482,65 @@ class Mat(Component):
                 self.power_row_decoders.readOp.gate_leakage
             )
 
+            expressions = {
+                # CAM all-active search operation leakage
+                "thismat_power_cam_all_active_searchOp_leakage": self.power_cam_all_active.searchOp.leakage,
+                "thismat_total_power_readOp_leakage_including_cam_all_active": (
+                    self.power.readOp.leakage + self.power_cam_all_active.searchOp.leakage
+                ),
+
+                # Bitline precharge search operation gate leakage for CAM
+                "thismat_cam_bl_precharge_eq_drv_power_readOp_gate_leakage": self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage,
+                "thismat_power_bl_precharge_eq_drv_searchOp_gate_leakage_scaled": (
+                    self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
+                ),
+
+                # Sense amp gate leakage, scaled by number of sense amps, subarrays, and read/write/search ports
+                "thismat_power_sa_readOp_gate_leakage": self.power_sa.readOp.gate_leakage,
+                "thismat_RWP_plus_ERP_plus_SCHP": self.RWP + self.ERP + self.SCHP,
+                "thismat_power_sa_readOp_gate_leakage_scaled": (
+                    self.power_sa.readOp.gate_leakage * self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Subarray output driver gate leakage, including out wire power, scaled by output drivers and read/write/search ports
+                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
+                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                ),
+
+                # Total gate leakage for readOp, including bitline precharge, sense amp, and subarray out driver components
+                "thismat_total_power_readOp_gate_leakage_including_components": (
+                    self.power_bl_precharge_eq_drv.searchOp.gate_leakage +
+                    self.power_sa.readOp.gate_leakage +
+                    self.power_subarray_out_drv.readOp.gate_leakage
+                ),
+
+                # Row decoder gate leakage power, scaled by subarray rows, number of subarrays, and read/write/erase ports
+                "thismat_row_dec_power_readOp_gate_leakage": self.row_dec.power.readOp.gate_leakage,
+                "thismat_subarray_num_rows": self.subarray.num_rows,
+                "thismat_RWP_plus_ERP_plus_EWP": self.RWP + self.ERP + self.EWP,
+                "thismat_power_row_decoders_readOp_gate_leakage_scaled": (
+                    self.row_dec.power.readOp.gate_leakage * self.subarray.num_rows * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.EWP)
+                ),
+
+                # Additional gate leakage components from predecoders and row decoders
+                "thismat_r_predec_power_readOp_gate_leakage": self.r_predec.power.readOp.gate_leakage,
+                "thismat_total_power_readOp_gate_leakage_including_row_decoders": (
+                    self.r_predec.power.readOp.gate_leakage + self.power_row_decoders.readOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
+
             self.power_cam_all_active.searchOp.gate_leakage = self.power_matchline.searchOp.gate_leakage
             self.power_cam_all_active.searchOp.gate_leakage += self.sl_precharge_eq_drv.power.readOp.gate_leakage
             self.power_cam_all_active.searchOp.gate_leakage += self.sl_data_drv.power.readOp.gate_leakage * self.subarray.num_cols_fa_cam
@@ -1432,3 +2548,45 @@ class Mat(Component):
             self.power_cam_all_active.searchOp.gate_leakage *= self.num_subarrays_per_mat
 
             self.power.readOp.gate_leakage += self.power_cam_all_active.searchOp.gate_leakage
+            
+            expressions = {
+                # CAM all-active search operation gate leakage components
+                "thismat_power_matchline_searchOp_gate_leakage": self.power_matchline.searchOp.gate_leakage,
+                "thismat_sl_precharge_eq_drv_power_readOp_gate_leakage": self.sl_precharge_eq_drv.power.readOp.gate_leakage,
+                "thismat_sl_data_drv_power_readOp_gate_leakage": self.sl_data_drv.power.readOp.gate_leakage,
+                "thismat_subarray_num_cols_fa_cam": self.subarray.num_cols_fa_cam,
+                "thismat_ml_precharge_drv_power_readOp_dynamic": self.ml_precharge_drv.power.readOp.dynamic,
+                
+                # Scaled CAM all-active search operation gate leakage
+                "thismat_power_cam_all_active_searchOp_gate_leakage_scaled": (
+                    (self.power_matchline.searchOp.gate_leakage +
+                    self.sl_precharge_eq_drv.power.readOp.gate_leakage +
+                    self.sl_data_drv.power.readOp.gate_leakage * self.subarray.num_cols_fa_cam +
+                    self.ml_precharge_drv.power.readOp.dynamic) * self.num_subarrays_per_mat
+                ),
+
+                # Total gate leakage for readOp, including CAM all-active search operation
+                "thismat_total_power_readOp_gate_leakage_including_cam_all_active": (
+                    self.power.readOp.gate_leakage + self.power_cam_all_active.searchOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression and subexpression to a separate file, ensuring unique file names
+            for expr_name, value in expressions.items():
+                unique_file_path = get_unique_filepath(output_dir, expr_name)
+                
+                # Write the value of the expression to the file
+                with open(unique_file_path, "w") as file:
+                    file.write(str(value))
+
+
+def get_unique_filepath(directory, base_filename):
+    import os
+    """Generate a unique file path by adding a counter if the file already exists."""
+    file_path = os.path.join(directory, f"{base_filename}.txt")
+    counter = 1
+    # Check if file exists and increment counter if it does
+    while os.path.exists(file_path):
+        file_path = os.path.join(directory, f"{base_filename}_{counter}.txt")
+        counter += 1
+    return file_path

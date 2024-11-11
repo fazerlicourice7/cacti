@@ -183,6 +183,12 @@ class Bank(Component):
         return self.mat.compute_delays(inrisetime)
 
     def compute_power_energy(self):
+        # Write files to the cacti/sympy directory
+        # Define the output directory
+        import os
+        output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+        os.makedirs(output_dir, exist_ok=True)
+
         self.mat.compute_power_energy()
 
         if not (self.dp.fully_assoc or self.dp.pure_cam):
@@ -196,6 +202,35 @@ class Bank(Component):
             self.array_leakage += self.mat.array_leakage * self.dp.num_mats
             self.wl_leakage += self.mat.wl_leakage * self.dp.num_mats
             self.cl_leakage += self.mat.cl_leakage * self.dp.num_mats
+            expressions = {
+            # Direct expressions without "_self" prefix for self attributes
+                "thisbank_mat_power_readOp_dynamic_mul_num_act_mats_hor_dir": self.mat.power.readOp.dynamic * self.dp.num_act_mats_hor_dir,
+                "thisbank_mat_power_readOp_leakage_mul_num_mats": self.mat.power.readOp.leakage * self.dp.num_mats,
+                "thisbank_mat_power_readOp_gate_leakage_mul_num_mats": self.mat.power.gate_leakage * self.dp.num_mats,
+                
+                "thisbank_htree_in_add_power_readOp_dynamic": self.htree_in_add.power.readOp.dynamic,
+                "thisbank_htree_out_data_power_readOp_dynamic": self.htree_out_data.power.readOp.dynamic,
+
+                # Leakage values without "_self" prefix
+                "thisbank_array_leakage": self.array_leakage,
+                "thisbank_mat_array_leakage_mul_num_mats": self.mat.array_leakage * self.dp.num_mats,
+                "thisbank_wl_leakage": self.wl_leakage,
+                "thisbank_mat_wl_leakage_mul_num_mats": self.mat.wl_leakage * self.dp.num_mats,
+                "thisbank_cl_leakage": self.cl_leakage,
+                "thisbank_mat_cl_leakage_mul_num_mats": self.mat.cl_leakage * self.dp.num_mats,
+            }
+
+            # Define the output directory
+            output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
         else:
             self.power.readOp.dynamic += self.mat.power.readOp.dynamic
             self.power.readOp.leakage += self.mat.power.readOp.leakage * self.dp.num_mats
@@ -227,3 +262,104 @@ class Bank(Component):
             self.power.readOp.gate_leakage += self.htree_out_data.power.readOp.gate_leakage
             self.power.readOp.gate_leakage += self.htree_in_search.power.readOp.gate_leakage
             self.power.readOp.gate_leakage += self.htree_out_search.power.readOp.gate_leakage
+
+            expressions = {
+                # ReadOp Dynamic and Leakage terms
+                "thisbank_mat_power_readOp_dynamic": self.mat.power.readOp.dynamic,
+                "thisbank_mat_power_readOp_leakage_mul_num_mats": self.mat.power.readOp.leakage * self.dp.num_mats,
+                "thisbank_num_mats": self.dp.num_mats,
+                "thisbank_mat_power_readOp_gate_leakage_mul_num_mats": self.mat.power.readOp.gate_leakage * self.dp.num_mats,
+
+                # SearchOp Dynamic terms
+                "thisbank_mat_power_searchOp_dynamic_mul_num_mats": self.mat.power.searchOp.dynamic * self.dp.num_mats,
+                "thisbank_mat_power_bl_precharge_eq_drv_searchOp_dynamic": self.mat.power_bl_precharge_eq_drv.searchOp.dynamic,
+                "thisbank_mat_power_sa_searchOp_dynamic": self.mat.power_sa.searchOp.dynamic,
+                "thisbank_mat_power_bitline_searchOp_dynamic": self.mat.power_bitline.searchOp.dynamic,
+                "thisbank_mat_power_subarray_out_drv_searchOp_dynamic": self.mat.power_subarray_out_drv.searchOp.dynamic,
+                "thisbank_mat_ml_to_ram_wl_drv_power_readOp_dynamic": self.mat.ml_to_ram_wl_drv.power.readOp.dynamic,
+
+                # Additional Dynamic terms for htree
+                "thisbank_htree_in_add_power_readOp_dynamic": self.htree_in_add.power.readOp.dynamic,
+                "thisbank_htree_out_data_power_readOp_dynamic": self.htree_out_data.power.readOp.dynamic,
+                "thisbank_htree_in_search_power_searchOp_dynamic": self.htree_in_search.power.searchOp.dynamic,
+                "thisbank_htree_out_search_power_searchOp_dynamic": self.htree_out_search.power.searchOp.dynamic,
+
+                # ReadOp Leakage terms for htree
+                "thisbank_htree_in_add_power_readOp_leakage": self.htree_in_add.power.readOp.leakage,
+                "thisbank_htree_in_data_power_readOp_leakage": self.htree_in_data.power.readOp.leakage,
+                "thisbank_htree_out_data_power_readOp_leakage": self.htree_out_data.power.readOp.leakage,
+                "thisbank_htree_in_search_power_readOp_leakage": self.htree_in_search.power.readOp.leakage,
+                "thisbank_htree_out_search_power_readOp_leakage": self.htree_out_search.power.readOp.leakage,
+
+                # Gate Leakage terms for htree
+                "thisbank_htree_in_add_power_readOp_gate_leakage": self.htree_in_add.power.readOp.gate_leakage,
+                "thisbank_htree_in_data_power_readOp_gate_leakage": self.htree_in_data.power.readOp.gate_leakage,
+                "thisbank_htree_out_data_power_readOp_gate_leakage": self.htree_out_data.power.readOp.gate_leakage,
+                "thisbank_htree_in_search_power_readOp_gate_leakage": self.htree_in_search.power.readOp.gate_leakage,
+                "thisbank_htree_out_search_power_readOp_gate_leakage": self.htree_out_search.power.readOp.gate_leakage,
+
+                "thisbank_self_power_readOp_gate_leakage": self.power.readOp.gate_leakage,
+            }
+
+            # Define the output directory
+            output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+        
+        
+
+        # # Define each expression to be evaluated
+        # expressions = {
+        #     "thisbank_self_power_readOp_dynamic": self.power.readOp.dynamic,
+        #     "thisbank_self_mat_power_readOp_dynamic_mul_num_act_mats_hor_dir": self.mat.power.readOp.dynamic * self.dp.num_act_mats_hor_dir,
+        #     "thisbank_self_power_readOp_leakage": self.power.readOp.leakage,
+        #     "thisbank_self_mat_power_readOp_leakage_mul_num_mats": self.mat.power.readOp.leakage * self.dp.num_mats,
+        #     "thisbank_self_dp_num_mats": self.dp.num_mats,
+        #     "thisbank_self_power_readOp_gate_leakage": self.power.readOp.gate_leakage,
+        #     "thisbank_self_mat_power_readOp_gate_leakage_mul_num_mats": self.mat.power.readOp.gate_leakage * self.dp.num_mats,
+        #     "thisbank_self_htree_in_add_power_readOp_dynamic": self.htree_in_add.power.readOp.dynamic,
+        #     "thisbank_self_htree_out_data_power_readOp_dynamic": self.htree_out_data.power.readOp.dynamic,
+        #     "thisbank_self_array_leakage": self.array_leakage,
+        #     "thisbank_self_mat_array_leakage_mul_num_mats": self.mat.array_leakage * self.dp.num_mats,
+        #     "thisbank_self_wl_leakage": self.wl_leakage,
+        #     "thisbank_self_mat_wl_leakage_mul_num_mats": self.mat.wl_leakage * self.dp.num_mats,
+        #     "thisbank_self_cl_leakage": self.cl_leakage,
+        #     "thisbank_self_mat_cl_leakage_mul_num_mats": self.mat.cl_leakage * self.dp.num_mats,
+        #     "thisbank_self_power_searchOp_dynamic": self.power.searchOp.dynamic,
+        #     "thisbank_self_mat_power_searchOp_dynamic_mul_num_mats": self.mat.power.searchOp.dynamic * self.dp.num_mats,
+        #     "thisbank_self_mat_power_bl_precharge_eq_drv_searchOp_dynamic": self.mat.power_bl_precharge_eq_drv.searchOp.dynamic,
+        #     "thisbank_self_mat_power_sa_searchOp_dynamic": self.mat.power_sa.searchOp.dynamic,
+        #     "thisbank_self_mat_power_bitline_searchOp_dynamic": self.mat.power_bitline.searchOp.dynamic,
+        #     "thisbank_self_mat_power_subarray_out_drv_searchOp_dynamic": self.mat.power_subarray_out_drv.searchOp.dynamic,
+        #     "thisbank_self_mat_ml_to_ram_wl_drv_power_readOp_dynamic": self.mat.ml_to_ram_wl_drv.power.readOp.dynamic,
+        #     "thisbank_self_htree_in_search_power_searchOp_dynamic": self.htree_in_search.power.searchOp.dynamic,
+        #     "thisbank_self_htree_out_search_power_searchOp_dynamic": self.htree_out_search.power.searchOp.dynamic,
+        #     "thisbank_self_htree_in_data_power_readOp_leakage": self.htree_in_data.power.readOp.leakage,
+        #     "thisbank_self_htree_out_data_power_readOp_leakage": self.htree_out_data.power.readOp.leakage,
+        #     "thisbank_self_htree_in_search_power_readOp_leakage": self.htree_in_search.power.readOp.leakage,
+        #     "thisbank_self_htree_out_search_power_readOp_leakage": self.htree_out_search.power.readOp.leakage,
+        #     "thisbank_self_htree_in_add_power_readOp_gate_leakage": self.htree_in_add.power.readOp.gate_leakage,
+        #     "thisbank_self_htree_in_data_power_readOp_gate_leakage": self.htree_in_data.power.readOp.gate_leakage,
+        #     "thisbank_self_htree_out_data_power_readOp_gate_leakage": self.htree_out_data.power.readOp.gate_leakage,
+        #     "thisbank_self_htree_in_search_power_readOp_gate_leakage": self.htree_in_search.power.readOp.gate_leakage,
+        #     "thisbank_self_htree_out_search_power_readOp_gate_leakage": self.htree_out_search.power.readOp.gate_leakage,
+        # }
+
+        # # Write the values of each expression to a separate file
+        # for expr_name, value in expressions.items():
+        #     file_path = os.path.join(output_dir, f"{expr_name}.txt")
+            
+        #     # Write the value of the expression to the file
+        #     with open(file_path, "w") as file:
+        #         file.write(str(value))
+
+
+# DO one run, save expressions 32 -d 32nm
+# DO run where does first 22 then 32, then save expresssions 1

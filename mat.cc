@@ -34,6 +34,12 @@
 #include "mat.h"
 #include <assert.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 Mat::Mat(const DynamicParameter & dyn_p)
  :dp(dyn_p),
@@ -538,10 +544,28 @@ Mat::~Mat()
   }
 }
 
+// Function to create the directory if it doesn't exist
+void create_directory(const char *path) {
+    mkdir(path, 0777);
+}
 
+// Function to append a value to the output file
+void append_value_to_file(const char *filename, const char *label, double value) {
+    FILE *file = fopen(filename, "a"); // Append mode
+    if (file != NULL) {
+        fprintf(file, "%s: %f\n", label, value);
+        fclose(file);
+    } else {
+        perror("Error opening file");
+    }
+}
 
 double Mat::compute_delays(double inrisetime)
 {
+  const char *output_dir = "debug_sympy_validate";
+	create_directory(output_dir);
+	const char *output_file = "debug_sympy_validate/debug_sympy_validate.txt";
+
 	int k;
 	double rd, C_intrinsic, C_ld, tf, R_bl_precharge,r_b_metal, R_bl, C_bl;
 	double outrisetime_search, outrisetime, row_dec_outrisetime;
@@ -570,11 +594,17 @@ double Mat::compute_delays(double inrisetime)
 			         (R_bl_precharge * C_bl + R_bl * C_bl / 2);
 
 
+      append_value_to_file(output_file, "1_outrise_1", outrisetime_search);
 			outrisetime_search = compute_bitline_delay(outrisetime_search);
+      append_value_to_file(output_file, "1_outrise_2", outrisetime_search);
 			outrisetime_search = compute_sa_delay(outrisetime_search);
+      append_value_to_file(output_file, "1_outrise_3", outrisetime_search);
 		}
+      append_value_to_file(output_file, "1_outrise_B4_SAOD", outrisetime_search);
 			outrisetime_search = compute_subarray_out_drv(outrisetime_search);
+      append_value_to_file(output_file, "1_outrise_5", outrisetime_search);
 			subarray_out_wire->set_in_rise_time(outrisetime_search);
+      append_value_to_file(output_file, "1_outrise_6", outrisetime_search);
 			outrisetime_search = subarray_out_wire->signal_rise_time();
 			delay_subarray_out_drv_htree = delay_subarray_out_drv + subarray_out_wire->delay;
 
@@ -650,10 +680,15 @@ double Mat::compute_delays(double inrisetime)
 	  row_dec_outrisetime = inrisetime;
   }
 
+  append_value_to_file(output_file, "2_outrise_1", row_dec_outrisetime);
   outrisetime = compute_bitline_delay(row_dec_outrisetime);
+  append_value_to_file(output_file, "2_outrise_2", outrisetime);
   outrisetime = compute_sa_delay(outrisetime);
+  append_value_to_file(output_file, "2_outrise_3_B4_SOAD", outrisetime);
   outrisetime = compute_subarray_out_drv(outrisetime);
+  append_value_to_file(output_file, "2_outrise_4", outrisetime);
   subarray_out_wire->set_in_rise_time(outrisetime);
+  append_value_to_file(output_file, "2_outrise_5", outrisetime);
   outrisetime = subarray_out_wire->signal_rise_time();
 
   delay_subarray_out_drv_htree = delay_subarray_out_drv + subarray_out_wire->delay;
@@ -669,7 +704,6 @@ double Mat::compute_delays(double inrisetime)
     }
   return outrisetime;
 }
-
 
 
 double Mat::compute_bit_mux_sa_precharge_sa_mux_wr_drv_wr_mux_h()
@@ -1327,8 +1361,14 @@ double Mat::compute_sa_delay(double inrisetime)
 
 double Mat::compute_subarray_out_drv(double inrisetime)
 {
+  const char *output_dir = "debug_sympy_validate";
+	create_directory(output_dir);
+	const char *output_file = "debug_sympy_validate/debug_sympy_validate.txt";
+  append_value_to_file(output_file, "SUBARRAY OUT VALLLLUUUEEEE", inrisetime);
+
   double C_ld, rd, tf, this_delay;
   double p_to_n_sz_r = pmos_to_nmos_sz_ratio(is_dram);
+
 
   // delay of signal through pass-transistor of first level of sense-amp mux to input of inverter-buffer.
   rd = tr_R_on(g_tp.w_nmos_sa_mux, NCH, 1, is_dram);
@@ -1487,6 +1527,12 @@ void Mat::compute_power_energy()
     // add energy consumed in predecoder drivers. This unit is shared by all subarrays in a mat.
 	// FIXME
 	//CACTI3DD
+
+  // Define directory
+	const char *output_dir = "debug_sympy_validate";
+	create_directory(output_dir);
+	const char *output_file = "debug_sympy_validate/debug_sympy_validate.txt";
+
 	if (g_ip->is_3d_mem)
 	{
 	    if (g_ip->print_detail_debug)
@@ -1499,6 +1545,19 @@ void Mat::compute_power_energy()
 		  power_bitline.readOp.dynamic  *= subarray.num_cols;
 
 		  power_subarray_out_drv.readOp.dynamic = power_subarray_out_drv.readOp.dynamic * g_ip->io_width * g_ip->burst_depth;//* subarray.num_cols;
+
+      append_value_to_file(output_file, "thismat_bl_precharge_eq_drv_power_readOp_dynamic", bl_precharge_eq_drv->power.readOp.dynamic);
+      append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_dynamic", power_bl_precharge_eq_drv.readOp.dynamic);
+
+      append_value_to_file(output_file, "thismat_subarray_num_cols", subarray.num_cols);
+      append_value_to_file(output_file, "thismat_power_sa_readOp_dynamic_scaled", power_sa.readOp.dynamic);
+
+      append_value_to_file(output_file, "thismat_power_bitline_readOp_dynamic_scaled", power_bitline.readOp.dynamic);
+
+      append_value_to_file(output_file, "thismat_g_ip_io_width", g_ip->io_width);
+      append_value_to_file(output_file, "thismat_g_ip_burst_depth", g_ip->burst_depth);
+      append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic_scaled", power_subarray_out_drv.readOp.dynamic);
+
 
 		  if (g_ip->print_detail_debug)
 		  {
@@ -1513,6 +1572,11 @@ void Mat::compute_power_energy()
 		                          power_sa.readOp.dynamic +
 		                          power_bitline.readOp.dynamic +
 		                          power_subarray_out_drv.readOp.dynamic;
+      append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_dynamic", power_bl_precharge_eq_drv.readOp.dynamic);
+      append_value_to_file(output_file, "thismat_power_sa_readOp_dynamic_scaled", power_sa.readOp.dynamic);
+      append_value_to_file(output_file, "thismat_power_bitline_readOp_dynamic_scaled", power_bitline.readOp.dynamic);
+      append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic_scaled", power_subarray_out_drv.readOp.dynamic);
+      append_value_to_file(output_file, "thismat_total_power_readOp_dynamic", power.readOp.dynamic);
 	}
 	else
 	{ //is_3d_mem
@@ -1523,13 +1587,28 @@ void Mat::compute_power_energy()
 
   // add energy consumed in decoders
   power_row_decoders.readOp.dynamic        = row_dec->power.readOp.dynamic;
-  if (!(is_fa||pure_cam))
-    power_row_decoders.readOp.dynamic        *= num_subarrays_per_mat;
+  append_value_to_file(output_file, "thismat_r_predec_power_readOp_dynamic", r_predec->power.readOp.dynamic);
+  append_value_to_file(output_file, "thismat_b_mux_predec_power_readOp_dynamic", b_mux_predec->power.readOp.dynamic);
+  append_value_to_file(output_file, "thismat_sa_mux_lev_1_predec_power_readOp_dynamic", sa_mux_lev_1_predec->power.readOp.dynamic);
+  append_value_to_file(output_file, "thismat_sa_mux_lev_2_predec_power_readOp_dynamic", sa_mux_lev_2_predec->power.readOp.dynamic);
+  append_value_to_file(output_file, "thismat_total_power_readOp_dynamic", power.readOp.dynamic);
 
+  append_value_to_file(output_file, "thismat_row_dec_power_readOp_dynamic", row_dec->power.readOp.dynamic);
+  append_value_to_file(output_file, "thismat_power_row_decoders_readOp_dynamic", power_row_decoders.readOp.dynamic);
+
+
+  if (!(is_fa||pure_cam)) {
+    power_row_decoders.readOp.dynamic        *= num_subarrays_per_mat;
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_dynamic_original", power_row_decoders.readOp.dynamic);
+    append_value_to_file(output_file, "WOAAHH I'm IN !(is_fa||pure_cam)", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_1_weird_1", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_dynamic_scaled", power_row_decoders.readOp.dynamic);
+  }
   // add energy consumed in bitline prechagers, SAs, and bitlines
-  if (!(is_fa||pure_cam))
+  if (!(is_fa||pure_cam)) 
   {
 	  // add energy consumed in bitline prechagers
+    append_value_to_file(output_file, "WOAAHH I'm IN 22222 !(is_fa||pure_cam)", num_subarrays_per_mat);
 	  power_bl_precharge_eq_drv.readOp.dynamic = bl_precharge_eq_drv->power.readOp.dynamic;
 	  power_bl_precharge_eq_drv.readOp.dynamic *= num_subarrays_per_mat;
 
@@ -1556,6 +1635,40 @@ void Mat::compute_power_energy()
 	                          sa_mux_lev_1_dec->power.readOp.dynamic +
 	                          sa_mux_lev_2_dec->power.readOp.dynamic +
 	                          power_comparator.readOp.dynamic;
+
+    // Energy consumed in bitline prechargers
+    append_value_to_file(output_file, "thismat_bl_precharge_eq_drv_power_readOp_dynamic_weird_2", bl_precharge_eq_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_2", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_dynamic_scaled", power_bl_precharge_eq_drv.readOp.dynamic);
+
+    // Sense amps energy
+    append_value_to_file(output_file, "thismat_subarray_num_cols", subarray.num_cols);
+    append_value_to_file(output_file, "thismat_deg_bl_muxing", deg_bl_muxing);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_dynamic_scaled", power_sa.readOp.dynamic);
+
+    // Energy consumed in bitlines
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_dynamic_scaled", power_bitline.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bitline_writeOp_dynamic_scaled", power_bitline.writeOp.dynamic);
+
+    // Subarray output energy
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic", power_subarray_out_drv.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_dynamic", subarray_out_wire->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_num_do_b_mat", num_do_b_mat);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic_scaled", power_subarray_out_drv.readOp.dynamic);
+
+    // Cumulative power.readOp.dynamic after adding precharge, sense amp, bitline, and subarray output energy
+    append_value_to_file(output_file, "thismat_total_power_readOp_dynamic_first_sum", power.readOp.dynamic);
+
+    // Row decoders and additional components
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_dynamic", power_row_decoders.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_bit_mux_dec_power_readOp_dynamic", bit_mux_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_1_dec_power_readOp_dynamic", sa_mux_lev_1_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_2_dec_power_readOp_dynamic", sa_mux_lev_2_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_comparator_readOp_dynamic", power_comparator.readOp.dynamic);
+
+    // Final cumulative power.readOp.dynamic including row decoders, mux, and comparator energy
+    append_value_to_file(output_file, "thismat_total_power_readOp_dynamic_final", power.readOp.dynamic);
   }
 
   else if (is_fa)
@@ -1585,6 +1698,35 @@ void Mat::compute_power_energy()
 	  power_subarray_out_drv.readOp.dynamic =
 		  (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_do_b_mat;
 
+    // Energy in bitline prechargers for readOp and searchOp
+    append_value_to_file(output_file, "thismat_bl_precharge_eq_drv_power_readOp_dynamic", bl_precharge_eq_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_cam_bl_precharge_eq_drv_power_readOp_dynamic", cam_bl_precharge_eq_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_dynamic_combined", power_bl_precharge_eq_drv.readOp.dynamic);
+
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_searchOp_dynamic", power_bl_precharge_eq_drv.searchOp.dynamic);
+
+    // Sense amps energy
+    append_value_to_file(output_file, "thismat_subarray_num_cols_fa_cam", subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_subarray_num_cols_fa_ram", subarray.num_cols_fa_ram);
+    append_value_to_file(output_file, "thismat_deg_bl_muxing", deg_bl_muxing);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_num_sa_subarray_search", num_sa_subarray_search);
+    append_value_to_file(output_file, "thismat_power_sa_searchOp_dynamic_scaled", power_sa.searchOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_dynamic_scaled", power_sa.readOp.dynamic);
+
+    // Energy consumed in bitlines for readOp, writeOp, and searchOp
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_dynamic_scaled", power_bitline.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bitline_writeOp_dynamic_scaled", power_bitline.writeOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bitline_searchOp_dynamic_scaled", power_bitline.searchOp.dynamic);
+
+    // Subarray output energy for readOp and searchOp
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic", power_subarray_out_drv.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_dynamic", subarray_out_wire->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_num_do_b_mat", num_do_b_mat);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic_scaled", power_subarray_out_drv.readOp.dynamic);
+
+    append_value_to_file(output_file, "thismat_num_so_b_mat", num_so_b_mat);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_searchOp_dynamic_scaled", power_subarray_out_drv.searchOp.dynamic);
 
 	  power.readOp.dynamic += power_bl_precharge_eq_drv.readOp.dynamic +
 	                          power_sa.readOp.dynamic +
@@ -1596,6 +1738,25 @@ void Mat::compute_power_energy()
 	                          sa_mux_lev_1_dec->power.readOp.dynamic +
 	                          sa_mux_lev_2_dec->power.readOp.dynamic +
 	                          power_comparator.readOp.dynamic;
+
+    // Add individual components of power.readOp.dynamic
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_dynamic", power_bl_precharge_eq_drv.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_dynamic", power_sa.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_dynamic", power_bitline.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic", power_subarray_out_drv.readOp.dynamic);
+
+    // Cumulative sum after adding precharge, sense amp, bitline, and subarray output energy
+    append_value_to_file(output_file, "thismat_partial_power_readOp_dynamic", power.readOp.dynamic);
+
+    // Add additional components for row decoders, mux, and comparator
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_dynamic", power_row_decoders.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_bit_mux_dec_power_readOp_dynamic", bit_mux_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_1_dec_power_readOp_dynamic", sa_mux_lev_1_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_2_dec_power_readOp_dynamic", sa_mux_lev_2_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_comparator_readOp_dynamic", power_comparator.readOp.dynamic);
+
+    // Final cumulative sum for power.readOp.dynamic including all components
+    append_value_to_file(output_file, "thismat_total_power_readOp_dynamic", power.readOp.dynamic);
 
 	  //add energy consumed inside cam
 	  power_matchline.searchOp.dynamic *= num_subarrays_per_mat;
@@ -1614,6 +1775,29 @@ void Mat::compute_power_energy()
 	  power_cam_all_active.searchOp.dynamic +=power_matchline_precharge.searchOp.dynamic;
 
 	  power.searchOp.dynamic += power_cam_all_active.searchOp.dynamic;
+
+    // Matchline and searchline dynamic power
+    append_value_to_file(output_file, "thismat_power_matchline_searchOp_dynamic_scaled", power_matchline.searchOp.dynamic);
+
+    append_value_to_file(output_file, "thismat_sl_precharge_eq_drv_power_readOp_dynamic", sl_precharge_eq_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_searchline_precharge_searchOp_dynamic_scaled", power_searchline_precharge.searchOp.dynamic);
+
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_dynamic", sl_data_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_subarray_num_cols_fa_cam", subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_power_searchline_searchOp_dynamic_scaled", power_searchline.searchOp.dynamic);
+
+    append_value_to_file(output_file, "thismat_ml_precharge_drv_power_readOp_dynamic", ml_precharge_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_matchline_precharge_searchOp_dynamic_scaled", power_matchline_precharge.searchOp.dynamic);
+
+    append_value_to_file(output_file, "thismat_ml_to_ram_wl_drv_power_readOp_dynamic", ml_to_ram_wl_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_ml_to_ram_wl_drv_searchOp_dynamic", power_ml_to_ram_wl_drv.searchOp.dynamic);
+
+    // Cumulative CAM all-active dynamic power
+    append_value_to_file(output_file, "thismat_power_cam_all_active_searchOp_dynamic", power_cam_all_active.searchOp.dynamic);
+
+    // Final cumulative searchOp dynamic power including CAM all-active components
+    append_value_to_file(output_file, "thismat_total_power_searchOp_dynamic", power.searchOp.dynamic);
+
 	  //power.searchOp.dynamic += ml_to_ram_wl_drv->power.readOp.dynamic;
 
   }
@@ -1650,6 +1834,43 @@ void Mat::compute_power_energy()
 	                          sa_mux_lev_2_dec->power.readOp.dynamic +
 	                          power_comparator.readOp.dynamic;
 
+    // Bitline prechargers energy
+    append_value_to_file(output_file, "thismat_cam_bl_precharge_eq_drv_power_readOp_dynamic", cam_bl_precharge_eq_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_dynamic", power_bl_precharge_eq_drv.readOp.dynamic);
+
+    // Sense amps energy
+    append_value_to_file(output_file, "thismat_subarray_num_cols_fa_cam", subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_deg_bl_muxing", deg_bl_muxing);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_dynamic_scaled", power_sa.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_sa_searchOp_dynamic", power_sa.searchOp.dynamic);
+
+    // Bitline energy
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_dynamic_scaled", power_bitline.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bitline_searchOp_dynamic", power_bitline.searchOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_bitline_writeOp_dynamic_scaled", power_bitline.writeOp.dynamic);
+
+    // Subarray output energy for readOp and searchOp
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic", power_subarray_out_drv.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_dynamic", subarray_out_wire->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_num_do_b_mat", num_do_b_mat);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_dynamic_scaled", power_subarray_out_drv.readOp.dynamic);
+
+    append_value_to_file(output_file, "thismat_num_so_b_mat", num_so_b_mat);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_searchOp_dynamic_scaled", power_subarray_out_drv.searchOp.dynamic);
+
+    // First cumulative sum for power.readOp.dynamic
+    append_value_to_file(output_file, "thismat_partial_power_readOp_dynamic", power.readOp.dynamic);
+
+    // Row decoders, mux, and comparator energy
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_dynamic", power_row_decoders.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_bit_mux_dec_power_readOp_dynamic", bit_mux_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_1_dec_power_readOp_dynamic", sa_mux_lev_1_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_2_dec_power_readOp_dynamic", sa_mux_lev_2_dec->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_comparator_readOp_dynamic", power_comparator.readOp.dynamic);
+
+    // Final cumulative value for power.readOp.dynamic
+    append_value_to_file(output_file, "thismat_total_power_readOp_dynamic", power.readOp.dynamic);
 
 	  ////add energy consumed inside cam
 	  power_matchline.searchOp.dynamic *= num_subarrays_per_mat;
@@ -1670,6 +1891,31 @@ void Mat::compute_power_energy()
 	  power.searchOp.dynamic += power_cam_all_active.searchOp.dynamic;
 	  //power.searchOp.dynamic += ml_to_ram_wl_drv->power.readOp.dynamic;
 
+    // Matchline dynamic power
+    append_value_to_file(output_file, "thismat_power_matchline_searchOp_dynamic_scaled", power_matchline.searchOp.dynamic);
+
+    // Searchline precharge dynamic power
+    append_value_to_file(output_file, "thismat_sl_precharge_eq_drv_power_readOp_dynamic", sl_precharge_eq_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_searchline_precharge_searchOp_dynamic_scaled", power_searchline_precharge.searchOp.dynamic);
+
+    // Searchline dynamic power
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_dynamic", sl_data_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_subarray_num_cols_fa_cam", subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_power_searchline_searchOp_dynamic_scaled", power_searchline.searchOp.dynamic);
+
+    // Matchline precharge dynamic power
+    append_value_to_file(output_file, "thismat_ml_precharge_drv_power_readOp_dynamic", ml_precharge_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_matchline_precharge_searchOp_dynamic_scaled", power_matchline_precharge.searchOp.dynamic);
+
+    // ML to RAM WL driver dynamic power
+    append_value_to_file(output_file, "thismat_ml_to_ram_wl_drv_power_readOp_dynamic", ml_to_ram_wl_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_ml_to_ram_wl_drv_searchOp_dynamic", power_ml_to_ram_wl_drv.searchOp.dynamic);
+
+    // CAM all-active dynamic power
+    append_value_to_file(output_file, "thismat_power_cam_all_active_searchOp_dynamic", power_cam_all_active.searchOp.dynamic);
+
+    // Final cumulative searchOp dynamic power including CAM all-active components
+    append_value_to_file(output_file, "thismat_total_power_searchOp_dynamic", power.searchOp.dynamic);
   }
 
 	}//CACTI3DD
@@ -1707,7 +1953,42 @@ void Mat::compute_power_energy()
 		power_subarray_out_drv.readOp.leakage +
 		power_comparator.readOp.leakage;
 
+    // Number of output drivers in subarray
+    append_value_to_file(output_file, "thismat_number_output_drivers_subarray_weird_3", number_output_drivers_subarray);
 
+    // Bitline leakage power
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_leakage_scaled", power_bitline.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_1", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_subarray_num_cols", subarray.num_cols);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_3", num_subarrays_per_mat);
+
+    // Bitline precharge leakage power
+    append_value_to_file(output_file, "thismat_bl_precharge_eq_drv_power_readOp_leakage", bl_precharge_eq_drv->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_leakage_scaled", power_bl_precharge_eq_drv.readOp.leakage);
+
+    // Sense amps leakage power
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_leakage_scaled", power_sa.readOp.leakage);
+
+    // Subarray output driver leakage power
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_leakage", power_subarray_out_drv.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_leakage", subarray_out_wire->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_leakage_scaled", power_subarray_out_drv.readOp.leakage);
+
+    // Cumulative readOp leakage for power
+    append_value_to_file(output_file, "thismat_total_power_readOp_leakage_first_sum", power.readOp.leakage);
+
+    // Comparator leakage power
+    append_value_to_file(output_file, "thismat_power_comparator_readOp_leakage_scaled", power_comparator.readOp.leakage);
+
+    // Final cumulative readOp leakage for power including comparator
+    append_value_to_file(output_file, "thismat_total_power_readOp_leakage", power.readOp.leakage);
+
+    // Array leakage
+    append_value_to_file(output_file, "thismat_array_leakage", array_leakage);
+
+    // Column leakage (cl_leakage)
+    append_value_to_file(output_file, "thismat_cl_leakage", cl_leakage);
 
     //Decoder blocks
     power_row_decoders.readOp.leakage = row_dec->power.readOp.leakage * subarray.num_rows * num_subarrays_per_mat;
@@ -1715,7 +1996,29 @@ void Mat::compute_power_energy()
     power_sa_mux_lev_1_decoders.readOp.leakage = sa_mux_lev_1_dec->power.readOp.leakage * dp.Ndsam_lev_1;
     power_sa_mux_lev_2_decoders.readOp.leakage = sa_mux_lev_2_dec->power.readOp.leakage * dp.Ndsam_lev_2;
 
+    // Row decoders leakage power
+    append_value_to_file(output_file, "thismat_row_dec_power_readOp_leakage", row_dec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_2", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_4", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_leakage_scaled", power_row_decoders.readOp.leakage);
+
+    // Bit mux decoders leakage power
+    append_value_to_file(output_file, "thismat_bit_mux_dec_power_readOp_leakage", bit_mux_dec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_deg_bl_muxing", deg_bl_muxing);
+    append_value_to_file(output_file, "thismat_power_bit_mux_decoders_readOp_leakage_scaled", power_bit_mux_decoders.readOp.leakage);
+
+    // Sense amp mux level 1 decoders leakage power
+    append_value_to_file(output_file, "thismat_sa_mux_lev_1_dec_power_readOp_leakage", sa_mux_lev_1_dec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_dp_Ndsam_lev_1", dp.Ndsam_lev_1);
+    append_value_to_file(output_file, "thismat_power_sa_mux_lev_1_decoders_readOp_leakage_scaled", power_sa_mux_lev_1_decoders.readOp.leakage);
+
+    // Sense amp mux level 2 decoders leakage power
+    append_value_to_file(output_file, "thismat_sa_mux_lev_2_dec_power_readOp_leakage", sa_mux_lev_2_dec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_dp_Ndsam_lev_2", dp.Ndsam_lev_2);
+    append_value_to_file(output_file, "thismat_power_sa_mux_lev_2_decoders_readOp_leakage_scaled", power_sa_mux_lev_2_decoders.readOp.leakage);
+
     if (!g_ip->wl_power_gated)
+    {
     	power.readOp.leakage += r_predec->power.readOp.leakage +
     	b_mux_predec->power.readOp.leakage +
     	sa_mux_lev_1_predec->power.readOp.leakage +
@@ -1724,7 +2027,23 @@ void Mat::compute_power_energy()
     	power_bit_mux_decoders.readOp.leakage +
     	power_sa_mux_lev_1_decoders.readOp.leakage +
     	power_sa_mux_lev_2_decoders.readOp.leakage;
-    else
+
+      // Predecoder leakage power components
+      append_value_to_file(output_file, "thismat_r_predec_power_readOp_leakage", r_predec->power.readOp.leakage);
+      append_value_to_file(output_file, "thismat_b_mux_predec_power_readOp_leakage", b_mux_predec->power.readOp.leakage);
+      append_value_to_file(output_file, "thismat_sa_mux_lev_1_predec_power_readOp_leakage", sa_mux_lev_1_predec->power.readOp.leakage);
+      append_value_to_file(output_file, "thismat_sa_mux_lev_2_predec_power_readOp_leakage", sa_mux_lev_2_predec->power.readOp.leakage);
+
+      // Decoder leakage power components
+      append_value_to_file(output_file, "thismat_power_row_decoders_readOp_leakage", power_row_decoders.readOp.leakage);
+      append_value_to_file(output_file, "thismat_power_bit_mux_decoders_readOp_leakage", power_bit_mux_decoders.readOp.leakage);
+      append_value_to_file(output_file, "thismat_power_sa_mux_lev_1_decoders_readOp_leakage", power_sa_mux_lev_1_decoders.readOp.leakage);
+      append_value_to_file(output_file, "thismat_power_sa_mux_lev_2_decoders_readOp_leakage", power_sa_mux_lev_2_decoders.readOp.leakage);
+
+      // Final cumulative leakage power for power.readOp.leakage
+      append_value_to_file(output_file, "thismat_total_power_readOp_leakage", power.readOp.leakage);
+    }
+    else {
     	power.readOp.leakage += (r_predec->power.readOp.leakage +
     			b_mux_predec->power.readOp.leakage +
     			sa_mux_lev_1_predec->power.readOp.leakage +
@@ -1733,6 +2052,26 @@ void Mat::compute_power_energy()
     			power_bit_mux_decoders.readOp.leakage +
     			power_sa_mux_lev_1_decoders.readOp.leakage +
     			power_sa_mux_lev_2_decoders.readOp.leakage)/g_tp.peri_global.Vdd*g_tp.peri_global.Vcc_min;
+
+      // Predecoder leakage power components
+      append_value_to_file(output_file, "thismat_r_predec_power_readOp_leakage", r_predec->power.readOp.leakage);
+      append_value_to_file(output_file, "thismat_b_mux_predec_power_readOp_leakage", b_mux_predec->power.readOp.leakage);
+      append_value_to_file(output_file, "thismat_sa_mux_lev_1_predec_power_readOp_leakage", sa_mux_lev_1_predec->power.readOp.leakage);
+      append_value_to_file(output_file, "thismat_sa_mux_lev_2_predec_power_readOp_leakage", sa_mux_lev_2_predec->power.readOp.leakage);
+
+      // Decoder leakage power components
+      append_value_to_file(output_file, "thismat_power_row_decoders_readOp_leakage", power_row_decoders.readOp.leakage);
+      append_value_to_file(output_file, "thismat_power_bit_mux_decoders_readOp_leakage", power_bit_mux_decoders.readOp.leakage);
+      append_value_to_file(output_file, "thismat_power_sa_mux_lev_1_decoders_readOp_leakage", power_sa_mux_lev_1_decoders.readOp.leakage);
+      append_value_to_file(output_file, "thismat_power_sa_mux_lev_2_decoders_readOp_leakage", power_sa_mux_lev_2_decoders.readOp.leakage);
+
+      // Voltage scaling factors
+      append_value_to_file(output_file, "thismat_g_tp_peri_global_Vdd", g_tp.peri_global.Vdd);
+      append_value_to_file(output_file, "thismat_g_tp_peri_global_Vcc_min", g_tp.peri_global.Vcc_min);
+
+      // Final cumulative leakage power for power.readOp.leakage, after voltage scaling
+      append_value_to_file(output_file, "thismat_total_power_readOp_leakage_scaled", power.readOp.leakage);
+    }
 
     wl_leakage = r_predec->power.readOp.leakage +
 		b_mux_predec->power.readOp.leakage +
@@ -1744,9 +2083,36 @@ void Mat::compute_power_energy()
 		power_sa_mux_lev_2_decoders.readOp.leakage;
 
     //++++Below is gate leakage
-	power_bitline.readOp.gate_leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
+	  power_bitline.readOp.gate_leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
     power_bl_precharge_eq_drv.readOp.gate_leakage = bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
     power_sa.readOp.gate_leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP);
+
+    // Wordline leakage components
+    append_value_to_file(output_file, "thismat_r_predec_power_readOp_leakage", r_predec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_b_mux_predec_power_readOp_leakage", b_mux_predec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_1_predec_power_readOp_leakage", sa_mux_lev_1_predec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_2_predec_power_readOp_leakage", sa_mux_lev_2_predec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_leakage", power_row_decoders.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_bit_mux_decoders_readOp_leakage", power_bit_mux_decoders.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_sa_mux_lev_1_decoders_readOp_leakage", power_sa_mux_lev_1_decoders.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_sa_mux_lev_2_decoders_readOp_leakage", power_sa_mux_lev_2_decoders.readOp.leakage);
+
+    // Cumulative wordline leakage
+    append_value_to_file(output_file, "thismat_total_wl_leakage", wl_leakage);
+
+    // Gate leakage components
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_gate_leakage_scaled", power_bitline.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_3", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_subarray_num_cols", subarray.num_cols);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_5", num_subarrays_per_mat);
+
+    append_value_to_file(output_file, "thismat_bl_precharge_eq_drv_power_readOp_gate_leakage", bl_precharge_eq_drv->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_gate_leakage_scaled", power_bl_precharge_eq_drv.readOp.gate_leakage);
+
+    append_value_to_file(output_file, "thismat_power_sa_readOp_gate_leakage_scaled", power_sa.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
 
     //num_sa_subarray             = subarray.num_cols / deg_bl_muxing;
     power_subarray_out_drv.readOp.gate_leakage =
@@ -1762,6 +2128,34 @@ void Mat::compute_power_energy()
     power_comparator.readOp.gate_leakage *= num_do_b_mat * (RWP + ERP);
     power.readOp.gate_leakage += power_comparator.readOp.gate_leakage;
 
+    // Subarray output driver gate leakage
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_gate_leakage", subarray_out_wire->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_6", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled", power_subarray_out_drv.readOp.gate_leakage);
+
+    // Bitline gate leakage
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_gate_leakage", power_bitline.readOp.gate_leakage);
+
+    // Bitline precharge gate leakage
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_gate_leakage", power_bl_precharge_eq_drv.readOp.gate_leakage);
+
+    // Sense amplifier gate leakage
+    append_value_to_file(output_file, "thismat_power_sa_readOp_gate_leakage", power_sa.readOp.gate_leakage);
+
+    // Total cumulative readOp gate leakage including subarray and sense amplifiers
+    append_value_to_file(output_file, "thismat_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
+
+    // Comparator gate leakage
+    append_value_to_file(output_file, "thismat_power_comparator_readOp_gate_leakage_scaled", power_comparator.readOp.gate_leakage);
+
+    // Final total power readOp gate leakage including comparator
+    append_value_to_file(output_file, "thismat_final_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
+
+
     if (g_ip->power_gating)
     {
 
@@ -1776,6 +2170,32 @@ void Mat::compute_power_energy()
     	wl_wakeup_e.readOp.dynamic = row_dec->sleeptx->wakeup_power.readOp.dynamic * num_subarrays_per_mat*subarray.num_rows*dp.num_act_mats_hor_dir;
     	wl_wakeup_t = row_dec->sleeptx->wakeup_delay;
 
+      // Array sleep transistor area
+      append_value_to_file(output_file, "thismat_sram_sleep_tx_area_get_area", sram_sleep_tx->area.get_area());
+      append_value_to_file(output_file, "thismat_subarray_num_cols", subarray.num_cols);
+      append_value_to_file(output_file, "thismat_num_subarrays_per_mat_7", num_subarrays_per_mat);
+      append_value_to_file(output_file, "thismat_dp_num_mats", dp.num_mats);
+      append_value_to_file(output_file, "thismat_array_sleep_tx_area", array_sleep_tx_area);
+
+      // Array wakeup energy dynamic
+      append_value_to_file(output_file, "thismat_sram_sleep_tx_wakeup_power_readOp_dynamic", sram_sleep_tx->wakeup_power.readOp.dynamic);
+      append_value_to_file(output_file, "thismat_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+      append_value_to_file(output_file, "thismat_array_wakeup_e_readOp_dynamic", array_wakeup_e.readOp.dynamic);
+
+      // Array wakeup delay
+      append_value_to_file(output_file, "thismat_array_wakeup_t", array_wakeup_t);
+
+      // Wordline sleep transistor area
+      append_value_to_file(output_file, "thismat_row_dec_sleeptx_area_get_area", row_dec->sleeptx->area.get_area());
+      append_value_to_file(output_file, "thismat_subarray_num_rows_4", subarray.num_rows);
+      append_value_to_file(output_file, "thismat_wl_sleep_tx_area", wl_sleep_tx_area);
+
+      // Wordline wakeup energy dynamic
+      append_value_to_file(output_file, "thismat_row_dec_sleeptx_wakeup_power_readOp_dynamic", row_dec->sleeptx->wakeup_power.readOp.dynamic);
+      append_value_to_file(output_file, "thismat_wl_wakeup_e_readOp_dynamic", wl_wakeup_e.readOp.dynamic);
+
+      // Wordline wakeup delay
+      append_value_to_file(output_file, "thismat_wl_wakeup_t", wl_wakeup_t);
     }
 
     // gate_leakage power
@@ -1792,6 +2212,36 @@ void Mat::compute_power_energy()
                           power_bit_mux_decoders.readOp.gate_leakage +
                           power_sa_mux_lev_1_decoders.readOp.gate_leakage +
                           power_sa_mux_lev_2_decoders.readOp.gate_leakage;
+
+    // Gate leakage for row decoders
+    append_value_to_file(output_file, "thismat_row_dec_power_readOp_gate_leakage", row_dec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_5", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_8", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_gate_leakage_scaled", power_row_decoders.readOp.gate_leakage);
+
+    // Gate leakage for bit mux decoders
+    append_value_to_file(output_file, "thismat_bit_mux_dec_power_readOp_gate_leakage", bit_mux_dec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_deg_bl_muxing", deg_bl_muxing);
+    append_value_to_file(output_file, "thismat_power_bit_mux_decoders_readOp_gate_leakage_scaled", power_bit_mux_decoders.readOp.gate_leakage);
+
+    // Gate leakage for sense amp mux level 1 decoders
+    append_value_to_file(output_file, "thismat_sa_mux_lev_1_dec_power_readOp_gate_leakage", sa_mux_lev_1_dec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_dp_Ndsam_lev_1", dp.Ndsam_lev_1);
+    append_value_to_file(output_file, "thismat_power_sa_mux_lev_1_decoders_readOp_gate_leakage_scaled", power_sa_mux_lev_1_decoders.readOp.gate_leakage);
+
+    // Gate leakage for sense amp mux level 2 decoders
+    append_value_to_file(output_file, "thismat_sa_mux_lev_2_dec_power_readOp_gate_leakage", sa_mux_lev_2_dec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_dp_Ndsam_lev_2", dp.Ndsam_lev_2);
+    append_value_to_file(output_file, "thismat_power_sa_mux_lev_2_decoders_readOp_gate_leakage_scaled", power_sa_mux_lev_2_decoders.readOp.gate_leakage);
+
+    // Predecoder gate leakage components
+    append_value_to_file(output_file, "thismat_r_predec_power_readOp_gate_leakage", r_predec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_b_mux_predec_power_readOp_gate_leakage", b_mux_predec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_1_predec_power_readOp_gate_leakage", sa_mux_lev_1_predec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_sa_mux_lev_2_predec_power_readOp_gate_leakage", sa_mux_lev_2_predec->power.readOp.gate_leakage);
+
+    // Total gate leakage for read operation
+    append_value_to_file(output_file, "thismat_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
   }
   else if (is_fa)
   {
@@ -1815,6 +2265,37 @@ void Mat::compute_power_energy()
 	                          power_sa.readOp.leakage +
 	                          power_subarray_out_drv.readOp.leakage;
 
+    // Number of output drivers per subarray
+    append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
+
+    // Power bitline leakage
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_leakage_scaled", power_bitline.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_6", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_subarray_num_cols", subarray.num_cols);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_9", num_subarrays_per_mat);
+
+    // Bitline precharge leakage
+    append_value_to_file(output_file, "thismat_bl_precharge_eq_drv_power_readOp_leakage", bl_precharge_eq_drv->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_leakage_scaled", power_bl_precharge_eq_drv.readOp.leakage);
+
+    // CAM bitline precharge search leakage
+    append_value_to_file(output_file, "thismat_cam_bl_precharge_eq_drv_power_readOp_leakage", cam_bl_precharge_eq_drv->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_searchOp_leakage_scaled", power_bl_precharge_eq_drv.searchOp.leakage);
+
+    // Sense amplifier leakage
+    append_value_to_file(output_file, "thismat_power_sa_readOp_leakage_scaled", power_sa.readOp.leakage);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
+
+    // Subarray output driver leakage
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_leakage_scaled", power_subarray_out_drv.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_leakage", subarray_out_wire->power.readOp.leakage);
+
+    // Total readOp leakage including bitline, precharge, sense amps, and output drivers
+    append_value_to_file(output_file, "thismat_total_power_readOp_leakage", power.readOp.leakage);
+
 	  //cout<<"leakage4"<<power.readOp.leakage<<endl;
 
 	  // leakage power
@@ -1822,6 +2303,17 @@ void Mat::compute_power_energy()
 	  power.readOp.leakage += r_predec->power.readOp.leakage +
 	                          power_row_decoders.readOp.leakage;
 
+    // Row decoders leakage
+    append_value_to_file(output_file, "thismat_row_dec_power_readOp_leakage", row_dec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_7", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_10", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_leakage_scaled", power_row_decoders.readOp.leakage);
+
+    // Predecoder leakage
+    append_value_to_file(output_file, "thismat_r_predec_power_readOp_leakage", r_predec->power.readOp.leakage);
+
+    // Total readOp leakage including row decoders and predecoder
+    append_value_to_file(output_file, "thismat_total_power_readOp_leakage", power.readOp.leakage);
 	  //cout<<"leakage5"<<power.readOp.leakage<<endl;
 
 	  //inside cam
@@ -1833,6 +2325,26 @@ void Mat::compute_power_energy()
 
 	  power.readOp.leakage += power_cam_all_active.searchOp.leakage;
 
+    // Matchline search operation leakage
+    append_value_to_file(output_file, "thismat_power_matchline_searchOp_leakage", power_matchline.searchOp.leakage);
+
+    // Searchline precharge driver leakage
+    append_value_to_file(output_file, "thismat_sl_precharge_eq_drv_power_readOp_leakage", sl_precharge_eq_drv->power.readOp.leakage);
+
+    // Searchline data driver leakage scaled by columns in fully associative CAM
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_leakage", sl_data_drv->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_cols_fa_cam", subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_leakage_scaled", sl_data_drv->power.readOp.leakage * subarray.num_cols_fa_cam);
+
+    // Matchline precharge driver dynamic leakage
+    append_value_to_file(output_file, "thismat_ml_precharge_drv_power_readOp_dynamic", ml_precharge_drv->power.readOp.dynamic);
+
+    // Total CAM active leakage for search operation scaled by number of subarrays per mat
+    append_value_to_file(output_file, "thismat_power_cam_all_active_searchOp_leakage_scaled", power_cam_all_active.searchOp.leakage);
+
+    // Total read operation leakage including CAM active search operation leakage
+    append_value_to_file(output_file, "thismat_total_power_readOp_leakage", power.readOp.leakage);
+
 //	  cout<<"leakage6"<<power.readOp.leakage<<endl;
 
 	  //+++Below is gate leakage
@@ -1840,6 +2352,28 @@ void Mat::compute_power_energy()
 	  power_bl_precharge_eq_drv.readOp.gate_leakage = bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
 	  power_bl_precharge_eq_drv.searchOp.gate_leakage = cam_bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
 	  power_sa.readOp.gate_leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
+
+    // Bitline gate leakage scaled by subarray dimensions and number of subarrays per mat
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_gate_leakage_scaled", power_bitline.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_8", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_subarray_num_cols", subarray.num_cols);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_11", num_subarrays_per_mat);
+
+    // Bitline precharge driver gate leakage for read operation
+    append_value_to_file(output_file, "thismat_bl_precharge_eq_drv_power_readOp_gate_leakage", bl_precharge_eq_drv->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_gate_leakage_scaled", power_bl_precharge_eq_drv.readOp.gate_leakage);
+
+    // CAM bitline precharge driver gate leakage for search operation
+    append_value_to_file(output_file, "thismat_cam_bl_precharge_eq_drv_power_readOp_gate_leakage", cam_bl_precharge_eq_drv->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_searchOp_gate_leakage_scaled", power_bl_precharge_eq_drv.searchOp.gate_leakage);
+
+    // Sense amplifier gate leakage scaled by number of sense amplifiers and subarrays per mat
+    append_value_to_file(output_file, "thismat_power_sa_readOp_gate_leakage_scaled", power_sa.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
+
 
 	  //cout<<"leakage3"<<power.readOp.gate_leakage<<endl;
 
@@ -1861,6 +2395,34 @@ void Mat::compute_power_energy()
 	  power.readOp.gate_leakage += r_predec->power.readOp.gate_leakage +
 	  power_row_decoders.readOp.gate_leakage;
 
+    // Subarray output driver gate leakage
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_gate_leakage", subarray_out_wire->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
+
+    // Total gate leakage for read operation
+    append_value_to_file(output_file, "thismat_power_bitline_readOp_gate_leakage_scaled", power_bitline.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_readOp_gate_leakage_scaled", power_bl_precharge_eq_drv.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_searchOp_gate_leakage_scaled", power_bl_precharge_eq_drv.searchOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_gate_leakage_scaled", power_sa.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_total_power_subarray_out_drv_readOp_gate_leakage_scaled", power_subarray_out_drv.readOp.gate_leakage);
+
+    // Row decoders gate leakage
+    append_value_to_file(output_file, "thismat_row_dec_power_readOp_gate_leakage", row_dec->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_9", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_12", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_gate_leakage_scaled", power_row_decoders.readOp.gate_leakage);
+
+    // Predecoder gate leakage
+    append_value_to_file(output_file, "thismat_r_predec_power_readOp_gate_leakage", r_predec->power.readOp.gate_leakage);
+
+    // Total cumulative readOp gate leakage
+    append_value_to_file(output_file, "thismat_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
+
+
 	  //cout<<"leakage5"<<power.readOp.gate_leakage<<endl;
 
 	  //inside cam
@@ -1872,6 +2434,25 @@ void Mat::compute_power_energy()
 
 	  power.readOp.gate_leakage += power_cam_all_active.searchOp.gate_leakage;
 
+    // Matchline search operation gate leakage
+    append_value_to_file(output_file, "thismat_power_matchline_searchOp_gate_leakage", power_matchline.searchOp.gate_leakage);
+
+    // Searchline precharge driver gate leakage
+    append_value_to_file(output_file, "thismat_sl_precharge_eq_drv_power_readOp_gate_leakage", sl_precharge_eq_drv->power.readOp.gate_leakage);
+
+    // Searchline data driver gate leakage scaled by number of columns in fully associative CAM
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_gate_leakage", sl_data_drv->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_cols_fa_cam", subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_gate_leakage_scaled", sl_data_drv->power.readOp.gate_leakage * subarray.num_cols_fa_cam);
+
+    // Matchline precharge driver dynamic power (used as gate leakage here)
+    append_value_to_file(output_file, "thismat_ml_precharge_drv_power_readOp_dynamic", ml_precharge_drv->power.readOp.dynamic);
+
+    // Total CAM active gate leakage for search operation, scaled by number of subarrays per mat
+    append_value_to_file(output_file, "thismat_power_cam_all_active_searchOp_gate_leakage_scaled", power_cam_all_active.searchOp.gate_leakage);
+
+    // Total read operation gate leakage including CAM active search operation leakage
+    append_value_to_file(output_file, "thismat_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
   }
   else
   {
@@ -1898,6 +2479,39 @@ void Mat::compute_power_energy()
 	  power.readOp.leakage += r_predec->power.readOp.leakage +
 	                          power_row_decoders.readOp.leakage;
 
+    // Number of output drivers per subarray
+    append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
+
+    // CAM bitline precharge driver leakage for search operation
+    append_value_to_file(output_file, "thismat_cam_bl_precharge_eq_drv_power_readOp_leakage", cam_bl_precharge_eq_drv->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_searchOp_leakage_scaled", power_bl_precharge_eq_drv.searchOp.leakage);
+
+    // Sense amplifier read operation leakage scaled by number of sense amplifiers and subarrays per mat
+    append_value_to_file(output_file, "thismat_power_sa_readOp_leakage_scaled", power_sa.readOp.leakage);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
+
+    // Subarray output driver leakage including subarray output wire leakage, scaled by drivers and subarrays
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_leakage_scaled", power_subarray_out_drv.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_leakage", subarray_out_wire->power.readOp.leakage);
+
+    // Total cumulative readOp leakage so far
+    append_value_to_file(output_file, "thismat_total_power_readOp_leakage", power.readOp.leakage);
+
+    // Row decoders read operation leakage
+    append_value_to_file(output_file, "thismat_row_dec_power_readOp_leakage", row_dec->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_subarray_num_rows_10", subarray.num_rows);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_13", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_power_row_decoders_readOp_leakage_scaled", power_row_decoders.readOp.leakage);
+
+    // Predecoder leakage
+    append_value_to_file(output_file, "thismat_r_predec_power_readOp_leakage", r_predec->power.readOp.leakage);
+
+    // Final cumulative readOp leakage
+    append_value_to_file(output_file, "thismat_final_total_power_readOp_leakage", power.readOp.leakage);
+
 	  //inside cam
 	  power_cam_all_active.searchOp.leakage = power_matchline.searchOp.leakage;
 	  power_cam_all_active.searchOp.leakage +=sl_precharge_eq_drv->power.readOp.leakage;
@@ -1915,6 +2529,34 @@ void Mat::compute_power_energy()
 	  power_subarray_out_drv.readOp.gate_leakage =
 		  (power_subarray_out_drv.readOp.gate_leakage + subarray_out_wire->power.readOp.gate_leakage) *
 		  number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
+
+    // Active search operation leakage for CAM
+    append_value_to_file(output_file, "thismat_power_matchline_searchOp_leakage", power_matchline.searchOp.leakage);
+    append_value_to_file(output_file, "thismat_sl_precharge_eq_drv_power_readOp_leakage", sl_precharge_eq_drv->power.readOp.leakage);
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_leakage_scaled", sl_data_drv->power.readOp.leakage * subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_ml_precharge_drv_power_readOp_dynamic", ml_precharge_drv->power.readOp.dynamic);
+    append_value_to_file(output_file, "thismat_power_cam_all_active_searchOp_leakage_scaled", power_cam_all_active.searchOp.leakage);
+
+    // Cumulative readOp leakage including CAM active leakage
+    append_value_to_file(output_file, "thismat_total_power_readOp_leakage", power.readOp.leakage);
+
+    // Gate leakage for bitline precharge driver in search operation
+    append_value_to_file(output_file, "thismat_cam_bl_precharge_eq_drv_power_readOp_gate_leakage_scaled", power_bl_precharge_eq_drv.searchOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_gate_leakage_scaled", power_sa.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_num_sa_subarray", num_sa_subarray);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
+
+    // Subarray output driver gate leakage including subarray output wire leakage
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled", power_subarray_out_drv.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_gate_leakage", subarray_out_wire->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_14", num_subarrays_per_mat);
+
+    // Final cumulative readOp gate leakage including all components
+    append_value_to_file(output_file, "thismat_final_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
+
 
 	  power.readOp.gate_leakage += //power_bitline.readOp.gate_leakage +
 	                          //power_bl_precharge_eq_drv.readOp.gate_leakage +
@@ -1935,6 +2577,35 @@ void Mat::compute_power_energy()
 	  power_cam_all_active.searchOp.gate_leakage *= num_subarrays_per_mat;
 
 	  power.readOp.gate_leakage += power_cam_all_active.searchOp.gate_leakage;
+
+    // Active search operation gate leakage for bitline precharge driver in search operation
+    append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_searchOp_gate_leakage", power_bl_precharge_eq_drv.searchOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_sa_readOp_gate_leakage", power_sa.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
+
+    // Cumulative readOp gate leakage including bitline precharge, SA, and subarray out drivers
+    append_value_to_file(output_file, "thismat_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
+
+    // Row decoder gate leakage scaled by subarray rows, number of subarrays, and write operations
+    append_value_to_file(output_file, "thismat_row_dec_power_readOp_gate_leakage_scaled", power_row_decoders.readOp.gate_leakage);
+
+    // Predecoder gate leakage
+    append_value_to_file(output_file, "thismat_r_predec_power_readOp_gate_leakage", r_predec->power.readOp.gate_leakage);
+
+    // Updated cumulative readOp gate leakage
+    append_value_to_file(output_file, "thismat_final_total_power_readOp_gate_leakage_with_row_and_predecoders", power.readOp.gate_leakage);
+
+    // CAM Section - Active search operation gate leakage
+    append_value_to_file(output_file, "thismat_power_matchline_searchOp_gate_leakage", power_matchline.searchOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_sl_precharge_eq_drv_power_readOp_gate_leakage", sl_precharge_eq_drv->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_sl_data_drv_power_readOp_gate_leakage_scaled", sl_data_drv->power.readOp.gate_leakage * subarray.num_cols_fa_cam);
+    append_value_to_file(output_file, "thismat_ml_precharge_drv_power_readOp_dynamic", ml_precharge_drv->power.readOp.dynamic);
+
+    // Total CAM active search operation gate leakage
+    append_value_to_file(output_file, "thismat_power_cam_all_active_searchOp_gate_leakage_scaled", power_cam_all_active.searchOp.gate_leakage);
+
+    // Final cumulative readOp gate leakage including CAM gate leakage
+    append_value_to_file(output_file, "thismat_final_total_power_readOp_gate_leakage_with_cam", power.readOp.gate_leakage);
   }
 }
 

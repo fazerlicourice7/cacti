@@ -528,7 +528,18 @@ class UCA(Component):
         self.bank.compute_power_energy()
         self.power = self.bank.power
 
+        # Write files to the debug_sympy_expressions directory
+        # Define the output directory
+        import os
+        output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+        os.makedirs(output_dir, exist_ok=True)
+
         if self.g_ip.is_3d_mem:
+            file_path = os.path.join(output_dir, f"WHATTIN3d.txt")
+            # Write the value of the expression to the file
+            with open(file_path, "w") as file:
+                file.write("meep")
+
             datapath_energy = 0.505e-9 * self.g_ip.F_sz_nm / 55
             self.activate_energy = (
                 self.membus_RAS.power.readOp.dynamic +
@@ -625,8 +636,123 @@ class UCA(Component):
                 self.bank.htree_out_data.power.readOp.dynamic
             )
 
+            ### expr write
+            # Define each unique expression, including all sub-expressions
+            expressions = {
+                # Sub-expressions
+                "thisuca_htree_in_add_power_readOp_dynamic": self.htree_in_add.power.readOp.dynamic,
+                "thisuca_htree_out_data_power_readOp_dynamic": self.htree_out_data.power.readOp.dynamic,
+                "thisuca_htree_in_data_power_readOp_dynamic": self.htree_in_data.power.readOp.dynamic,
+                "thisuca_htree_in_search_power_searchOp_dynamic": self.htree_in_search.power.searchOp.dynamic,
+                "thisuca_htree_out_search_power_searchOp_dynamic": self.htree_out_search.power.searchOp.dynamic,
+                
+                "thisuca_htree_in_add_power_readOp_leakage": self.htree_in_add.power.readOp.leakage,
+                "thisuca_htree_in_data_power_readOp_leakage": self.htree_in_data.power.readOp.leakage,
+                "thisuca_htree_out_data_power_readOp_leakage": self.htree_out_data.power.readOp.leakage,
+                "thisuca_htree_in_search_power_readOp_leakage": self.htree_in_search.power.readOp.leakage,
+                "thisuca_htree_out_search_power_readOp_leakage": self.htree_out_search.power.readOp.leakage,
+                
+                "thisuca_htree_in_add_power_readOp_gate_leakage": self.htree_in_add.power.readOp.gate_leakage,
+                "thisuca_htree_in_data_power_readOp_gate_leakage": self.htree_in_data.power.readOp.gate_leakage,
+                "thisuca_htree_out_data_power_readOp_gate_leakage": self.htree_out_data.power.readOp.gate_leakage,
+                "thisuca_htree_in_search_power_readOp_gate_leakage": self.htree_in_search.power.readOp.gate_leakage,
+                "thisuca_htree_out_search_power_readOp_gate_leakage": self.htree_out_search.power.readOp.gate_leakage,
+                
+                "thisuca_bank_mat_power_bitline_readOp_dynamic": self.bank.mat.power_bitline.readOp.dynamic,
+                "thisuca_bank_mat_power_bitline_writeOp_dynamic": self.bank.mat.power_bitline.writeOp.dynamic,
+                "thisuca_bank_htree_in_data_power_readOp_dynamic": self.bank.htree_in_data.power.readOp.dynamic,
+                "thisuca_bank_htree_out_data_power_readOp_dynamic": self.bank.htree_out_data.power.readOp.dynamic,
+                
+                # Main expressions using sub-expressions
+                "thisuca_power_routing_to_bank_readOp_dynamic": (
+                    self.htree_in_add.power.readOp.dynamic + self.htree_out_data.power.readOp.dynamic
+                ),
+                "thisuca_power_routing_to_bank_writeOp_dynamic": (
+                    self.htree_in_add.power.readOp.dynamic + self.htree_in_data.power.readOp.dynamic
+                ),
+                "thisuca_power_routing_to_bank_searchOp_dynamic": (
+                    self.htree_in_search.power.searchOp.dynamic + self.htree_out_search.power.searchOp.dynamic 
+                    if self.dp.fully_assoc or self.dp.pure_cam else 0
+                ),
+                
+                "thisuca_power_routing_to_bank_readOp_leakage": (
+                    self.htree_in_add.power.readOp.leakage +
+                    self.htree_in_data.power.readOp.leakage +
+                    self.htree_out_data.power.readOp.leakage +
+                    (self.htree_in_search.power.readOp.leakage + self.htree_out_search.power.readOp.leakage if self.dp.fully_assoc or self.dp.pure_cam else 0)
+                ),
+                
+                "thisuca_power_routing_to_bank_readOp_gate_leakage": (
+                    self.htree_in_add.power.readOp.gate_leakage +
+                    self.htree_in_data.power.readOp.gate_leakage +
+                    self.htree_out_data.power.readOp.gate_leakage +
+                    (self.htree_in_search.power.readOp.gate_leakage + self.htree_out_search.power.readOp.gate_leakage if self.dp.fully_assoc or self.dp.pure_cam else 0)
+                ),
+                
+                "thisuca_power_searchOp_dynamic": (
+                    self.power.searchOp.dynamic + 
+                    (self.htree_in_search.power.searchOp.dynamic + self.htree_out_search.power.searchOp.dynamic if self.dp.fully_assoc or self.dp.pure_cam else 0)
+                ),
+                "thisuca_power_readOp_dynamic": (
+                    self.power.readOp.dynamic + 
+                    (self.htree_in_add.power.readOp.dynamic + self.htree_out_data.power.readOp.dynamic)
+                ),
+                "thisuca_power_readOp_leakage": (
+                    self.power.readOp.leakage + 
+                    (self.htree_in_add.power.readOp.leakage + self.htree_in_data.power.readOp.leakage + self.htree_out_data.power.readOp.leakage)
+                ),
+                "thisuca_power_readOp_gate_leakage": (
+                    self.power.readOp.gate_leakage + 
+                    (self.htree_in_add.power.readOp.gate_leakage + self.htree_in_data.power.readOp.gate_leakage + self.htree_out_data.power.readOp.gate_leakage)
+                ),
+                
+                # Total write energy per access
+                "thisuca_power_writeOp_dynamic": (
+                    self.power.readOp.dynamic -
+                    self.bank.mat.power_bitline.readOp.dynamic * self.dp.num_act_mats_hor_dir +
+                    self.bank.mat.power_bitline.writeOp.dynamic * self.dp.num_act_mats_hor_dir -
+                    (self.htree_in_add.power.readOp.dynamic + self.htree_out_data.power.readOp.dynamic) +
+                    (self.htree_in_add.power.readOp.dynamic + self.htree_in_data.power.readOp.dynamic) +
+                    self.bank.htree_in_data.power.readOp.dynamic -
+                    self.bank.htree_out_data.power.readOp.dynamic
+                ),
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
+
             if not self.dp.is_dram:
                 self.power.writeOp.dynamic -= self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+
+                ### expr write
+                # Define the unique expression with sub-expression
+                expressions = {
+                    # Sub-expression
+                    "thisuca_bank_mat_power_sa_readOp_dynamic_mul_num_act_mats_hor_dir": (
+                        self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                    ),
+                    
+                    # Main expression using the sub-expression
+                    "thisuca_power_writeOp_dynamic_adjusted": (
+                        self.power.writeOp.dynamic - 
+                        (self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir)
+                    )
+                }
+
+                # Write the values of each expression to a separate file
+                for expr_name, value in expressions.items():
+                    file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                    # Write the value of the expression to the file
+                    with open(file_path, "w") as file:
+                        file.write(str(value))
+                ### expr write
+
 
             self.dyn_read_energy_from_closed_page = self.power.readOp.dynamic
             self.dyn_read_energy_from_open_page = (
@@ -667,6 +793,114 @@ class UCA(Component):
                 ) * self.dp.num_act_mats_hor_dir
             )
 
+            ### expr write
+            # Define each unique expression, including sub-expressions
+            expressions = {
+                # Sub-expressions for dyn_read_energy_from_open_page
+                "thisuca_power_readOp_dynamic": self.power.readOp.dynamic,
+                "thisuca_bank_mat_r_predec_power_readOp_dynamic": self.bank.mat.r_predec.power.readOp.dynamic,
+                "thisuca_bank_mat_power_row_decoders_readOp_dynamic": self.bank.mat.power_row_decoders.readOp.dynamic,
+                "thisuca_bank_mat_power_bl_precharge_eq_drv_readOp_dynamic": self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic,
+                "thisuca_bank_mat_power_sa_readOp_dynamic": self.bank.mat.power_sa.readOp.dynamic,
+                "thisuca_bank_mat_power_bitline_readOp_dynamic": self.bank.mat.power_bitline.readOp.dynamic,
+                "thisuca_dyn_read_energy_from_open_page": (
+                    self.power.readOp.dynamic -
+                    (
+                        self.bank.mat.r_predec.power.readOp.dynamic +
+                        self.bank.mat.power_row_decoders.readOp.dynamic +
+                        self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic +
+                        self.bank.mat.power_sa.readOp.dynamic +
+                        self.bank.mat.power_bitline.readOp.dynamic
+                    ) * self.dp.num_act_mats_hor_dir
+                ),
+
+                # Sub-expressions for dyn_read_energy_remaining_words_in_burst
+                "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_dynamic": self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic,
+                "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_dynamic": self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic,
+                "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_dynamic": self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic,
+                "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_dynamic": self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic,
+                "thisuca_bank_mat_power_subarray_out_drv_readOp_dynamic": self.bank.mat.power_subarray_out_drv.readOp.dynamic,
+                "thisuca_bank_htree_out_data_power_readOp_dynamic": self.bank.htree_out_data.power.readOp.dynamic,
+                "thisuca_power_routing_to_bank_readOp_dynamic": self.power_routing_to_bank.readOp.dynamic,
+                "thisuca_dyn_read_energy_remaining_words_in_burst": (
+                    (parameter.symbolic_convex_max(self.g_ip.burst_len / self.g_ip.int_prefetch_w, 1) - 1) *
+                    (
+                        (
+                            self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic +
+                            self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
+                            self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                        ) * self.dp.num_act_mats_hor_dir +
+                        self.bank.htree_out_data.power.readOp.dynamic +
+                        self.power_routing_to_bank.readOp.dynamic
+                    )
+                ),
+
+                # Calculated expressions for dyn_read_energy_from_closed_page and dyn_read_energy_from_open_page
+                "thisuca_dyn_read_energy_from_closed_page": self.power.readOp.dynamic + (
+                    (parameter.symbolic_convex_max(self.g_ip.burst_len / self.g_ip.int_prefetch_w, 1) - 1) *
+                    (
+                        (
+                            self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic +
+                            self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
+                            self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                        ) * self.dp.num_act_mats_hor_dir +
+                        self.bank.htree_out_data.power.readOp.dynamic +
+                        self.power_routing_to_bank.readOp.dynamic
+                    )
+                ),
+                "thisuca_dyn_read_energy_from_open_page_adjusted": (
+                    self.power.readOp.dynamic -
+                    (
+                        self.bank.mat.r_predec.power.readOp.dynamic +
+                        self.bank.mat.power_row_decoders.readOp.dynamic +
+                        self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic +
+                        self.bank.mat.power_sa.readOp.dynamic +
+                        self.bank.mat.power_bitline.readOp.dynamic
+                    ) * self.dp.num_act_mats_hor_dir +
+                    (parameter.symbolic_convex_max(self.g_ip.burst_len / self.g_ip.int_prefetch_w, 1) - 1) *
+                    (
+                        (
+                            self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic +
+                            self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
+                            self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                        ) * self.dp.num_act_mats_hor_dir +
+                        self.bank.htree_out_data.power.readOp.dynamic +
+                        self.power_routing_to_bank.readOp.dynamic
+                    )
+                ),
+
+                # Sub-expressions for activate_energy
+                "thisuca_htree_in_add_power_readOp_dynamic": self.htree_in_add.power.readOp.dynamic,
+                "thisuca_bank_htree_in_add_power_bit_readOp_dynamic": self.bank.htree_in_add.power_bit.readOp.dynamic,
+                "thisuca_bank_mat_r_predec_power_readOp_dynamic": self.bank.mat.r_predec.power.readOp.dynamic,
+                "thisuca_bank_mat_power_row_decoders_readOp_dynamic": self.bank.mat.power_row_decoders.readOp.dynamic,
+                "thisuca_bank_mat_power_sa_readOp_dynamic": self.bank.mat.power_sa.readOp.dynamic,
+                "thisuca_activate_energy": (
+                    self.htree_in_add.power.readOp.dynamic +
+                    self.bank.htree_in_add.power_bit.readOp.dynamic * self.bank.num_addr_b_routed_to_mat_for_act +
+                    (
+                        self.bank.mat.r_predec.power.readOp.dynamic +
+                        self.bank.mat.power_row_decoders.readOp.dynamic +
+                        self.bank.mat.power_sa.readOp.dynamic
+                    ) * self.dp.num_act_mats_hor_dir
+                )
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
+
             self.read_energy = (
                 self.htree_in_add.power.readOp.dynamic +
                 self.bank.htree_in_add.power_bit.readOp.dynamic * self.bank.num_addr_b_routed_to_mat_for_rd_or_wr +
@@ -699,6 +933,74 @@ class UCA(Component):
                 self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
             ) * self.dp.num_act_mats_hor_dir
 
+            ### expr write
+            # Define each unique expression, including all sub-expressions
+            expressions = {
+                # Sub-expressions for read_energy
+                "thisuca_htree_in_add_power_readOp_dynamic": self.htree_in_add.power.readOp.dynamic,
+                "thisuca_bank_htree_in_add_power_bit_readOp_dynamic": (
+                    self.bank.htree_in_add.power_bit.readOp.dynamic * self.bank.num_addr_b_routed_to_mat_for_rd_or_wr
+                ),
+                "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_dynamic": self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic,
+                "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_dynamic": self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic,
+                "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_dynamic": self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic,
+                "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_dynamic": self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic,
+                "thisuca_bank_mat_power_subarray_out_drv_readOp_dynamic": self.bank.mat.power_subarray_out_drv.readOp.dynamic,
+                "thisuca_bank_htree_out_data_power_readOp_dynamic": self.bank.htree_out_data.power.readOp.dynamic,
+                "thisuca_htree_in_data_power_readOp_dynamic": self.htree_in_data.power.readOp.dynamic,
+                "thisuca_read_energy": (
+                    (
+                        self.htree_in_add.power.readOp.dynamic +
+                        self.bank.htree_in_add.power_bit.readOp.dynamic * self.bank.num_addr_b_routed_to_mat_for_rd_or_wr +
+                        (
+                            self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic +
+                            self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
+                            self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                        ) * self.dp.num_act_mats_hor_dir +
+                        self.bank.htree_out_data.power.readOp.dynamic +
+                        self.htree_in_data.power.readOp.dynamic
+                    ) * self.g_ip.burst_len
+                ),
+
+                # Sub-expressions for write_energy
+                "thisuca_bank_htree_in_data_power_readOp_dynamic": self.bank.htree_in_data.power.readOp.dynamic,
+                "thisuca_write_energy": (
+                    (
+                        self.htree_in_add.power.readOp.dynamic +
+                        self.bank.htree_in_add.power_bit.readOp.dynamic * self.bank.num_addr_b_routed_to_mat_for_rd_or_wr +
+                        self.htree_in_data.power.readOp.dynamic +
+                        self.bank.htree_in_data.power.readOp.dynamic +
+                        (
+                            self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic +
+                            self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+                            self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic
+                        ) * self.dp.num_act_mats_hor_dir
+                    ) * self.g_ip.burst_len
+                ),
+
+                # Sub-expressions for precharge_energy
+                "thisuca_bank_mat_power_bitline_readOp_dynamic": self.bank.mat.power_bitline.readOp.dynamic,
+                "thisuca_bank_mat_power_bl_precharge_eq_drv_readOp_dynamic": self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic,
+                "thisuca_precharge_energy": (
+                    (
+                        self.bank.mat.power_bitline.readOp.dynamic +
+                        self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
+                    ) * self.dp.num_act_mats_hor_dir
+                ),
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
+
         self.leak_power_subbank_closed_page = (
             (
                 self.bank.mat.r_predec.power.readOp.leakage +
@@ -723,6 +1025,96 @@ class UCA(Component):
             ) * self.dp.num_act_mats_hor_dir
         )
 
+        ### expr write
+        # Define each unique expression, including all sub-expressions
+        expressions = {
+            # Sub-expressions for leakage power
+            "thisuca_bank_mat_r_predec_power_readOp_leakage": self.bank.mat.r_predec.power.readOp.leakage,
+            "thisuca_bank_mat_b_mux_predec_power_readOp_leakage": self.bank.mat.b_mux_predec.power.readOp.leakage,
+            "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_leakage": self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage,
+            "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_leakage": self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage,
+            "thisuca_bank_mat_power_row_decoders_readOp_leakage": self.bank.mat.power_row_decoders.readOp.leakage,
+            "thisuca_bank_mat_power_bit_mux_decoders_readOp_leakage": self.bank.mat.power_bit_mux_decoders.readOp.leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_leakage": self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_leakage": self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage,
+            "thisuca_bank_mat_leak_power_sense_amps_closed_page_state": self.bank.mat.leak_power_sense_amps_closed_page_state,
+            
+            # Combined leakage power for closed page state
+            "thisuca_leakage_power_closed_page_state": (
+                (
+                    self.bank.mat.r_predec.power.readOp.leakage +
+                    self.bank.mat.b_mux_predec.power.readOp.leakage +
+                    self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage +
+                    self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage +
+                    self.bank.mat.power_row_decoders.readOp.leakage +
+                    self.bank.mat.power_bit_mux_decoders.readOp.leakage +
+                    self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage +
+                    self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage +
+                    self.bank.mat.leak_power_sense_amps_closed_page_state
+                ) * self.dp.num_act_mats_hor_dir
+            ),
+
+            # Sub-expressions for gate leakage power
+            "thisuca_bank_mat_r_predec_power_readOp_gate_leakage": self.bank.mat.r_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_b_mux_predec_power_readOp_gate_leakage": self.bank.mat.b_mux_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_gate_leakage": self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_gate_leakage": self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_power_row_decoders_readOp_gate_leakage": self.bank.mat.power_row_decoders.readOp.gate_leakage,
+            "thisuca_bank_mat_power_bit_mux_decoders_readOp_gate_leakage": self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_gate_leakage": self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_gate_leakage": self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage,
+
+            # Combined gate leakage power for closed page state
+            "thisuca_gate_leakage_power_closed_page_state": (
+                (
+                    self.bank.mat.r_predec.power.readOp.gate_leakage +
+                    self.bank.mat.b_mux_predec.power.readOp.gate_leakage +
+                    self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage +
+                    self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage +
+                    self.bank.mat.power_row_decoders.readOp.gate_leakage +
+                    self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage +
+                    self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
+                    self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
+                ) * self.dp.num_act_mats_hor_dir
+            ),
+
+            # Main expression for total leakage power in closed page state
+            "thisuca_leak_power_subbank_closed_page": (
+                (
+                    (
+                        self.bank.mat.r_predec.power.readOp.leakage +
+                        self.bank.mat.b_mux_predec.power.readOp.leakage +
+                        self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage +
+                        self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage +
+                        self.bank.mat.power_row_decoders.readOp.leakage +
+                        self.bank.mat.power_bit_mux_decoders.readOp.leakage +
+                        self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage +
+                        self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage +
+                        self.bank.mat.leak_power_sense_amps_closed_page_state
+                    ) * self.dp.num_act_mats_hor_dir +
+                    (
+                        self.bank.mat.r_predec.power.readOp.gate_leakage +
+                        self.bank.mat.b_mux_predec.power.readOp.gate_leakage +
+                        self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage +
+                        self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage +
+                        self.bank.mat.power_row_decoders.readOp.gate_leakage +
+                        self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage +
+                        self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
+                        self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
+                    ) * self.dp.num_act_mats_hor_dir
+                )
+            ),
+        }
+
+        # Write the values of each expression to a separate file
+        for expr_name, value in expressions.items():
+            file_path = os.path.join(output_dir, f"{expr_name}.txt")
+            
+            # Write the value of the expression to the file
+            with open(file_path, "w") as file:
+                file.write(str(value))
+        ### expr write
+
         self.leak_power_subbank_open_page = (
             (
                 self.bank.mat.r_predec.power.readOp.leakage +
@@ -746,6 +1138,95 @@ class UCA(Component):
                 self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
             ) * self.dp.num_act_mats_hor_dir
         )
+        ### expr write
+        # Define each unique expression, including all sub-expressions
+        expressions = {
+            # Sub-expressions for leakage power
+            "thisuca_bank_mat_r_predec_power_readOp_leakage": self.bank.mat.r_predec.power.readOp.leakage,
+            "thisuca_bank_mat_b_mux_predec_power_readOp_leakage": self.bank.mat.b_mux_predec.power.readOp.leakage,
+            "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_leakage": self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage,
+            "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_leakage": self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage,
+            "thisuca_bank_mat_power_row_decoders_readOp_leakage": self.bank.mat.power_row_decoders.readOp.leakage,
+            "thisuca_bank_mat_power_bit_mux_decoders_readOp_leakage": self.bank.mat.power_bit_mux_decoders.readOp.leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_leakage": self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_leakage": self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage,
+            "thisuca_bank_mat_leak_power_sense_amps_open_page_state": self.bank.mat.leak_power_sense_amps_open_page_state,
+            
+            # Combined leakage power for open page state
+            "thisuca_leakage_power_open_page_state": (
+                (
+                    self.bank.mat.r_predec.power.readOp.leakage +
+                    self.bank.mat.b_mux_predec.power.readOp.leakage +
+                    self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage +
+                    self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage +
+                    self.bank.mat.power_row_decoders.readOp.leakage +
+                    self.bank.mat.power_bit_mux_decoders.readOp.leakage +
+                    self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage +
+                    self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage +
+                    self.bank.mat.leak_power_sense_amps_open_page_state
+                ) * self.dp.num_act_mats_hor_dir
+            ),
+
+            # Sub-expressions for gate leakage power
+            "thisuca_bank_mat_r_predec_power_readOp_gate_leakage": self.bank.mat.r_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_b_mux_predec_power_readOp_gate_leakage": self.bank.mat.b_mux_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_gate_leakage": self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_gate_leakage": self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage,
+            "thisuca_bank_mat_power_row_decoders_readOp_gate_leakage": self.bank.mat.power_row_decoders.readOp.gate_leakage,
+            "thisuca_bank_mat_power_bit_mux_decoders_readOp_gate_leakage": self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_gate_leakage": self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage,
+            "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_gate_leakage": self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage,
+
+            # Combined gate leakage power for open page state
+            "thisuca_gate_leakage_power_open_page_state": (
+                (
+                    self.bank.mat.r_predec.power.readOp.gate_leakage +
+                    self.bank.mat.b_mux_predec.power.readOp.gate_leakage +
+                    self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage +
+                    self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage +
+                    self.bank.mat.power_row_decoders.readOp.gate_leakage +
+                    self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage +
+                    self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
+                    self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
+                ) * self.dp.num_act_mats_hor_dir
+            ),
+
+            # Main expression for total leakage power in open page state
+            "thisuca_leak_power_subbank_open_page": (
+                (
+                    (
+                        self.bank.mat.r_predec.power.readOp.leakage +
+                        self.bank.mat.b_mux_predec.power.readOp.leakage +
+                        self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage +
+                        self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage +
+                        self.bank.mat.power_row_decoders.readOp.leakage +
+                        self.bank.mat.power_bit_mux_decoders.readOp.leakage +
+                        self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage +
+                        self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage +
+                        self.bank.mat.leak_power_sense_amps_open_page_state
+                    ) * self.dp.num_act_mats_hor_dir +
+                    (
+                        self.bank.mat.r_predec.power.readOp.gate_leakage +
+                        self.bank.mat.b_mux_predec.power.readOp.gate_leakage +
+                        self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage +
+                        self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage +
+                        self.bank.mat.power_row_decoders.readOp.gate_leakage +
+                        self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage +
+                        self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
+                        self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
+                    ) * self.dp.num_act_mats_hor_dir
+                )
+            ),
+        }
+
+        # Write the values of each expression to a separate file
+        for expr_name, value in expressions.items():
+            file_path = os.path.join(output_dir, f"{expr_name}.txt")
+            
+            # Write the value of the expression to the file
+            with open(file_path, "w") as file:
+                file.write(str(value))
+        ### expr write
 
         self.leak_power_request_and_reply_networks = (
             self.power_routing_to_bank.readOp.leakage +
@@ -757,6 +1238,40 @@ class UCA(Component):
             self.bank.htree_in_data.power.readOp.gate_leakage +
             self.bank.htree_out_data.power.readOp.gate_leakage
         )
+        ### expr write
+        # Define each unique expression, including all sub-expressions
+        expressions = {
+            # Sub-expressions for leakage and gate leakage power
+            "thisuca_power_routing_to_bank_readOp_leakage": self.power_routing_to_bank.readOp.leakage,
+            "thisuca_bank_htree_in_add_power_readOp_leakage": self.bank.htree_in_add.power.readOp.leakage,
+            "thisuca_bank_htree_in_data_power_readOp_leakage": self.bank.htree_in_data.power.readOp.leakage,
+            "thisuca_bank_htree_out_data_power_readOp_leakage": self.bank.htree_out_data.power.readOp.leakage,
+            "thisuca_power_routing_to_bank_readOp_gate_leakage": self.power_routing_to_bank.readOp.gate_leakage,
+            "thisuca_bank_htree_in_add_power_readOp_gate_leakage": self.bank.htree_in_add.power.readOp.gate_leakage,
+            "thisuca_bank_htree_in_data_power_readOp_gate_leakage": self.bank.htree_in_data.power.readOp.gate_leakage,
+            "thisuca_bank_htree_out_data_power_readOp_gate_leakage": self.bank.htree_out_data.power.readOp.gate_leakage,
+
+            # Main expression for request and reply networks leakage power
+            "thisuca_leak_power_request_and_reply_networks": (
+                self.power_routing_to_bank.readOp.leakage +
+                self.bank.htree_in_add.power.readOp.leakage +
+                self.bank.htree_in_data.power.readOp.leakage +
+                self.bank.htree_out_data.power.readOp.leakage +
+                self.power_routing_to_bank.readOp.gate_leakage +
+                self.bank.htree_in_add.power.readOp.gate_leakage +
+                self.bank.htree_in_data.power.readOp.gate_leakage +
+                self.bank.htree_out_data.power.readOp.gate_leakage
+            )
+        }
+
+        # Write the values of each expression to a separate file
+        for expr_name, value in expressions.items():
+            file_path = os.path.join(output_dir, f"{expr_name}.txt")
+            
+            # Write the value of the expression to the file
+            with open(file_path, "w") as file:
+                file.write(str(value))
+        ### expr write
 
         if self.dp.fully_assoc or self.dp.pure_cam:
             self.leak_power_request_and_reply_networks += (
@@ -765,6 +1280,32 @@ class UCA(Component):
                 self.htree_in_search.power.readOp.gate_leakage +
                 self.htree_out_search.power.readOp.gate_leakage
             )
+            ### expr write
+            # Define each unique expression, including all sub-expressions
+            expressions = {
+                # Sub-expressions for additional leakage and gate leakage power
+                "thisuca_fapc_htree_in_search_power_readOp_leakage": self.htree_in_search.power.readOp.leakage,
+                "thisuca_fapc_htree_out_search_power_readOp_leakage": self.htree_out_search.power.readOp.leakage,
+                "thisuca_fapc_htree_in_search_power_readOp_gate_leakage": self.htree_in_search.power.readOp.gate_leakage,
+                "thisuca_fapc_htree_out_search_power_readOp_gate_leakage": self.htree_out_search.power.readOp.gate_leakage,
+
+                # Expression for additional terms in request and reply networks leakage power
+                "thisuca_fapc_leak_power_request_and_reply_networks": (
+                    self.htree_in_search.power.readOp.leakage +
+                    self.htree_out_search.power.readOp.leakage +
+                    self.htree_in_search.power.readOp.gate_leakage +
+                    self.htree_out_search.power.readOp.gate_leakage
+                )
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
 
         if self.dp.is_dram:
             self.refresh_power = (
@@ -776,6 +1317,47 @@ class UCA(Component):
                 self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic * self.dp.num_act_mats_hor_dir +
                 self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
             ) / self.dp.dram_refresh_period
+
+            ### expr write
+            # Define each unique expression, including all sub-expressions
+            expressions = {
+                # Sub-expressions for refresh power calculation
+                "thisuca_isdram_bank_mat_r_predec_power_readOp_dynamic_mul_num_act_mats_hor_dir": (
+                    self.bank.mat.r_predec.power.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                ),
+                "thisuca_isdram_bank_mat_row_dec_power_readOp_dynamic": self.bank.mat.row_dec.power.readOp.dynamic,
+                "thisuca_isdram_bank_mat_per_bitline_read_energy_mul_num_c_subarray_num_r_subarray_num_subarrays": (
+                    self.bank.mat.per_bitline_read_energy * self.dp.num_c_subarray * self.dp.num_r_subarray * self.dp.num_subarrays
+                ),
+                "thisuca_isdram_bank_mat_power_bl_precharge_eq_drv_readOp_dynamic_mul_num_act_mats_hor_dir": (
+                    self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                ),
+                "thisuca_isdram_bank_mat_power_sa_readOp_dynamic_mul_num_act_mats_hor_dir": (
+                    self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                ),
+
+                # Main expression for refresh power
+                "thisuca_isdram_refresh_power_one": (
+                    (
+                        (
+                            self.bank.mat.r_predec.power.readOp.dynamic * self.dp.num_act_mats_hor_dir +
+                            self.bank.mat.row_dec.power.readOp.dynamic
+                        ) * self.dp.num_r_subarray * self.dp.num_subarrays +
+                        self.bank.mat.per_bitline_read_energy * self.dp.num_c_subarray * self.dp.num_r_subarray * self.dp.num_subarrays +
+                        self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic * self.dp.num_act_mats_hor_dir +
+                        self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                    ) / self.dp.dram_refresh_period
+                )
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
 
         if not self.dp.is_tag:
             self.power.readOp.dynamic = self.dyn_read_energy_from_closed_page
@@ -792,12 +1374,100 @@ class UCA(Component):
                     self.bank.htree_in_data.power.readOp.dynamic
                 ) * (parameter.symbolic_convex_max(self.g_ip.burst_len / self.g_ip.int_prefetch_w, 1) - 1)
             )
+            ### expr write
+            # Define each unique expression, including all sub-expressions
+            expressions = {
+                # Sub-expressions for dynamic read and write energy calculations
+                "thisuca_istag_dyn_read_energy_from_closed_page": self.dyn_read_energy_from_closed_page,
+                "thisuca_istag_dyn_read_energy_remaining_words_in_burst": self.dyn_read_energy_remaining_words_in_burst,
+                "thisuca_istag_bank_mat_power_bitline_readOp_dynamic_mul_num_act_mats_hor_dir": (
+                    self.bank.mat.power_bitline.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                ),
+                "thisuca_istag_bank_mat_power_bitline_writeOp_dynamic_mul_num_act_mats_hor_dir": (
+                    self.bank.mat.power_bitline.writeOp.dynamic * self.dp.num_act_mats_hor_dir
+                ),
+                "thisuca_istag_power_routing_to_bank_writeOp_dynamic": self.power_routing_to_bank.writeOp.dynamic,
+                "thisuca_istag_power_routing_to_bank_readOp_dynamic": self.power_routing_to_bank.readOp.dynamic,
+                "thisuca_istag_bank_htree_out_data_power_readOp_dynamic": self.bank.htree_out_data.power.readOp.dynamic,
+                "thisuca_istag_bank_htree_in_data_power_readOp_dynamic": self.bank.htree_in_data.power.readOp.dynamic,
+                "thisuca_istag_symbolic_convex_max_burst_len_int_prefetch_w_minus_one": (
+                    parameter.symbolic_convex_max(self.g_ip.burst_len / self.g_ip.int_prefetch_w, 1) - 1
+                ),
+
+                # Main expression for dynamic read operation energy
+                "thisuca_istag_power_readOp_dynamic": self.dyn_read_energy_from_closed_page,
+
+                # Main expression for dynamic write operation energy
+                "thisuca_istag_power_writeOp_dynamic": (
+                    self.dyn_read_energy_from_closed_page -
+                    self.dyn_read_energy_remaining_words_in_burst -
+                    self.bank.mat.power_bitline.readOp.dynamic * self.dp.num_act_mats_hor_dir +
+                    self.bank.mat.power_bitline.writeOp.dynamic * self.dp.num_act_mats_hor_dir +
+                    (
+                        self.power_routing_to_bank.writeOp.dynamic -
+                        self.power_routing_to_bank.readOp.dynamic -
+                        self.bank.htree_out_data.power.readOp.dynamic +
+                        self.bank.htree_in_data.power.readOp.dynamic
+                    ) * (parameter.symbolic_convex_max(self.g_ip.burst_len / self.g_ip.int_prefetch_w, 1) - 1)
+                )
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
 
             if not self.dp.is_dram:
                 self.power.writeOp.dynamic -= self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                ### expr write
+                # Define the unique expression
+                expressions = {
+                    # Sub-expression for write operation dynamic energy adjustment
+                    "thisuca_istag_notdram_bank_mat_power_sa_readOp_dynamic_mul_num_act_mats_hor_dir": (
+                        self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                    ),
+
+                    # Adjusted main expression for dynamic write operation energy
+                    "thisuca_istag_notdram_power_writeOp_dynamic_adjusted": (
+                        self.power.writeOp.dynamic - self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                    )
+                }
+
+                # Write the values of each expression to a separate file
+                for expr_name, value in expressions.items():
+                    file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                    
+                    # Write the value of the expression to the file
+                    with open(file_path, "w") as file:
+                        file.write(str(value))
+                ### expr write
 
         if self.dp.is_dram:
             self.power.readOp.leakage += self.refresh_power
+            ### expr write
+            # Define the unique expression
+            expressions = {
+                # Sub-expression for refresh power
+                "thisuca_isdram_refresh_power_two": self.refresh_power,
+
+                # Adjusted main expression for leakage power with added refresh power
+                "thisuca_isdram_power_readOp_leakage_adjusted": (
+                    self.power.readOp.leakage + self.refresh_power
+                )
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
 
         if self.g_ip.is_3d_mem:
             self.power.readOp.dynamic = self.read_energy
@@ -807,6 +1477,38 @@ class UCA(Component):
                 self.membus_CAS.power.readOp.leakage +
                 self.membus_data.power.readOp.leakage
             )
+            ### expr write
+            # Define each unique expression, including all sub-expressions
+            expressions = {
+                # Sub-expressions for read and write dynamic power
+                "thisuca_3dmem_read_energy": self.read_energy,
+                "thisuca_3dmem_write_energy": self.write_energy,
+
+                # Main expressions for readOp dynamic and writeOp dynamic power
+                "thisuca_3dmem_power_readOp_dynamic": self.read_energy,
+                "thisuca_3dmem_power_writeOp_dynamic": self.write_energy,
+
+                # Sub-expressions for leakage power components
+                "thisuca_3dmem_membus_RAS_power_readOp_leakage": self.membus_RAS.power.readOp.leakage,
+                "thisuca_3dmem_membus_CAS_power_readOp_leakage": self.membus_CAS.power.readOp.leakage,
+                "thisuca_3dmem_membus_data_power_readOp_leakage": self.membus_data.power.readOp.leakage,
+
+                # Main expression for readOp leakage power
+                "thisuca_3dmem_power_readOp_leakage": (
+                    self.membus_RAS.power.readOp.leakage +
+                    self.membus_CAS.power.readOp.leakage +
+                    self.membus_data.power.readOp.leakage
+                )
+            }
+
+            # Write the values of each expression to a separate file
+            for expr_name, value in expressions.items():
+                file_path = os.path.join(output_dir, f"{expr_name}.txt")
+                
+                # Write the value of the expression to the file
+                with open(file_path, "w") as file:
+                    file.write(str(value))
+            ### expr write
 
         # assert self.power.readOp.dynamic > 0
         # assert self.power.writeOp.dynamic > 0

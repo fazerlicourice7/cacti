@@ -38,6 +38,12 @@
 #include "TSV.h"
 #include "memorybus.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 UCA::UCA(const DynamicParameter & dyn_p)
  :dp(dyn_p), bank(dp), nbanks(g_ip->nbanks), refresh_power(0)
@@ -533,11 +539,30 @@ double UCA::compute_delays(double inrisetime)
   return outrisetime;
 }
 
+// Function to create the directory if it doesn't exist
+void uca_create_directory(const char *path) {
+    mkdir(path, 0777);
+}
 
+// Function to append a value to the output file
+void uca_append_value_to_file(const char *filename, const char *label, double value) {
+    FILE *file = fopen(filename, "a"); // Append mode
+    if (file != NULL) {
+        fprintf(file, "%s: %f\n", label, value);
+        fclose(file);
+    } else {
+        perror("Error opening file");
+    }
+}
 
 // note: currently, power numbers are for a bank of an array
 void UCA::compute_power_energy()
 {
+	// Define directory
+	const char *output_dir = "debug_sympy_validate";
+	uca_create_directory(output_dir);
+	const char *output_file = "debug_sympy_validate/debug_sympy_validate.txt";
+
   bank.compute_power_energy();
   power = bank.power;
   //CACTI3DD
@@ -609,88 +634,247 @@ void UCA::compute_power_energy()
   }//CACTI3DD
   else
   {
-  power_routing_to_bank.readOp.dynamic  = htree_in_add->power.readOp.dynamic + htree_out_data->power.readOp.dynamic;
-  power_routing_to_bank.writeOp.dynamic = htree_in_add->power.readOp.dynamic + htree_in_data->power.readOp.dynamic;
-  if (dp.fully_assoc || dp.pure_cam)
-      power_routing_to_bank.searchOp.dynamic= htree_in_search->power.searchOp.dynamic + htree_out_search->power.searchOp.dynamic;
+		power_routing_to_bank.readOp.dynamic  = htree_in_add->power.readOp.dynamic + htree_out_data->power.readOp.dynamic;
+		power_routing_to_bank.writeOp.dynamic = htree_in_add->power.readOp.dynamic + htree_in_data->power.readOp.dynamic;
 
-  power_routing_to_bank.readOp.leakage += htree_in_add->power.readOp.leakage +
-                                          htree_in_data->power.readOp.leakage +
-                                          htree_out_data->power.readOp.leakage;
+		// Write individual values and calculations to the file
+    uca_append_value_to_file(output_file, "thisuca_htree_in_add_power_readOp_dynamic", htree_in_add->power.readOp.dynamic);
+    uca_append_value_to_file(output_file, "thisuca_htree_out_data_power_readOp_dynamic", htree_out_data->power.readOp.dynamic);
+    uca_append_value_to_file(output_file, "thisuca_htree_in_data_power_readOp_dynamic", htree_in_data->power.readOp.dynamic);
+    
+    uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_dynamic", power_routing_to_bank.readOp.dynamic);
+    uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_writeOp_dynamic", power_routing_to_bank.writeOp.dynamic);
 
-  power_routing_to_bank.readOp.gate_leakage += htree_in_add->power.readOp.gate_leakage +
-                                          htree_in_data->power.readOp.gate_leakage +
-                                          htree_out_data->power.readOp.gate_leakage;
-  if (dp.fully_assoc || dp.pure_cam)
-  {
-	power_routing_to_bank.readOp.leakage += htree_in_search->power.readOp.leakage + htree_out_search->power.readOp.leakage;
-	power_routing_to_bank.readOp.gate_leakage += htree_in_search->power.readOp.gate_leakage + htree_out_search->power.readOp.gate_leakage;
-  }
+		if (dp.fully_assoc || dp.pure_cam)
+		{
+				power_routing_to_bank.searchOp.dynamic= htree_in_search->power.searchOp.dynamic + htree_out_search->power.searchOp.dynamic;
+				uca_append_value_to_file(output_file, "thisuca_fapc_htree_in_search_power_searchOp_dynamic", htree_in_search->power.searchOp.dynamic);
+    		uca_append_value_to_file(output_file, "thisuca_fapc_htree_out_search_power_searchOp_dynamic", htree_out_search->power.searchOp.dynamic);
 
-  power.searchOp.dynamic += power_routing_to_bank.searchOp.dynamic;
-  power.readOp.dynamic += power_routing_to_bank.readOp.dynamic;
-  power.readOp.leakage += power_routing_to_bank.readOp.leakage;
-  power.readOp.gate_leakage += power_routing_to_bank.readOp.gate_leakage;
+    		uca_append_value_to_file(output_file, "thisuca_fapc_power_routing_to_bank_searchOp_dynamic", power_routing_to_bank.searchOp.dynamic);
+		}
 
-  // calculate total write energy per access
-  power.writeOp.dynamic = power.readOp.dynamic
-                        - bank.mat.power_bitline.readOp.dynamic * dp.num_act_mats_hor_dir
-                        + bank.mat.power_bitline.writeOp.dynamic * dp.num_act_mats_hor_dir
-                        - power_routing_to_bank.readOp.dynamic
-                        + power_routing_to_bank.writeOp.dynamic
-                        + bank.htree_in_data->power.readOp.dynamic
-                        - bank.htree_out_data->power.readOp.dynamic;
+		power_routing_to_bank.readOp.leakage += htree_in_add->power.readOp.leakage +
+																						htree_in_data->power.readOp.leakage +
+																						htree_out_data->power.readOp.leakage;
 
-  if (dp.is_dram == false)
-  {
-    power.writeOp.dynamic -= bank.mat.power_sa.readOp.dynamic * dp.num_act_mats_hor_dir;
-  }
+		power_routing_to_bank.readOp.gate_leakage += htree_in_add->power.readOp.gate_leakage +
+																						htree_in_data->power.readOp.gate_leakage +
+																						htree_out_data->power.readOp.gate_leakage;
 
-  dyn_read_energy_from_closed_page = power.readOp.dynamic;
-  dyn_read_energy_from_open_page   = power.readOp.dynamic -
-                                     (bank.mat.r_predec->power.readOp.dynamic +
-                                      bank.mat.power_row_decoders.readOp.dynamic +
-                                      bank.mat.power_bl_precharge_eq_drv.readOp.dynamic +
-                                      bank.mat.power_sa.readOp.dynamic +
-                                      bank.mat.power_bitline.readOp.dynamic) * dp.num_act_mats_hor_dir;
+		// Write individual values and calculations to the file for readOp.leakage
+		uca_append_value_to_file(output_file, "thisuca_htree_in_add_power_readOp_leakage", htree_in_add->power.readOp.leakage);
+		uca_append_value_to_file(output_file, "thisuca_htree_in_data_power_readOp_leakage", htree_in_data->power.readOp.leakage);
+		uca_append_value_to_file(output_file, "thisuca_htree_out_data_power_readOp_leakage", htree_out_data->power.readOp.leakage);
 
-  dyn_read_energy_remaining_words_in_burst =
-    (MAX((g_ip->burst_len / g_ip->int_prefetch_w), 1) - 1) *
-    ((bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic +
-      bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic +
-      bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
-      bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
-      bank.mat.power_subarray_out_drv.readOp.dynamic)     * dp.num_act_mats_hor_dir +
-     bank.htree_out_data->power.readOp.dynamic +
-     power_routing_to_bank.readOp.dynamic);
-  dyn_read_energy_from_closed_page += dyn_read_energy_remaining_words_in_burst;
-  dyn_read_energy_from_open_page   += dyn_read_energy_remaining_words_in_burst;
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_leakage", power_routing_to_bank.readOp.leakage);
 
-  activate_energy = htree_in_add->power.readOp.dynamic +
-                    bank.htree_in_add->power_bit.readOp.dynamic * bank.num_addr_b_routed_to_mat_for_act +
-                    (bank.mat.r_predec->power.readOp.dynamic +
-                     bank.mat.power_row_decoders.readOp.dynamic +
-                     bank.mat.power_sa.readOp.dynamic) * dp.num_act_mats_hor_dir;
-  read_energy    = (htree_in_add->power.readOp.dynamic +
-                    bank.htree_in_add->power_bit.readOp.dynamic * bank.num_addr_b_routed_to_mat_for_rd_or_wr +
-                    (bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic  +
-                     bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic  +
-                     bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
-                     bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
-                     bank.mat.power_subarray_out_drv.readOp.dynamic) * dp.num_act_mats_hor_dir +
-                    bank.htree_out_data->power.readOp.dynamic +
-                    htree_in_data->power.readOp.dynamic) * g_ip->burst_len;
-  write_energy   = (htree_in_add->power.readOp.dynamic +
-                    bank.htree_in_add->power_bit.readOp.dynamic * bank.num_addr_b_routed_to_mat_for_rd_or_wr +
-                    htree_in_data->power.readOp.dynamic +
-                    bank.htree_in_data->power.readOp.dynamic +
-                    (bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic  +
-                     bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic  +
-                     bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
-                     bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic) * dp.num_act_mats_hor_dir) * g_ip->burst_len;
-  precharge_energy = (bank.mat.power_bitline.readOp.dynamic +
-                      bank.mat.power_bl_precharge_eq_drv.readOp.dynamic) * dp.num_act_mats_hor_dir;
+		// Write individual values and calculations to the file for readOp.gate_leakage
+		uca_append_value_to_file(output_file, "thisuca_htree_in_add_power_readOp_gate_leakage", htree_in_add->power.readOp.gate_leakage);
+		uca_append_value_to_file(output_file, "thisuca_htree_in_data_power_readOp_gate_leakage", htree_in_data->power.readOp.gate_leakage);
+		uca_append_value_to_file(output_file, "thisuca_htree_out_data_power_readOp_gate_leakage", htree_out_data->power.readOp.gate_leakage);
+
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_gate_leakage", power_routing_to_bank.readOp.gate_leakage);
+
+		if (dp.fully_assoc || dp.pure_cam)
+		{
+		power_routing_to_bank.readOp.leakage += htree_in_search->power.readOp.leakage + htree_out_search->power.readOp.leakage;
+		power_routing_to_bank.readOp.gate_leakage += htree_in_search->power.readOp.gate_leakage + htree_out_search->power.readOp.gate_leakage;
+
+		// Write individual values and calculations to the file for readOp.leakage
+		uca_append_value_to_file(output_file, "thisuca_fapc_htree_in_search_power_readOp_leakage", htree_in_search->power.readOp.leakage);
+		uca_append_value_to_file(output_file, "thisuca_fapc_htree_out_search_power_readOp_leakage", htree_out_search->power.readOp.leakage);
+
+		uca_append_value_to_file(output_file, "thisuca_fapc_power_routing_to_bank_readOp_leakage", power_routing_to_bank.readOp.leakage);
+
+		// Write individual values and calculations to the file for readOp.gate_leakage
+		uca_append_value_to_file(output_file, "thisuca_fapc_htree_in_search_power_readOp_gate_leakage", htree_in_search->power.readOp.gate_leakage);
+		uca_append_value_to_file(output_file, "thisuca_fapc_htree_out_search_power_readOp_gate_leakage", htree_out_search->power.readOp.gate_leakage);
+
+		uca_append_value_to_file(output_file, "thisuca_fapc_power_routing_to_bank_readOp_gate_leakage", power_routing_to_bank.readOp.gate_leakage);
+		}
+
+		power.searchOp.dynamic += power_routing_to_bank.searchOp.dynamic;
+		power.readOp.dynamic += power_routing_to_bank.readOp.dynamic;
+		power.readOp.leakage += power_routing_to_bank.readOp.leakage;
+		power.readOp.gate_leakage += power_routing_to_bank.readOp.gate_leakage;
+
+		// Write individual values and calculations to the file for searchOp.dynamic
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_searchOp_dynamic", power_routing_to_bank.searchOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_power_searchOp_dynamic", power.searchOp.dynamic);
+
+		// Write individual values and calculations to the file for readOp.dynamic
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_dynamic", power_routing_to_bank.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_power_readOp_dynamic", power.readOp.dynamic);
+
+		// Write individual values and calculations to the file for readOp.leakage
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_leakage", power_routing_to_bank.readOp.leakage);
+		uca_append_value_to_file(output_file, "thisuca_power_readOp_leakage", power.readOp.leakage);
+
+		// Write individual values and calculations to the file for readOp.gate_leakage
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_gate_leakage", power_routing_to_bank.readOp.gate_leakage);
+		uca_append_value_to_file(output_file, "thisuca_power_readOp_gate_leakage", power.readOp.gate_leakage);
+
+		// calculate total write energy per access
+		power.writeOp.dynamic = power.readOp.dynamic
+													- bank.mat.power_bitline.readOp.dynamic * dp.num_act_mats_hor_dir
+													+ bank.mat.power_bitline.writeOp.dynamic * dp.num_act_mats_hor_dir
+													- power_routing_to_bank.readOp.dynamic
+													+ power_routing_to_bank.writeOp.dynamic
+													+ bank.htree_in_data->power.readOp.dynamic
+													- bank.htree_out_data->power.readOp.dynamic;
+
+		// Write individual values and calculations to the file for writeOp.dynamic
+		uca_append_value_to_file(output_file, "thisuca_power_readOp_dynamic", power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bitline_readOp_dynamic_mul_num_act_mats_hor_dir", bank.mat.power_bitline.readOp.dynamic * dp.num_act_mats_hor_dir);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bitline_writeOp_dynamic_mul_num_act_mats_hor_dir", bank.mat.power_bitline.writeOp.dynamic * dp.num_act_mats_hor_dir);
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_dynamic", power_routing_to_bank.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_writeOp_dynamic", power_routing_to_bank.writeOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_in_data_power_readOp_dynamic", bank.htree_in_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_out_data_power_readOp_dynamic", bank.htree_out_data->power.readOp.dynamic);
+
+		uca_append_value_to_file(output_file, "thisuca_power_writeOp_dynamic", power.writeOp.dynamic);
+
+		if (dp.is_dram == false)
+		{
+			power.writeOp.dynamic -= bank.mat.power_sa.readOp.dynamic * dp.num_act_mats_hor_dir;
+			// Write individual values and calculations to the file for writeOp.dynamic adjustment
+			uca_append_value_to_file(output_file, "thisuca_notdram_bank_mat_power_sa_readOp_dynamic_mul_num_act_mats_hor_dir", bank.mat.power_sa.readOp.dynamic * dp.num_act_mats_hor_dir);
+
+			uca_append_value_to_file(output_file, "thisuca_notdram_power_writeOp_dynamic_adjusted", power.writeOp.dynamic);
+
+		}
+
+		dyn_read_energy_from_closed_page = power.readOp.dynamic;
+		dyn_read_energy_from_open_page   = power.readOp.dynamic -
+																			(bank.mat.r_predec->power.readOp.dynamic +
+																				bank.mat.power_row_decoders.readOp.dynamic +
+																				bank.mat.power_bl_precharge_eq_drv.readOp.dynamic +
+																				bank.mat.power_sa.readOp.dynamic +
+																				bank.mat.power_bitline.readOp.dynamic) * dp.num_act_mats_hor_dir;
+
+		 // Write individual values and calculations to the file for dyn_read_energy_from_closed_page and dyn_read_energy_from_open_page
+		uca_append_value_to_file(output_file, "thisuca_power_readOp_dynamic", power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_r_predec_power_readOp_dynamic", bank.mat.r_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_row_decoders_readOp_dynamic", bank.mat.power_row_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bl_precharge_eq_drv_readOp_dynamic", bank.mat.power_bl_precharge_eq_drv.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_readOp_dynamic", bank.mat.power_sa.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bitline_readOp_dynamic", bank.mat.power_bitline.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_dynamic_energy_factor", (bank.mat.r_predec->power.readOp.dynamic +
+																																										bank.mat.power_row_decoders.readOp.dynamic +
+																																										bank.mat.power_bl_precharge_eq_drv.readOp.dynamic +
+																																										bank.mat.power_sa.readOp.dynamic +
+																																										bank.mat.power_bitline.readOp.dynamic) * dp.num_act_mats_hor_dir);
+
+		uca_append_value_to_file(output_file, "thisuca_dyn_read_energy_from_closed_page", dyn_read_energy_from_closed_page);
+		uca_append_value_to_file(output_file, "thisuca_dyn_read_energy_from_open_page", dyn_read_energy_from_open_page);
+
+
+		dyn_read_energy_remaining_words_in_burst =
+			(MAX((g_ip->burst_len / g_ip->int_prefetch_w), 1) - 1) *
+			((bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic +
+				bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic +
+				bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+				bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
+				bank.mat.power_subarray_out_drv.readOp.dynamic)     * dp.num_act_mats_hor_dir +
+			bank.htree_out_data->power.readOp.dynamic +
+			power_routing_to_bank.readOp.dynamic);
+		dyn_read_energy_from_closed_page += dyn_read_energy_remaining_words_in_burst;
+		dyn_read_energy_from_open_page   += dyn_read_energy_remaining_words_in_burst;
+
+		// Write individual values and calculations to the file for dyn_read_energy_remaining_words_in_burst
+		uca_append_value_to_file(output_file, "thisuca_burst_len_over_prefetch_max_minus_one", MAX((g_ip->burst_len / g_ip->int_prefetch_w), 1) - 1);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_dynamic", bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_dynamic", bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_dynamic", bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_dynamic", bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_subarray_out_drv_readOp_dynamic", bank.mat.power_subarray_out_drv.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_out_data_power_readOp_dynamic", bank.htree_out_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_dynamic", power_routing_to_bank.readOp.dynamic);
+
+		uca_append_value_to_file(output_file, "thisuca_dyn_read_energy_remaining_words_in_burst", dyn_read_energy_remaining_words_in_burst);
+
+		// Write individual values for updated dyn_read_energy_from_closed_page and dyn_read_energy_from_open_page
+		uca_append_value_to_file(output_file, "thisuca_dyn_read_energy_from_closed_page_updated", dyn_read_energy_from_closed_page);
+		uca_append_value_to_file(output_file, "thisuca_dyn_read_energy_from_open_page_updated", dyn_read_energy_from_open_page);
+
+
+		activate_energy = htree_in_add->power.readOp.dynamic +
+											bank.htree_in_add->power_bit.readOp.dynamic * bank.num_addr_b_routed_to_mat_for_act +
+											(bank.mat.r_predec->power.readOp.dynamic +
+											bank.mat.power_row_decoders.readOp.dynamic +
+											bank.mat.power_sa.readOp.dynamic) * dp.num_act_mats_hor_dir;
+		// Write individual values and calculations to the file for activate_energy
+		uca_append_value_to_file(output_file, "thisuca_htree_in_add_power_readOp_dynamic", htree_in_add->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_in_add_power_bit_readOp_dynamic", bank.htree_in_add->power_bit.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_num_addr_b_routed_to_mat_for_act", bank.num_addr_b_routed_to_mat_for_act);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_r_predec_power_readOp_dynamic", bank.mat.r_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_row_decoders_readOp_dynamic", bank.mat.power_row_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_readOp_dynamic", bank.mat.power_sa.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+
+		uca_append_value_to_file(output_file, "thisuca_activate_energy", activate_energy);
+		
+		read_energy    = (htree_in_add->power.readOp.dynamic +
+											bank.htree_in_add->power_bit.readOp.dynamic * bank.num_addr_b_routed_to_mat_for_rd_or_wr +
+											(bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic  +
+											bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic  +
+											bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+											bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic +
+											bank.mat.power_subarray_out_drv.readOp.dynamic) * dp.num_act_mats_hor_dir +
+											bank.htree_out_data->power.readOp.dynamic +
+											htree_in_data->power.readOp.dynamic) * g_ip->burst_len;
+		// Write individual values and calculations to the file for read_energy
+		uca_append_value_to_file(output_file, "thisuca_htree_in_add_power_readOp_dynamic", htree_in_add->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_in_add_power_bit_readOp_dynamic", bank.htree_in_add->power_bit.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_num_addr_b_routed_to_mat_for_rd_or_wr", bank.num_addr_b_routed_to_mat_for_rd_or_wr);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_dynamic", bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_dynamic", bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_dynamic", bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_dynamic", bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_subarray_out_drv_readOp_dynamic", bank.mat.power_subarray_out_drv.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_out_data_power_readOp_dynamic", bank.htree_out_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_htree_in_data_power_readOp_dynamic", htree_in_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_g_ip_burst_len", g_ip->burst_len);
+
+		uca_append_value_to_file(output_file, "thisuca_read_energy", read_energy);
+
+		write_energy   = (htree_in_add->power.readOp.dynamic +
+											bank.htree_in_add->power_bit.readOp.dynamic * bank.num_addr_b_routed_to_mat_for_rd_or_wr +
+											htree_in_data->power.readOp.dynamic +
+											bank.htree_in_data->power.readOp.dynamic +
+											(bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic  +
+											bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic  +
+											bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic +
+											bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic) * dp.num_act_mats_hor_dir) * g_ip->burst_len;
+		// Write individual values and calculations to the file for write_energy
+		uca_append_value_to_file(output_file, "thisuca_htree_in_add_power_readOp_dynamic", htree_in_add->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_in_add_power_bit_readOp_dynamic", bank.htree_in_add->power_bit.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_num_addr_b_routed_to_mat_for_rd_or_wr", bank.num_addr_b_routed_to_mat_for_rd_or_wr);
+		uca_append_value_to_file(output_file, "thisuca_htree_in_data_power_readOp_dynamic", htree_in_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_htree_in_data_power_readOp_dynamic", bank.htree_in_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_dynamic", bank.mat.sa_mux_lev_1_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_dynamic", bank.mat.sa_mux_lev_2_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_dynamic", bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_dynamic", bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+		uca_append_value_to_file(output_file, "thisuca_g_ip_burst_len", g_ip->burst_len);
+
+		uca_append_value_to_file(output_file, "thisuca_write_energy", write_energy);
+
+		precharge_energy = (bank.mat.power_bitline.readOp.dynamic +
+												bank.mat.power_bl_precharge_eq_drv.readOp.dynamic) * dp.num_act_mats_hor_dir;
+		// Write individual values and calculations to the file for precharge_energy
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bitline_readOp_dynamic", bank.mat.power_bitline.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bl_precharge_eq_drv_readOp_dynamic", bank.mat.power_bl_precharge_eq_drv.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+
+		uca_append_value_to_file(output_file, "thisuca_precharge_energy", precharge_energy);
+
   } //CACTI3DD
+	
   leak_power_subbank_closed_page =
     (bank.mat.r_predec->power.readOp.leakage +
      bank.mat.b_mux_predec->power.readOp.leakage +
@@ -712,6 +896,54 @@ void UCA::compute_power_energy()
      bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
      bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage) * dp.num_act_mats_hor_dir; //+
      //bank.mat.leak_power_sense_amps_closed_page_state) * dp.num_act_mats_hor_dir;
+
+	// Write individual values and calculations to the file for leak_power_subbank_closed_page
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_r_predec_power_readOp_leakage", bank.mat.r_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_b_mux_predec_power_readOp_leakage", bank.mat.b_mux_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_leakage", bank.mat.sa_mux_lev_1_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_leakage", bank.mat.sa_mux_lev_2_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_row_decoders_readOp_leakage", bank.mat.power_row_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bit_mux_decoders_readOp_leakage", bank.mat.power_bit_mux_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_leakage", bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_leakage", bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_leak_power_sense_amps_closed_page_state", bank.mat.leak_power_sense_amps_closed_page_state);
+	uca_append_value_to_file(output_file, "thisuca_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+
+	// First part of leak_power_subbank_closed_page
+	uca_append_value_to_file(output_file, "thisuca_leakage_power_closed_page_state", 
+			(bank.mat.r_predec->power.readOp.leakage +
+			bank.mat.b_mux_predec->power.readOp.leakage +
+			bank.mat.sa_mux_lev_1_predec->power.readOp.leakage +
+			bank.mat.sa_mux_lev_2_predec->power.readOp.leakage +
+			bank.mat.power_row_decoders.readOp.leakage +
+			bank.mat.power_bit_mux_decoders.readOp.leakage +
+			bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage +
+			bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage +
+			bank.mat.leak_power_sense_amps_closed_page_state) * dp.num_act_mats_hor_dir);
+
+	// Gate leakage components
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_r_predec_power_readOp_gate_leakage", bank.mat.r_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_b_mux_predec_power_readOp_gate_leakage", bank.mat.b_mux_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_gate_leakage", bank.mat.sa_mux_lev_1_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_gate_leakage", bank.mat.sa_mux_lev_2_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_row_decoders_readOp_gate_leakage", bank.mat.power_row_decoders.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bit_mux_decoders_readOp_gate_leakage", bank.mat.power_bit_mux_decoders.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_gate_leakage", bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_gate_leakage", bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage);
+
+	// Total gate leakage power for closed page state
+	uca_append_value_to_file(output_file, "thisuca_gate_leakage_power_closed_page_state", 
+			(bank.mat.r_predec->power.readOp.gate_leakage +
+			bank.mat.b_mux_predec->power.readOp.gate_leakage +
+			bank.mat.sa_mux_lev_1_predec->power.readOp.gate_leakage +
+			bank.mat.sa_mux_lev_2_predec->power.readOp.gate_leakage +
+			bank.mat.power_row_decoders.readOp.gate_leakage +
+			bank.mat.power_bit_mux_decoders.readOp.gate_leakage +
+			bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
+			bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage) * dp.num_act_mats_hor_dir);
+
+	// Second part of leak_power_subbank_closed_page, including gate leakage
+	uca_append_value_to_file(output_file, "thisuca_leak_power_subbank_closed_page", leak_power_subbank_closed_page);
 
   leak_power_subbank_open_page =
     (bank.mat.r_predec->power.readOp.leakage +
@@ -735,6 +967,55 @@ void UCA::compute_power_energy()
      bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage ) * dp.num_act_mats_hor_dir;
      //bank.mat.leak_power_sense_amps_open_page_state) * dp.num_act_mats_hor_dir;
 
+	// Write individual values and calculations to the file for leak_power_subbank_open_page
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_r_predec_power_readOp_leakage", bank.mat.r_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_b_mux_predec_power_readOp_leakage", bank.mat.b_mux_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_leakage", bank.mat.sa_mux_lev_1_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_leakage", bank.mat.sa_mux_lev_2_predec->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_row_decoders_readOp_leakage", bank.mat.power_row_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bit_mux_decoders_readOp_leakage", bank.mat.power_bit_mux_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_leakage", bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_leakage", bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_leak_power_sense_amps_open_page_state", bank.mat.leak_power_sense_amps_open_page_state);
+	uca_append_value_to_file(output_file, "thisuca_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+
+	// First part of leak_power_subbank_open_page
+	uca_append_value_to_file(output_file, "thisuca_leakage_power_open_page_state", 
+			(bank.mat.r_predec->power.readOp.leakage +
+			bank.mat.b_mux_predec->power.readOp.leakage +
+			bank.mat.sa_mux_lev_1_predec->power.readOp.leakage +
+			bank.mat.sa_mux_lev_2_predec->power.readOp.leakage +
+			bank.mat.power_row_decoders.readOp.leakage +
+			bank.mat.power_bit_mux_decoders.readOp.leakage +
+			bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage +
+			bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage +
+			bank.mat.leak_power_sense_amps_open_page_state) * dp.num_act_mats_hor_dir);
+
+	// Gate leakage components
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_r_predec_power_readOp_gate_leakage", bank.mat.r_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_b_mux_predec_power_readOp_gate_leakage", bank.mat.b_mux_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_1_predec_power_readOp_gate_leakage", bank.mat.sa_mux_lev_1_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_sa_mux_lev_2_predec_power_readOp_gate_leakage", bank.mat.sa_mux_lev_2_predec->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_row_decoders_readOp_gate_leakage", bank.mat.power_row_decoders.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_bit_mux_decoders_readOp_gate_leakage", bank.mat.power_bit_mux_decoders.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_1_decoders_readOp_gate_leakage", bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_mat_power_sa_mux_lev_2_decoders_readOp_gate_leakage", bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage);
+
+	// Total gate leakage power
+	uca_append_value_to_file(output_file, "thisuca_gate_leakage_power_open_page_state", 
+			(bank.mat.r_predec->power.readOp.gate_leakage +
+			bank.mat.b_mux_predec->power.readOp.gate_leakage +
+			bank.mat.sa_mux_lev_1_predec->power.readOp.gate_leakage +
+			bank.mat.sa_mux_lev_2_predec->power.readOp.gate_leakage +
+			bank.mat.power_row_decoders.readOp.gate_leakage +
+			bank.mat.power_bit_mux_decoders.readOp.gate_leakage +
+			bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage +
+			bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage) * dp.num_act_mats_hor_dir);
+
+	// Second part of leak_power_subbank_open_page, including gate leakage
+	uca_append_value_to_file(output_file, "thisuca_leak_power_subbank_open_page", leak_power_subbank_open_page);
+
+
   leak_power_request_and_reply_networks =
     power_routing_to_bank.readOp.leakage +
     bank.htree_in_add->power.readOp.leakage +
@@ -747,10 +1028,59 @@ void UCA::compute_power_energy()
     bank.htree_in_data->power.readOp.gate_leakage +
     bank.htree_out_data->power.readOp.gate_leakage;
 
+	// Write individual values and calculations to the file for leak_power_request_and_reply_networks
+	uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_leakage", power_routing_to_bank.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_htree_in_add_power_readOp_leakage", bank.htree_in_add->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_htree_in_data_power_readOp_leakage", bank.htree_in_data->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_htree_out_data_power_readOp_leakage", bank.htree_out_data->power.readOp.leakage);
+
+	// First part of leak_power_request_and_reply_networks (leakage power)
+	uca_append_value_to_file(output_file, "thisuca_leakage_power_request_and_reply_networks", 
+			power_routing_to_bank.readOp.leakage +
+			bank.htree_in_add->power.readOp.leakage +
+			bank.htree_in_data->power.readOp.leakage +
+			bank.htree_out_data->power.readOp.leakage);
+
+	// Gate leakage components
+	uca_append_value_to_file(output_file, "thisuca_power_routing_to_bank_readOp_gate_leakage", power_routing_to_bank.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_htree_in_add_power_readOp_gate_leakage", bank.htree_in_add->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_htree_in_data_power_readOp_gate_leakage", bank.htree_in_data->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_bank_htree_out_data_power_readOp_gate_leakage", bank.htree_out_data->power.readOp.gate_leakage);
+
+	// Total gate leakage power for request and reply networks
+	uca_append_value_to_file(output_file, "thisuca_gate_leakage_power_request_and_reply_networks", 
+			power_routing_to_bank.readOp.gate_leakage +
+			bank.htree_in_add->power.readOp.gate_leakage +
+			bank.htree_in_data->power.readOp.gate_leakage +
+			bank.htree_out_data->power.readOp.gate_leakage);
+
+	// Final total for leak_power_request_and_reply_networks (includes gate leakage)
+	uca_append_value_to_file(output_file, "thisuca_leak_power_request_and_reply_networks", leak_power_request_and_reply_networks);
+
+
   if (dp.fully_assoc || dp.pure_cam)
   {
 	leak_power_request_and_reply_networks += htree_in_search->power.readOp.leakage + htree_out_search->power.readOp.leakage;
 	leak_power_request_and_reply_networks += htree_in_search->power.readOp.gate_leakage + htree_out_search->power.readOp.gate_leakage;
+	
+	// Write individual values and calculations to the file for additional leak_power_request_and_reply_networks components
+	uca_append_value_to_file(output_file, "thisuca_fapc_htree_in_search_power_readOp_leakage", htree_in_search->power.readOp.leakage);
+	uca_append_value_to_file(output_file, "thisuca_fapc_htree_out_search_power_readOp_leakage", htree_out_search->power.readOp.leakage);
+
+	// Additional leakage power for request and reply networks
+	uca_append_value_to_file(output_file, "thisuca_fapc_additional_leakage_power_request_and_reply_networks", 
+			htree_in_search->power.readOp.leakage + htree_out_search->power.readOp.leakage);
+
+	// Gate leakage components for additional request and reply networks
+	uca_append_value_to_file(output_file, "thisuca_fapc_htree_in_search_power_readOp_gate_leakage", htree_in_search->power.readOp.gate_leakage);
+	uca_append_value_to_file(output_file, "thisuca_fapc_htree_out_search_power_readOp_gate_leakage", htree_out_search->power.readOp.gate_leakage);
+
+	// Additional gate leakage power for request and reply networks
+	uca_append_value_to_file(output_file, "thisuca_fapc_additional_gate_leakage_power_request_and_reply_networks", 
+			htree_in_search->power.readOp.gate_leakage + htree_out_search->power.readOp.gate_leakage);
+
+	// Update final totals for leak_power_request_and_reply_networks (includes additional leakage and gate leakage)
+	uca_append_value_to_file(output_file, "thisuca_fapc_leak_power_request_and_reply_networks", leak_power_request_and_reply_networks);
   }
 
 
@@ -762,6 +1092,21 @@ void UCA::compute_power_energy()
     refresh_power += bank.mat.power_bl_precharge_eq_drv.readOp.dynamic * dp.num_act_mats_hor_dir;
     refresh_power += bank.mat.power_sa.readOp.dynamic * dp.num_act_mats_hor_dir;
     refresh_power /= dp.dram_refresh_period;
+
+		// Write individual values and calculations to the file for refresh_power
+		uca_append_value_to_file(output_file, "thisuca_isdram_bank_mat_r_predec_power_readOp_dynamic", bank.mat.r_predec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_isdram_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+		uca_append_value_to_file(output_file, "thisuca_isdram_bank_mat_row_dec_power_readOp_dynamic", bank.mat.row_dec->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_isdram_dp_num_r_subarray", dp.num_r_subarray);
+		uca_append_value_to_file(output_file, "thisuca_isdram_dp_num_subarrays", dp.num_subarrays);
+		uca_append_value_to_file(output_file, "thisuca_isdram_bank_mat_per_bitline_read_energy", bank.mat.per_bitline_read_energy);
+		uca_append_value_to_file(output_file, "thisuca_isdram_dp_num_c_subarray", dp.num_c_subarray);
+		uca_append_value_to_file(output_file, "thisuca_isdram_bank_mat_power_bl_precharge_eq_drv_readOp_dynamic", bank.mat.power_bl_precharge_eq_drv.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_isdram_bank_mat_power_sa_readOp_dynamic", bank.mat.power_sa.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_isdram_dp_dram_refresh_period", dp.dram_refresh_period);
+
+		// Calculate and write the total refresh_power
+		uca_append_value_to_file(output_file, "thisuca_isdram_refresh_power_one", refresh_power);
   }
 
 
@@ -778,9 +1123,36 @@ void UCA::compute_power_energy()
          bank.htree_in_data->power.readOp.dynamic) *
         (MAX((g_ip->burst_len / g_ip->int_prefetch_w), 1) - 1); //FIXME
 
+		// Write individual values and calculations to the file for power.readOp.dynamic
+		uca_append_value_to_file(output_file, "thisuca_istag_dyn_read_energy_from_closed_page", dyn_read_energy_from_closed_page);
+
+		// Set power.readOp.dynamic
+		uca_append_value_to_file(output_file, "thisuca_istag_power_readOp_dynamic", power.readOp.dynamic);
+
+		// Write individual values and calculations to the file for power.writeOp.dynamic
+		uca_append_value_to_file(output_file, "thisuca_istag_dyn_read_energy_remaining_words_in_burst", dyn_read_energy_remaining_words_in_burst);
+		uca_append_value_to_file(output_file, "thisuca_istag_bank_mat_power_bitline_readOp_dynamic", bank.mat.power_bitline.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_istag_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+		uca_append_value_to_file(output_file, "thisuca_istag_bank_mat_power_bitline_writeOp_dynamic", bank.mat.power_bitline.writeOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_istag_power_routing_to_bank_writeOp_dynamic", power_routing_to_bank.writeOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_istag_power_routing_to_bank_readOp_dynamic", power_routing_to_bank.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_istag_bank_htree_out_data_power_readOp_dynamic", bank.htree_out_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_istag_bank_htree_in_data_power_readOp_dynamic", bank.htree_in_data->power.readOp.dynamic);
+		uca_append_value_to_file(output_file, "thisuca_istag_max_burst_len_over_prefetch_minus_one", MAX((g_ip->burst_len / g_ip->int_prefetch_w), 1) - 1);
+
+		// Calculate and write the total power.writeOp.dynamic
+		uca_append_value_to_file(output_file, "thisuca_istag_power_writeOp_dynamic", power.writeOp.dynamic);
+
+
     if (dp.is_dram == false)
     {
       power.writeOp.dynamic -= bank.mat.power_sa.readOp.dynamic * dp.num_act_mats_hor_dir;
+			// Write individual values and calculations to the file for power.writeOp.dynamic adjustment
+			uca_append_value_to_file(output_file, "thisuca_istag_notdram_bank_mat_power_sa_readOp_dynamic", bank.mat.power_sa.readOp.dynamic);
+			uca_append_value_to_file(output_file, "thisuca_istag_notdram_dp_num_act_mats_hor_dir", dp.num_act_mats_hor_dir);
+
+			// Adjusted power.writeOp.dynamic
+			uca_append_value_to_file(output_file, "thisuca_istag_notdram_power_writeOp_dynamic_adjusted", power.writeOp.dynamic);
     }
   }
 
@@ -788,6 +1160,12 @@ void UCA::compute_power_energy()
   if (dp.is_dram)
   {
     power.readOp.leakage += refresh_power;
+		// Write individual values and calculations to the file for power.readOp.leakage adjustment
+		uca_append_value_to_file(output_file, "thisuca_isdram_refresh_power_two", refresh_power);
+
+		// Adjusted power.readOp.leakage
+		uca_append_value_to_file(output_file, "thisuca_isdram_power_readOp_leakage_adjusted", power.readOp.leakage);
+
   }
 
   // TODO: below should be  avoided.
@@ -809,10 +1187,27 @@ void UCA::compute_power_energy()
 	  //cout << "test: " << membus_CAS->power.readOp.leakage << endl;
 	  //cout << "test: " << membus_data->power.readOp.leakage << endl;
 	  //cout << "test: power.readOp.leakage" << power.readOp.leakage << endl;
+		// Write individual values and calculations to the file for power.readOp.dynamic and power.writeOp.dynamic
+    uca_append_value_to_file(output_file, "thisuca_3dmem_read_energy", read_energy);
+    uca_append_value_to_file(output_file, "thisuca_3dmem_power_readOp_dynamic", power.readOp.dynamic);
+
+    uca_append_value_to_file(output_file, "thisuca_3dmem_write_energy", write_energy);
+    uca_append_value_to_file(output_file, "thisuca_3dmem_power_writeOp_dynamic", power.writeOp.dynamic);
+
+    // Write individual values for membus leakage components
+    uca_append_value_to_file(output_file, "thisuca_3dmem_membus_RAS_power_readOp_leakage", membus_RAS->power.readOp.leakage);
+    uca_append_value_to_file(output_file, "thisuca_3dmem_membus_CAS_power_readOp_leakage", membus_CAS->power.readOp.leakage);
+    uca_append_value_to_file(output_file, "thisuca_3dmem_membus_data_power_readOp_leakage", membus_data->power.readOp.leakage);
+
+    // Set power.readOp.leakage for 3D memory model
+    uca_append_value_to_file(output_file, "thisuca_3dmem_power_readOp_leakage_3d_mem", 
+        membus_RAS->power.readOp.leakage + membus_CAS->power.readOp.leakage + membus_data->power.readOp.leakage);
   }
 
   assert(power.readOp.dynamic  > 0);
   assert(power.writeOp.dynamic > 0);
   assert(power.readOp.leakage  > 0);
 }
+
+
 

@@ -10,16 +10,16 @@ from .parameter import gate_C, drain_C_, horowitz, tr_R_on
 
 class Wire(Component):
     global_ = Component()
-    global_5 = Component()
-    global_10 = Component()
-    global_20 = Component()
-    global_30 = Component()
+    # global_5 = Component()
+    # global_10 = Component()
+    # global_20 = Component()
+    # global_30 = Component()
     low_swing = Component()
     initialized = 0
     wire_width_init = None
     wire_spacing_init = None
 
-    def __init__(self, g_ip, g_tp, wire_model="Global_30", wl=1, n=1, w_s=1, s_s=1, wp=parameter.outside_mat, resistivity=CU_RESISTIVITY, dt=None):
+    def __init__(self, g_ip, g_tp, wire_model="Global", wl=1, n=1, w_s=1, s_s=1, wp=parameter.outside_mat, resistivity=CU_RESISTIVITY, dt=None):
         super().__init__()
         self.g_ip = g_ip
         self.g_tp = g_tp
@@ -90,11 +90,11 @@ class Wire(Component):
 
     def calculate_wire_stats(self):
         # Issue
-        print(f"CALC WIRE STATS self.wt: {self.wt}")
-        self.print_wire()
-        print()
-        import time
-        time.sleep(20)
+        # print(f"CALC WIRE STATS self.wt: {self.wt}")
+        # self.print_wire()
+        # print()
+        # import time
+        # time.sleep(20)
         if self.wire_placement == parameter.outside_mat:
             self.wire_width = self.g_tp.wire_outside_mat.pitch / 2
         elif self.wire_placement == parameter.inside_mat:
@@ -128,86 +128,86 @@ class Wire(Component):
                         self.g_tp.cell_h_def,
                     )
                 )
-            elif self.wt == 'Global_5':
-                self.delay = Wire.global_5.delay * self.wire_length
-                self.power.readOp.dynamic = Wire.global_5.power.readOp.dynamic * self.wire_length
-                self.power.readOp.leakage = Wire.global_5.power.readOp.leakage * self.wire_length
-                self.power.readOp.gate_leakage = Wire.global_5.power.readOp.gate_leakage * self.wire_length
-                self.repeater_spacing = Wire.global_5.area.w
-                self.repeater_size = Wire.global_5.area.h
+            # elif self.wt == 'Global_5':
+            #     self.delay = Wire.global_5.delay * self.wire_length
+            #     self.power.readOp.dynamic = Wire.global_5.power.readOp.dynamic * self.wire_length
+            #     self.power.readOp.leakage = Wire.global_5.power.readOp.leakage * self.wire_length
+            #     self.power.readOp.gate_leakage = Wire.global_5.power.readOp.gate_leakage * self.wire_length
+            #     self.repeater_spacing = Wire.global_5.area.w
+            #     self.repeater_size = Wire.global_5.area.h
 
-                self.area.set_area(
-                    (self.wire_length / self.repeater_spacing)
-                    * compute_gate_area(
-                        self.g_ip,
-                        self.g_tp,
-                        "INV",
-                        1,
-                        self.min_w_pmos * self.repeater_size,
-                        self.g_tp.min_w_nmos_ * self.repeater_size,
-                        self.g_tp.cell_h_def,
-                    )
-                )
-            elif self.wt == 'Global_10':
-                self.delay = Wire.global_10.delay * self.wire_length
-                self.power.readOp.dynamic = Wire.global_10.power.readOp.dynamic * self.wire_length
-                self.power.readOp.leakage = Wire.global_10.power.readOp.leakage * self.wire_length
-                self.power.readOp.gate_leakage = Wire.global_10.power.readOp.gate_leakage * self.wire_length
-                self.repeater_spacing = Wire.global_10.area.w
-                self.repeater_size = Wire.global_10.area.h
+            #     self.area.set_area(
+            #         (self.wire_length / self.repeater_spacing)
+            #         * compute_gate_area(
+            #             self.g_ip,
+            #             self.g_tp,
+            #             "INV",
+            #             1,
+            #             self.min_w_pmos * self.repeater_size,
+            #             self.g_tp.min_w_nmos_ * self.repeater_size,
+            #             self.g_tp.cell_h_def,
+            #         )
+            #     )
+            # elif self.wt == 'Global_10':
+            #     self.delay = Wire.global_10.delay * self.wire_length
+            #     self.power.readOp.dynamic = Wire.global_10.power.readOp.dynamic * self.wire_length
+            #     self.power.readOp.leakage = Wire.global_10.power.readOp.leakage * self.wire_length
+            #     self.power.readOp.gate_leakage = Wire.global_10.power.readOp.gate_leakage * self.wire_length
+            #     self.repeater_spacing = Wire.global_10.area.w
+            #     self.repeater_size = Wire.global_10.area.h
 
-                self.area.set_area(
-                    (self.wire_length / self.repeater_spacing)
-                    * compute_gate_area(
-                        self.g_ip,
-                        self.g_tp,
-                        "INV",
-                        1,
-                        self.min_w_pmos * self.repeater_size,
-                        self.g_tp.min_w_nmos_ * self.repeater_size,
-                        self.g_tp.cell_h_def,
-                    )
-                )
-            elif self.wt == 'Global_20':
-                self.delay = Wire.global_20.delay * self.wire_length
-                self.power.readOp.dynamic = Wire.global_20.power.readOp.dynamic * self.wire_length
-                self.power.readOp.leakage = Wire.global_20.power.readOp.leakage * self.wire_length
-                self.power.readOp.gate_leakage = Wire.global_20.power.readOp.gate_leakage * self.wire_length
-                self.repeater_spacing = Wire.global_20.area.w
-                self.repeater_size = Wire.global_20.area.h
+            #     self.area.set_area(
+            #         (self.wire_length / self.repeater_spacing)
+            #         * compute_gate_area(
+            #             self.g_ip,
+            #             self.g_tp,
+            #             "INV",
+            #             1,
+            #             self.min_w_pmos * self.repeater_size,
+            #             self.g_tp.min_w_nmos_ * self.repeater_size,
+            #             self.g_tp.cell_h_def,
+            #         )
+            #     )
+            # elif self.wt == 'Global_20':
+            #     self.delay = Wire.global_20.delay * self.wire_length
+            #     self.power.readOp.dynamic = Wire.global_20.power.readOp.dynamic * self.wire_length
+            #     self.power.readOp.leakage = Wire.global_20.power.readOp.leakage * self.wire_length
+            #     self.power.readOp.gate_leakage = Wire.global_20.power.readOp.gate_leakage * self.wire_length
+            #     self.repeater_spacing = Wire.global_20.area.w
+            #     self.repeater_size = Wire.global_20.area.h
 
-                self.area.set_area(
-                    (self.wire_length / self.repeater_spacing)
-                    * compute_gate_area(
-                        self.g_ip,
-                        self.g_tp,
-                        "INV",
-                        1,
-                        self.min_w_pmos * self.repeater_size,
-                        self.g_tp.min_w_nmos_ * self.repeater_size,
-                        self.g_tp.cell_h_def,
-                    )
-                )
-            elif self.wt == 'Global_30':
-                self.delay = Wire.global_30.delay * self.wire_length
-                self.power.readOp.dynamic = Wire.global_30.power.readOp.dynamic * self.wire_length
-                self.power.readOp.leakage = Wire.global_30.power.readOp.leakage * self.wire_length
-                self.power.readOp.gate_leakage = Wire.global_30.power.readOp.gate_leakage * self.wire_length
-                self.repeater_spacing = Wire.global_30.area.w
-                self.repeater_size = Wire.global_30.area.h
+            #     self.area.set_area(
+            #         (self.wire_length / self.repeater_spacing)
+            #         * compute_gate_area(
+            #             self.g_ip,
+            #             self.g_tp,
+            #             "INV",
+            #             1,
+            #             self.min_w_pmos * self.repeater_size,
+            #             self.g_tp.min_w_nmos_ * self.repeater_size,
+            #             self.g_tp.cell_h_def,
+            #         )
+            #     )
+            # elif self.wt == 'Global_30':
+            #     self.delay = Wire.global_30.delay * self.wire_length
+            #     self.power.readOp.dynamic = Wire.global_30.power.readOp.dynamic * self.wire_length
+            #     self.power.readOp.leakage = Wire.global_30.power.readOp.leakage * self.wire_length
+            #     self.power.readOp.gate_leakage = Wire.global_30.power.readOp.gate_leakage * self.wire_length
+            #     self.repeater_spacing = Wire.global_30.area.w
+            #     self.repeater_size = Wire.global_30.area.h
 
-                self.area.set_area(
-                    (self.wire_length / self.repeater_spacing)
-                    * compute_gate_area(
-                        self.g_ip,
-                        self.g_tp,
-                        "INV",
-                        1,
-                        self.min_w_pmos * self.repeater_size,
-                        self.g_tp.min_w_nmos_ * self.repeater_size,
-                        self.g_tp.cell_h_def,
-                    )
-                )
+            #     self.area.set_area(
+            #         (self.wire_length / self.repeater_spacing)
+            #         * compute_gate_area(
+            #             self.g_ip,
+            #             self.g_tp,
+            #             "INV",
+            #             1,
+            #             self.min_w_pmos * self.repeater_size,
+            #             self.g_tp.min_w_nmos_ * self.repeater_size,
+            #             self.g_tp.cell_h_def,
+            #         )
+            #     )
             else: # Check wr wire type
                 print(f"Oop self.wt is {self.wt}")
                 raise AssertionError()
@@ -591,7 +591,7 @@ class Wire(Component):
                 self.repeated_wire.append(Component())
 
         self.repeated_wire.pop()
-        self.update_fullswing()
+        # self.update_fullswing()
 
         Wire.global_.area.h = si
         Wire.global_.area.w = sp * 1e-6  # m
@@ -601,46 +601,46 @@ class Wire(Component):
         Wire.low_swing.power = l_wire.power
         del l_wire
 
-    def update_fullswing(self):
-        deltas = [
-            self.global_.delay + self.global_.delay * 0.05,
-            self.global_.delay + self.global_.delay * 0.1,
-            self.global_.delay + self.global_.delay * 0.2,
-            self.global_.delay + self.global_.delay * 0.3
-        ]
+    # def update_fullswing(self):
+    #     deltas = [
+    #         self.global_.delay + self.global_.delay * 0.05,
+    #         self.global_.delay + self.global_.delay * 0.1,
+    #         self.global_.delay + self.global_.delay * 0.2,
+    #         self.global_.delay + self.global_.delay * 0.3
+    #     ]
 
-        i = 4
-        while i > 0:
-            threshold = deltas[i - 1]
-            cost = float('inf')
-            for citer in list(self.repeated_wire):
-                # CHANGE: RELATIONAL LOGIC
-                # if citer.delay > threshold:
-                #     self.repeated_wire.remove(citer)
-                # else:
-                ncost = citer.power.readOp.dynamic / self.global_.power.readOp.dynamic + \
-                        citer.power.readOp.leakage / self.global_.power.readOp.leakage
+    #     i = 4
+    #     while i > 0:
+    #         threshold = deltas[i - 1]
+    #         cost = float('inf')
+    #         for citer in list(self.repeated_wire):
+    #             # CHANGE: RELATIONAL LOGIC
+    #             # if citer.delay > threshold:
+    #             #     self.repeated_wire.remove(citer)
+    #             # else:
+    #             ncost = citer.power.readOp.dynamic / self.global_.power.readOp.dynamic + \
+    #                     citer.power.readOp.leakage / self.global_.power.readOp.leakage
 
-                # CHANGE: RELATIONAL LOGIC
-                # if ncost < cost:
-                cost = ncost
-                if i == 4:
-                    Wire.global_30.delay = citer.delay
-                    Wire.global_30.power = citer.power
-                    Wire.global_30.area = citer.area
-                elif i == 3:
-                    Wire.global_20.delay = citer.delay
-                    Wire.global_20.power = citer.power
-                    Wire.global_20.area = citer.area
-                elif i == 2:
-                    Wire.global_10.delay = citer.delay
-                    Wire.global_10.power = citer.power
-                    Wire.global_10.area = citer.area
-                elif i == 1:
-                    Wire.global_5.delay = citer.delay
-                    Wire.global_5.power = citer.power
-                    Wire.global_5.area = citer.area
-            i -= 1
+    #             # CHANGE: RELATIONAL LOGIC
+    #             # if ncost < cost:
+    #             cost = ncost
+    #             if i == 4:
+    #                 Wire.global_30.delay = citer.delay
+    #                 Wire.global_30.power = citer.power
+    #                 Wire.global_30.area = citer.area
+    #             elif i == 3:
+    #                 Wire.global_20.delay = citer.delay
+    #                 Wire.global_20.power = citer.power
+    #                 Wire.global_20.area = citer.area
+    #             elif i == 2:
+    #                 Wire.global_10.delay = citer.delay
+    #                 Wire.global_10.power = citer.power
+    #                 Wire.global_10.area = citer.area
+    #             elif i == 1:
+    #                 Wire.global_5.delay = citer.delay
+    #                 Wire.global_5.power = citer.power
+    #                 Wire.global_5.area = citer.area
+    #         i -= 1
 
     def wire_model(self, space, size):
         ptemp = PowerDef()

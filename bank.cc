@@ -34,6 +34,12 @@
 #include "bank.h"
 #include <iostream>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 Bank::Bank(const DynamicParameter & dyn_p):
   dp(dyn_p), mat(dp),
@@ -141,10 +147,29 @@ double Bank::compute_delays(double inrisetime)
   return mat.compute_delays(inrisetime);
 }
 
+// Function to create the directory if it doesn't exist
+void bank_create_directory(const char *path) {
+    mkdir(path, 0777);
+}
 
+// Function to append a value to the output file
+void bank_append_value_to_file(const char *filename, const char *label, double value) {
+    FILE *file = fopen(filename, "a"); // Append mode
+    if (file != NULL) {
+        fprintf(file, "%s: %f\n", label, value);
+        fclose(file);
+    } else {
+        perror("Error opening file");
+    }
+}
 
 void Bank::compute_power_energy()
 {
+  // Define directory
+	const char *output_dir = "debug_sympy_validate";
+	bank_create_directory(output_dir);
+	const char *output_file = "debug_sympy_validate/debug_sympy_validate.txt";
+
   mat.compute_power_energy();
 
   if (!(dp.fully_assoc || dp.pure_cam))
@@ -159,6 +184,19 @@ void Bank::compute_power_energy()
 	  array_leakage  += mat.array_leakage*dp.num_mats;
 	  wl_leakage     += mat.wl_leakage*dp.num_mats;
 	  cl_leakage     += mat.cl_leakage*dp.num_mats;
+
+    // Write individual values for power.readOp.dynamic, power.readOp.leakage, and power.readOp.gate_leakage
+    bank_append_value_to_file(output_file, "thisbank_mat_power_readOp_dynamic_mul_num_act_mats_hor_dir", mat.power.readOp.dynamic * dp.num_act_mats_hor_dir);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_readOp_leakage_mul_num_mats", mat.power.readOp.leakage * dp.num_mats);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_readOp_gate_leakage_mul_num_mats", mat.power.readOp.gate_leakage * dp.num_mats);
+
+    bank_append_value_to_file(output_file, "thisbank_htree_in_add_power_readOp_dynamic", htree_in_add->power.readOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_htree_out_data_power_readOp_dynamic", htree_out_data->power.readOp.dynamic);
+
+    // Additional leakage terms
+    bank_append_value_to_file(output_file, "thisbank_mat_array_leakage_mul_num_mats", mat.array_leakage * dp.num_mats);
+    bank_append_value_to_file(output_file, "thisbank_mat_wl_leakage_mul_num_mats", mat.wl_leakage * dp.num_mats);
+    bank_append_value_to_file(output_file, "thisbank_mat_cl_leakage_mul_num_mats", mat.cl_leakage * dp.num_mats);
 //
 //	  power.readOp.leakage += htree_in_add->power.readOp.leakage;
 //	  power.readOp.leakage += htree_in_data->power.readOp.leakage;
@@ -200,7 +238,42 @@ void Bank::compute_power_energy()
 	  power.readOp.gate_leakage += htree_in_search->power.readOp.gate_leakage;
 	  power.readOp.gate_leakage += htree_out_search->power.readOp.gate_leakage;
 
+    // Fully associative or CAM configuration calculations
+    bank_append_value_to_file(output_file, "thisbank_mat_power_readOp_dynamic", mat.power.readOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_readOp_leakage_mul_num_mats", mat.power.readOp.leakage * dp.num_mats);
+    bank_append_value_to_file(output_file, "thisbank_num_mats", dp.num_mats);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_readOp_gate_leakage_mul_num_mats", mat.power.readOp.gate_leakage * dp.num_mats);
+
+    bank_append_value_to_file(output_file, "thisbank_mat_power_searchOp_dynamic_mul_num_mats", mat.power.searchOp.dynamic * dp.num_mats);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_bl_precharge_eq_drv_searchOp_dynamic", mat.power_bl_precharge_eq_drv.searchOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_sa_searchOp_dynamic", mat.power_sa.searchOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_bitline_searchOp_dynamic", mat.power_bitline.searchOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_mat_power_subarray_out_drv_searchOp_dynamic", mat.power_subarray_out_drv.searchOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_mat_ml_to_ram_wl_drv_power_readOp_dynamic", mat.ml_to_ram_wl_drv->power.readOp.dynamic);
+
+    bank_append_value_to_file(output_file, "thisbank_htree_in_add_power_readOp_dynamic", htree_in_add->power.readOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_htree_out_data_power_readOp_dynamic", htree_out_data->power.readOp.dynamic);
+
+    bank_append_value_to_file(output_file, "thisbank_htree_in_search_power_searchOp_dynamic", htree_in_search->power.searchOp.dynamic);
+    bank_append_value_to_file(output_file, "thisbank_htree_out_search_power_searchOp_dynamic", htree_out_search->power.searchOp.dynamic);
+
+    // Leakage components for associative or CAM configuration
+    bank_append_value_to_file(output_file, "thisbank_htree_in_add_power_readOp_leakage", htree_in_add->power.readOp.leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_in_data_power_readOp_leakage", htree_in_data->power.readOp.leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_out_data_power_readOp_leakage", htree_out_data->power.readOp.leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_in_search_power_readOp_leakage", htree_in_search->power.readOp.leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_out_search_power_readOp_leakage", htree_out_search->power.readOp.leakage);
+
+    // Gate leakage components
+    bank_append_value_to_file(output_file, "thisbank_htree_in_add_power_readOp_gate_leakage", htree_in_add->power.readOp.gate_leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_in_data_power_readOp_gate_leakage", htree_in_data->power.readOp.gate_leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_out_data_power_readOp_gate_leakage", htree_out_data->power.readOp.gate_leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_in_search_power_readOp_gate_leakage", htree_in_search->power.readOp.gate_leakage);
+    bank_append_value_to_file(output_file, "thisbank_htree_out_search_power_readOp_gate_leakage", htree_out_search->power.readOp.gate_leakage);
   }
 
 }
+
+
+
 
