@@ -1,1 +1,1 @@
-50160128*Vdd*(0.0675*I_off_n*n2p_drv_rt + 0.0675*I_off_n) + 22887839416.0584*Vdd*(12.285*I_off_n*n2p_drv_rt + 12.285*I_off_n)
+133893.860583942*Vdd*sqrt(area_cell)*sqrt(asp_ratio_cell)*(12.285*I_off_n*n2p_drv_rt + 12.285*I_off_n) + 50160128*Vdd*(0.0675*I_off_n*n2p_drv_rt + 0.0675*I_off_n)

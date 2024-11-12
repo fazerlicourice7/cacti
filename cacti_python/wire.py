@@ -60,10 +60,12 @@ class Wire(Component):
         self.wire_spacing = 0
         self.repeater_size = 0 
 
+        org_wire_length = self.wire_length
         if Wire.initialized != 1:
             # print("Initializing Wire")
             self.__init_wire_simple(w_s, s_s, wp, resistivity, dt)
 
+        self.wire_length = org_wire_length
         self.calculate_wire_stats()
 
         # ISSUE? -> might need to delete -> rpeater spacing is probably messed up
