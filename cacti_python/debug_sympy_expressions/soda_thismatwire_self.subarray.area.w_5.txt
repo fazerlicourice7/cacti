@@ -1,0 +1,1 @@
+40.69*sqrt(area_cell)/sqrt(asp_ratio_cell) + 9.36*wire_pitch + 19.5

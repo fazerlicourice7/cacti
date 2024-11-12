@@ -1,0 +1,1 @@
+2.46913580246914*Vdd*nmos_effective_resistance_multiplier/I_on_n

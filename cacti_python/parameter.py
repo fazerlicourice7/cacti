@@ -1188,6 +1188,7 @@ class TechnologyParameter:
         dram_acc_lo.assign(g_ip, self, in_file_lo, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
         dram_acc_hi.assign(g_ip, self, in_file_hi, ram_cell_tech_type if ram_cell_tech_type == comm_dram else dram_cell_tech_flavor, g_ip.temp)
         self.dram_acc.interpolate(alpha, dram_acc_lo, dram_acc_hi)
+        # TODO: could be why 22nm messes up... probably not?
         if tech_lo <= 22:
             pass
         elif tech_lo <= 32:

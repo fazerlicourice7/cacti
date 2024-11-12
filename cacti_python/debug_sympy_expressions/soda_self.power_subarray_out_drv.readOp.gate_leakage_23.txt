@@ -1,0 +1,1 @@
+0.585*I_g_on_n*Vdd + 2*Vdd*(0.04875*I_g_on_n*n2p_drv_rt + 0.04875*I_g_on_n)

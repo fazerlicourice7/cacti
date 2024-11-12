@@ -1,0 +1,1 @@
+Vdd*(0.03375*I_off_n*n2p_drv_rt + 0.03375*I_off_n)

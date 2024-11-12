@@ -1,0 +1,1 @@
+8.138e-5*sqrt(area_cell)/sqrt(asp_ratio_cell) + 1.3e-7*2**(-2 + log(33)/log(2))*wire_pitch + 5.54775e-5*wire_pitch + 3.9e-5

@@ -1,0 +1,1 @@
+9009.00900900901*Vdd*(2.277*I_g_on_n*n2p_drv_rt + 2.277*I_g_on_n)*(2.0032e-5*sqrt(area_cell)/sqrt(asp_ratio_cell) + 3.2e-8*2**(-2 + log(33)/log(2))*wire_pitch + 1.064e-5*wire_pitch + 9.6e-6)

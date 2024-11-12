@@ -1,0 +1,1 @@
+25681985536*Vdd*(0.0325*I_g_on_n*Wmemcellnmos + 0.0325*I_g_on_n*Wmemcellpmos)

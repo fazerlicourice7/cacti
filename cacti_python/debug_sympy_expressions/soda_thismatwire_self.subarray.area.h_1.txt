@@ -1,0 +1,1 @@
+5.85*sqrt(area_cell)*sqrt(asp_ratio_cell)
