@@ -40,6 +40,21 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+// Function to create the directory if it doesn't exist
+void create_directory(const char *path) {
+    mkdir(path, 0777);
+}
+
+// Function to append a value to the output file
+void append_value_to_file(const char *filename, const char *label, double value) {
+    FILE *file = fopen(filename, "a"); // Append mode
+    if (file != NULL) {
+        fprintf(file, "%s: %f\n", label, value);
+        fclose(file);
+    } else {
+        perror("Error opening file");
+    }
+}
 
 Mat::Mat(const DynamicParameter & dyn_p)
  :dp(dyn_p),
@@ -264,7 +279,10 @@ Mat::Mat(const DynamicParameter & dyn_p)
   sa_mux_lev_1_predec = new Predec(sa_mux_lev_1_predec_blk_drv1, sa_mux_lev_1_predec_blk_drv2);
   sa_mux_lev_2_predec = new Predec(sa_mux_lev_2_predec_blk_drv1, sa_mux_lev_2_predec_blk_drv2);
 
+  const char *output_file = "debug_sympy_validate/debug_sympy_validate.txt";
   subarray_out_wire   = new Wire(dp.wtype, g_ip->cl_vertical?subarray.area.w:subarray.area.h);//Bug should be subarray.area.w Owen and 
+  append_value_to_file(output_file, "thismatwire_self.subarray.area.w", subarray.area.w);
+  append_value_to_file(output_file, "thismatwire_self.subarray.area.h", subarray.area.h);
   //subarray_out_wire   = new Wire(g_ip->wt, g_ip->cl_vertical?subarray.area.w:subarray.area.h);//Bug should be subarray.area.w Owen and 
 
   double driver_c_gate_load;
@@ -544,21 +562,7 @@ Mat::~Mat()
   }
 }
 
-// Function to create the directory if it doesn't exist
-void create_directory(const char *path) {
-    mkdir(path, 0777);
-}
 
-// Function to append a value to the output file
-void append_value_to_file(const char *filename, const char *label, double value) {
-    FILE *file = fopen(filename, "a"); // Append mode
-    if (file != NULL) {
-        fprintf(file, "%s: %f\n", label, value);
-        fclose(file);
-    } else {
-        perror("Error opening file");
-    }
-}
 
 double Mat::compute_delays(double inrisetime)
 {
@@ -1368,61 +1372,131 @@ double Mat::compute_subarray_out_drv(double inrisetime)
 
   double C_ld, rd, tf, this_delay;
   double p_to_n_sz_r = pmos_to_nmos_sz_ratio(is_dram);
-
+  append_value_to_file(output_file, "soda_p_to_n_sz_r", p_to_n_sz_r);
 
   // delay of signal through pass-transistor of first level of sense-amp mux to input of inverter-buffer.
   rd = tr_R_on(g_tp.w_nmos_sa_mux, NCH, 1, is_dram);
+  append_value_to_file(output_file, "soda_rd", rd);
+  
   C_ld = dp.Ndsam_lev_1 * drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0, camFlag? cam_cell.w:cell.w * deg_bl_muxing / (RWP + ERP + SCHP), is_dram) +
     gate_C(g_tp.min_w_nmos_ + p_to_n_sz_r * g_tp.min_w_nmos_, 0.0, is_dram);
+  append_value_to_file(output_file, "soda_C_ld", C_ld);
+
   tf = rd * C_ld;
+  append_value_to_file(output_file, "soda_tf", tf);
+
   this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
+  append_value_to_file(output_file, "soda_this_delay", this_delay);
+
   delay_subarray_out_drv += this_delay;
+  append_value_to_file(output_file, "soda_delay_subarray_out_drv", delay_subarray_out_drv);
+
   inrisetime = this_delay/(1.0 - 0.5);
+  append_value_to_file(output_file, "soda_inrisetime", inrisetime);
+
   power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.dynamic", power_subarray_out_drv.readOp.dynamic);
+
   power_subarray_out_drv.readOp.leakage += 0;  // for now, let leakage of the pass transistor be 0
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.leakage", power_subarray_out_drv.readOp.leakage);
+
+  //////////
   power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(g_tp.w_nmos_sa_mux, 0, 1, nmos)* g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
+
   // delay of signal through inverter-buffer to second level of sense-amp mux.
   // internal delay of buffer
   rd = tr_R_on(g_tp.min_w_nmos_, NCH, 1, is_dram);
+  append_value_to_file(output_file, "soda_rd", rd);
+
   C_ld = drain_C_(g_tp.min_w_nmos_, NCH, 1, 1, g_tp.cell_h_def, is_dram) +
     drain_C_(p_to_n_sz_r * g_tp.min_w_nmos_, PCH, 1, 1, g_tp.cell_h_def, is_dram) +
     gate_C(g_tp.min_w_nmos_ + p_to_n_sz_r * g_tp.min_w_nmos_, 0.0, is_dram);
+  append_value_to_file(output_file, "soda_C_ld", C_ld);
+
   tf = rd * C_ld;
+  append_value_to_file(output_file, "soda_tf", tf);
+
   this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
+  append_value_to_file(output_file, "soda_this_delay", this_delay);
+
   delay_subarray_out_drv += this_delay;
+  append_value_to_file(output_file, "soda_delay_subarray_out_drv", delay_subarray_out_drv);
+
   inrisetime = this_delay/(1.0 - 0.5);
+  append_value_to_file(output_file, "soda_inrisetime", inrisetime);
+
   power_subarray_out_drv.readOp.dynamic      += C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.dynamic", power_subarray_out_drv.readOp.dynamic);
+
   power_subarray_out_drv.readOp.leakage      += cmos_Isub_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv, is_dram)* g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.leakage", power_subarray_out_drv.readOp.leakage);
+
   power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv)* g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
 
   // inverter driving drain of pass transistor of second level of sense-amp mux.
   rd = tr_R_on(g_tp.min_w_nmos_, NCH, 1, is_dram);
+  append_value_to_file(output_file, "soda_rd", rd);
+
   C_ld = drain_C_(g_tp.min_w_nmos_, NCH, 1, 1, g_tp.cell_h_def, is_dram) +
     drain_C_(p_to_n_sz_r * g_tp.min_w_nmos_, PCH, 1, 1, g_tp.cell_h_def, is_dram) +
     drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0, camFlag? cam_cell.w:cell.w * deg_bl_muxing * dp.Ndsam_lev_1 / (RWP + ERP + SCHP), is_dram);
+  append_value_to_file(output_file, "soda_C_ld", C_ld);
+  
   tf = rd * C_ld;
+  append_value_to_file(output_file, "soda_tf", tf);
+
   this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
+  append_value_to_file(output_file, "soda_this_delay", this_delay);
+
   delay_subarray_out_drv += this_delay;
+  append_value_to_file(output_file, "soda_delay_subarray_out_drv", delay_subarray_out_drv);
+
   inrisetime = this_delay/(1.0 - 0.5);
+  append_value_to_file(output_file, "soda_inrisetime", inrisetime);
+
   power_subarray_out_drv.readOp.dynamic      += C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.dynamic", power_subarray_out_drv.readOp.dynamic);
+
   power_subarray_out_drv.readOp.leakage      += cmos_Isub_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv)* g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.leakage", power_subarray_out_drv.readOp.leakage);
+
   power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv)* g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
 
 
   // delay of signal through pass-transistor to input of subarray output driver.
   rd = tr_R_on(g_tp.w_nmos_sa_mux, NCH, 1, is_dram);
+  append_value_to_file(output_file, "soda_rd", rd);
+
   C_ld = dp.Ndsam_lev_2 * drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0, camFlag? cam_cell.w:cell.w * deg_bl_muxing * dp.Ndsam_lev_1 / (RWP + ERP + SCHP), is_dram) +
     //gate_C(subarray_out_wire->repeater_size * g_tp.min_w_nmos_ * (1 + p_to_n_sz_r), 0.0, is_dram);
     gate_C(subarray_out_wire->repeater_size *(subarray_out_wire->wire_length/subarray_out_wire->repeater_spacing) * g_tp.min_w_nmos_ * (1 + p_to_n_sz_r), 0.0, is_dram);
+  append_value_to_file(output_file, "soda_C_ld", C_ld);
+
   tf = rd * C_ld;
+  append_value_to_file(output_file, "soda_tf", tf);
+
   this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
+  append_value_to_file(output_file, "soda_this_delay", this_delay);
+
   delay_subarray_out_drv += this_delay;
+  append_value_to_file(output_file, "soda_delay_subarray_out_drv", delay_subarray_out_drv);
+
   inrisetime = this_delay/(1.0 - 0.5);
+  append_value_to_file(output_file, "soda_inrisetime", inrisetime);
+
   power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.dynamic", power_subarray_out_drv.readOp.dynamic);
+
   power_subarray_out_drv.readOp.leakage += 0;  // for now, let leakage of the pass transistor be 0
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.leakage", power_subarray_out_drv.readOp.leakage);
+
   power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(g_tp.w_nmos_sa_mux, 0, 1, nmos)* g_tp.peri_global.Vdd;
+  append_value_to_file(output_file, "soda_power_subarray_out_drv.readOp.gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
 
-
+  append_value_to_file(output_file, "soda_inrisetime", inrisetime);
   return inrisetime;
 }
 
@@ -2135,6 +2209,7 @@ void Mat::compute_power_energy()
     append_value_to_file(output_file, "thismat_num_subarrays_per_mat_6", num_subarrays_per_mat);
     append_value_to_file(output_file, "thismat_RWP", RWP);
     append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
     append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled", power_subarray_out_drv.readOp.gate_leakage);
 
     // Bitline gate leakage
@@ -2399,6 +2474,7 @@ void Mat::compute_power_energy()
     append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
     append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_gate_leakage", subarray_out_wire->power.readOp.gate_leakage);
     append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat", num_subarrays_per_mat);
     append_value_to_file(output_file, "thismat_RWP", RWP);
     append_value_to_file(output_file, "thismat_ERP", ERP);
     append_value_to_file(output_file, "thismat_SCHP", SCHP);
@@ -2553,6 +2629,10 @@ void Mat::compute_power_energy()
     append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_gate_leakage", subarray_out_wire->power.readOp.gate_leakage);
     append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
     append_value_to_file(output_file, "thismat_num_subarrays_per_mat_14", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
+  
 
     // Final cumulative readOp gate leakage including all components
     append_value_to_file(output_file, "thismat_final_total_power_readOp_gate_leakage", power.readOp.gate_leakage);
@@ -2581,7 +2661,14 @@ void Mat::compute_power_energy()
     // Active search operation gate leakage for bitline precharge driver in search operation
     append_value_to_file(output_file, "thismat_power_bl_precharge_eq_drv_searchOp_gate_leakage", power_bl_precharge_eq_drv.searchOp.gate_leakage);
     append_value_to_file(output_file, "thismat_power_sa_readOp_gate_leakage", power_sa.readOp.gate_leakage);
+
     append_value_to_file(output_file, "thismat_power_subarray_out_drv_readOp_gate_leakage", power_subarray_out_drv.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_subarray_out_wire_power_readOp_gate_leakage", subarray_out_wire->power.readOp.gate_leakage);
+    append_value_to_file(output_file, "thismat_number_output_drivers_subarray", number_output_drivers_subarray);
+    append_value_to_file(output_file, "thismat_num_subarrays_per_mat_14", num_subarrays_per_mat);
+    append_value_to_file(output_file, "thismat_RWP", RWP);
+    append_value_to_file(output_file, "thismat_ERP", ERP);
+    append_value_to_file(output_file, "thismat_SCHP", SCHP);
 
     // Cumulative readOp gate leakage including bitline precharge, SA, and subarray out drivers
     append_value_to_file(output_file, "thismat_total_power_readOp_gate_leakage", power.readOp.gate_leakage);

@@ -23,6 +23,7 @@ from .parameter import (
 from .powergating import SleepTx
 from .subarray import Subarray
 from .wire import Wire
+import os
 
 
 # Note: This code relies on several other classes and functions (e.g., Subarray, Decoder, Driver, PredecBlk, PredecBlkDrv, Predec, Wire, Sleep_tx, gate_C, drain_C_, tr_R_on, horowitz, self.g_tp, g_ip)
@@ -235,6 +236,8 @@ class Mat(Component):
         self.sa_mux_lev_2_predec = Predec(self.sa_mux_lev_2_predec_blk_drv1, self.sa_mux_lev_2_predec_blk_drv2)
         
         print(f"WT PROBLEM HTREE Mat init subarray wire self.wt: {self.dp.wtype}")
+        write_to_debug("thismatwire_self.subarray.area.w", self.subarray.area.w)
+        write_to_debug("thismatwire_self.subarray.area.h", self.subarray.area.h)
         self.subarray_out_wire = Wire(
             self.g_ip,
             self.g_tp,
@@ -886,13 +889,16 @@ class Mat(Component):
             file_path = os.path.join(output_dir, f"{expr_name}.txt")
             
             # Write the value of the expression to the file
-            with open(file_path, "w") as file:
+            with open(file_path, "a") as file:
                 file.write(str(value))
 
         p_to_n_sz_r = pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram)
+        write_to_debug("p_to_n_sz_r", p_to_n_sz_r)
 
         # Delay of signal through pass-transistor of first level of sense-amp mux to input of inverter-buffer.
         rd = tr_R_on(self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
+        write_to_debug("rd", rd)
+
         C_ld = self.dp.Ndsam_lev_1 * drain_C_(
             self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
             self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP),
@@ -900,20 +906,38 @@ class Mat(Component):
         ) + gate_C(
             self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram
         )
+        write_to_debug("C_ld", C_ld)
+
         tf = rd * C_ld
+        write_to_debug("tf", tf)
+
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
+        write_to_debug("this_delay", this_delay)
+
         self.delay_subarray_out_drv += this_delay
+        write_to_debug("self.delay_subarray_out_drv", self.delay_subarray_out_drv)
+
         inrisetime = this_delay / (1.0 - 0.5)
+        write_to_debug("inrisetime", inrisetime)
+
         self.power_subarray_out_drv.readOp.dynamic += (
             C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
         )
+        write_to_debug("self.power_subarray_out_drv.readOp.dynamic", self.power_subarray_out_drv.readOp.dynamic)
+
         self.power_subarray_out_drv.readOp.leakage += 0  # For now, let leakage of the pass transistor be 0
+        write_to_debug("self.power_subarray_out_drv.readOp.leakage", self.power_subarray_out_drv.readOp.leakage)
+
+        #############
         self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
             self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos
         ) * self.g_tp.peri_global.Vdd
+        write_to_debug("self.power_subarray_out_drv.readOp.gate_leakage", self.power_subarray_out_drv.readOp.gate_leakage)
 
         # Delay of signal through inverter-buffer to second level of sense-amp mux.
         rd = tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, self.is_dram)
+        write_to_debug("rd", rd)
+
         C_ld = (
             drain_C_(
                 self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
@@ -923,22 +947,39 @@ class Mat(Component):
                 self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram
             )
         )
+        write_to_debug("C_ld", C_ld)
+
         tf = rd * C_ld
+        write_to_debug("tf", tf)
+
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
+        write_to_debug("this_delay", this_delay)
+        
         self.delay_subarray_out_drv += this_delay
+        write_to_debug("self.delay_subarray_out_drv", self.delay_subarray_out_drv)
+
         inrisetime = this_delay / (1.0 - 0.5)
+        write_to_debug("inrisetime", inrisetime)
+
         self.power_subarray_out_drv.readOp.dynamic += (
             C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
         )
+        write_to_debug("self.power_subarray_out_drv.readOp.dynamic", self.power_subarray_out_drv.readOp.dynamic)
+
         self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(
             self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv, self.is_dram
         ) * self.g_tp.peri_global.Vdd
+        write_to_debug("self.power_subarray_out_drv.readOp.leakage", self.power_subarray_out_drv.readOp.leakage)
+
         self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
             self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
         ) * self.g_tp.peri_global.Vdd
+        write_to_debug("self.power_subarray_out_drv.readOp.gate_leakage", self.power_subarray_out_drv.readOp.gate_leakage)
 
         # Inverter driving drain of pass transistor of second level of sense-amp mux.
         rd = tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, self.is_dram)
+        write_to_debug("rd", rd)
+
         C_ld = (
             drain_C_(
                 self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
@@ -950,22 +991,39 @@ class Mat(Component):
                 self.is_dram
             )
         )
+        write_to_debug("C_ld", C_ld)
+
         tf = rd * C_ld
+        write_to_debug("tf", tf)
+
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
+        write_to_debug("this_delay", this_delay)
+
         self.delay_subarray_out_drv += this_delay
+        write_to_debug("self.delay_subarray_out_drv", self.delay_subarray_out_drv)
+
         inrisetime = this_delay / (1.0 - 0.5)
+        write_to_debug("inrisetime", inrisetime)
+
         self.power_subarray_out_drv.readOp.dynamic += (
             C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
         )
+        write_to_debug("self.power_subarray_out_drv.readOp.dynamic", self.power_subarray_out_drv.readOp.dynamic)
+
         self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(
             self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
         ) * self.g_tp.peri_global.Vdd
+        write_to_debug("self.power_subarray_out_drv.readOp.leakage", self.power_subarray_out_drv.readOp.leakage)
+
         self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
             self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
         ) * self.g_tp.peri_global.Vdd
+        write_to_debug("self.power_subarray_out_drv.readOp.gate_leakage", self.power_subarray_out_drv.readOp.gate_leakage)
 
         # Delay of signal through pass-transistor to input of subarray output driver.
         rd = tr_R_on(self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
+        write_to_debug("rd", rd)
+
         C_ld = self.dp.Ndsam_lev_2 * drain_C_(
             self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
             self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP),
@@ -979,18 +1037,34 @@ class Mat(Component):
             0.0,
             self.is_dram
         )
+        write_to_debug("C_ld", C_ld)
+
         tf = rd * C_ld
+        write_to_debug("tf", tf)
+
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
+        write_to_debug("this_delay", this_delay)
+
         self.delay_subarray_out_drv += this_delay
+        write_to_debug("self.delay_subarray_out_drv", self.delay_subarray_out_drv)
+
         inrisetime = this_delay / (1.0 - 0.5)
+        write_to_debug("inrisetime", inrisetime)
+
         self.power_subarray_out_drv.readOp.dynamic += (
             C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
         )
+        write_to_debug("self.power_subarray_out_drv.readOp.dynamic", self.power_subarray_out_drv.readOp.dynamic)
+
         self.power_subarray_out_drv.readOp.leakage += 0  # For now, let leakage of the pass transistor be 0
+        write_to_debug("self.power_subarray_out_drv.readOp.leakage", self.power_subarray_out_drv.readOp.leakage)
+
         self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
             self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos
         ) * self.g_tp.peri_global.Vdd
+        write_to_debug("self.power_subarray_out_drv.readOp.gate_leakage", self.power_subarray_out_drv.readOp.gate_leakage)
 
+        write_to_debug("inrisetime", inrisetime)
         return inrisetime
 
 
@@ -1866,11 +1940,12 @@ class Mat(Component):
             self.power_bl_precharge_eq_drv.readOp.gate_leakage = self.bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
             self.power_sa.readOp.gate_leakage *= self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
 
+            before_subarray_out_drv_gate_leakage = self.power_subarray_out_drv.readOp.gate_leakage
             self.power_subarray_out_drv.readOp.gate_leakage = (
                 (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
                 self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
             )
-
+            
             self.power.readOp.gate_leakage += (
                 self.power_bitline.readOp.gate_leakage +
                 self.power_bl_precharge_eq_drv.readOp.gate_leakage +
@@ -1899,13 +1974,18 @@ class Mat(Component):
                 ),
 
                 # Subarray output driver gate leakage, including subarray out wire power, scaled by output drivers and read/write ports
-                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_a1": self.power_subarray_out_drv.readOp.gate_leakage,
+                "before_subarray_out_drv_gate_leakage": before_subarray_out_drv_gate_leakage,
                 "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
-                "thismat_number_output_drivers_subarray": self.number_output_drivers_subarray,
-                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
-                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
-                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
-                ),
+                # "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled_a1": (
+                #     (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                #     self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP)
+                # ),
+                "self.RWP": self.RWP,
+                "self.number_output_drivers_subarray": self.number_output_drivers_subarray,
+                "self.num_subarrays_per_mat": self.num_subarrays_per_mat,
+                "self.ERP": self.ERP,
+                "self.SCHP_a1": self.SCHP,
 
                 # Total gate leakage power for readOp, summing all components
                 "thismat_total_power_readOp_gate_leakage": (
@@ -2194,6 +2274,7 @@ class Mat(Component):
             self.power_bl_precharge_eq_drv.searchOp.gate_leakage = self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
             self.power_sa.readOp.gate_leakage *= self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
 
+            before_subarray_out_drv_gate_leakage = self.power_subarray_out_drv.readOp.gate_leakage
             self.power_subarray_out_drv.readOp.gate_leakage = (
                 (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
                 self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
@@ -2250,13 +2331,18 @@ class Mat(Component):
                 ),
 
                 # Subarray output driver gate leakage, scaled by output drivers, subarrays, and read/write/search ports
-                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_b1": self.power_subarray_out_drv.readOp.gate_leakage,
+                "before_subarray_out_drv_gate_leakage": before_subarray_out_drv_gate_leakage,
                 "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
-                "thismat_number_output_drivers_subarray": self.number_output_drivers_subarray,
-                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
-                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
-                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
-                ),
+                # "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled_b1": (
+                #     (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                #     self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                # ),
+                "self.RWP": self.RWP,
+                "self.number_output_drivers_subarray": self.number_output_drivers_subarray,
+                "self.num_subarrays_per_mat": self.num_subarrays_per_mat,
+                "self.ERP": self.ERP,
+                "self.SCHP_b1": self.SCHP,
 
                 # Total gate leakage power for readOp, summing all components
                 "thismat_total_power_readOp_gate_leakage": (
@@ -2334,13 +2420,18 @@ class Mat(Component):
                 ),
 
                 # Subarray output driver gate leakage, scaled by output drivers, subarrays, and read/write/search ports
-                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_c1": self.power_subarray_out_drv.readOp.gate_leakage,
+                "before_subarray_out_drv_gate_leakage": before_subarray_out_drv_gate_leakage,
                 "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
-                "thismat_number_output_drivers_subarray": self.number_output_drivers_subarray,
-                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
-                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
-                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
-                ),
+                # "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled_c1": (
+                #     (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                #     self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                # ),
+                "self.RWP": self.RWP,
+                "self.number_output_drivers_subarray": self.number_output_drivers_subarray,
+                "self.num_subarrays_per_mat": self.num_subarrays_per_mat,
+                "self.ERP": self.ERP,
+                "self.SCHP_c1": self.SCHP,
 
                 # Total gate leakage power for readOp, summing all components
                 "thismat_total_power_readOp_gate_leakage": (
@@ -2465,6 +2556,7 @@ class Mat(Component):
             self.power_bl_precharge_eq_drv.searchOp.gate_leakage = self.cam_bl_precharge_eq_drv.power.readOp.gate_leakage * self.num_subarrays_per_mat
             self.power_sa.readOp.gate_leakage *= self.num_sa_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
 
+            before_subarray_out_drv_gate_leakage = self.power_subarray_out_drv.readOp.gate_leakage
             self.power_subarray_out_drv.readOp.gate_leakage = (
                 (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
                 self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
@@ -2503,12 +2595,18 @@ class Mat(Component):
                 ),
 
                 # Subarray output driver gate leakage, including out wire power, scaled by output drivers and read/write/search ports
-                "thismat_power_subarray_out_drv_readOp_gate_leakage": self.power_subarray_out_drv.readOp.gate_leakage,
+                "thismat_power_subarray_out_drv_readOp_gate_leakage_d1": self.power_subarray_out_drv.readOp.gate_leakage,
+                "before_subarray_out_drv_gate_leakage": before_subarray_out_drv_gate_leakage,
                 "thismat_subarray_out_wire_power_readOp_gate_leakage": self.subarray_out_wire.power.readOp.gate_leakage,
-                "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled": (
-                    (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
-                    self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
-                ),
+                # "thismat_power_subarray_out_drv_readOp_gate_leakage_scaled_d1": (
+                #     (self.power_subarray_out_drv.readOp.gate_leakage + self.subarray_out_wire.power.readOp.gate_leakage) *
+                #     self.number_output_drivers_subarray * self.num_subarrays_per_mat * (self.RWP + self.ERP + self.SCHP)
+                # ),
+                "self.RWP": self.RWP,
+                "self.number_output_drivers_subarray": self.number_output_drivers_subarray,
+                "self.num_subarrays_per_mat": self.num_subarrays_per_mat,
+                "self.ERP": self.ERP,
+                "self.SCHP_d1": self.SCHP,
 
                 # Total gate leakage for readOp, including bitline precharge, sense amp, and subarray out driver components
                 "thismat_total_power_readOp_gate_leakage_including_components": (
@@ -2581,7 +2679,7 @@ class Mat(Component):
 
 
 def get_unique_filepath(directory, base_filename):
-    import os
+
     """Generate a unique file path by adding a counter if the file already exists."""
     file_path = os.path.join(directory, f"{base_filename}.txt")
     counter = 1
@@ -2590,3 +2688,20 @@ def get_unique_filepath(directory, base_filename):
         file_path = os.path.join(directory, f"{base_filename}_{counter}.txt")
         counter += 1
     return file_path
+
+def write_to_debug(name, value):
+    output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Initialize the file path and counter
+    counter = 1
+    file_path = os.path.join(output_dir, f"soda_{name}.txt")
+    
+    # Check if the file already exists and increment the counter
+    while os.path.exists(file_path):
+        file_path = os.path.join(output_dir, f"soda_{name}_{counter}.txt")
+        counter += 1
+    
+    # Write the value of the expression to the file
+    with open(file_path, "w") as file:
+        file.write(str(value))

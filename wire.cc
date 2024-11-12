@@ -33,6 +33,28 @@
 #include "cmath"
 #include "parameter.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+// Function to create the directory if it doesn't exist
+void wire_create_directory(const char *path) {
+    mkdir(path, 0777);
+}
+
+// Function to append a value to the output file
+void wire_append_value_to_file(const char *filename, const char *label, double value) {
+    FILE *file = fopen(filename, "a"); // Append mode
+    if (file != NULL) {
+        fprintf(file, "%s: %f\n", label, value);
+        fclose(file);
+    } else {
+        perror("Error opening file");
+    }
+}
+
 // use this constructor to calculate wire stats
 Wire::Wire(
     enum Wire_type wire_model,
@@ -125,6 +147,9 @@ Wire::~Wire()
 void
 Wire::calculate_wire_stats()
 {
+  // const char *output_dir = "debug_sympy_validate";
+	// wire_create_directory(output_dir);
+	const char *output_file = "debug_sympy_validate/debug_sympy_validate.txt";
 
   if (wire_placement == outside_mat) {
     wire_width = g_tp.wire_outside_mat.pitch/2;
@@ -141,11 +166,11 @@ Wire::calculate_wire_stats()
   wire_width   *= (w_scale * 1e-6/2) /* (m) */;
   wire_spacing *= (s_scale * 1e-6/2) /* (m) */;
 
-
+  wire_append_value_to_file(output_file, "BRO what the hell, why are you not being found", wire_length);
   if (wt != Low_swing) {
 
 	  //    delay_optimal_wire();
-	  
+    wire_append_value_to_file(output_file, "INNN WIRRREEEEEE", wire_length);
 	  if (wt == Global) {
 		  delay = global.delay * wire_length;
 		  power.readOp.dynamic = global.power.readOp.dynamic * wire_length;
@@ -156,6 +181,14 @@ Wire::calculate_wire_stats()
 		  area.set_area((wire_length/repeater_spacing) *
 				  compute_gate_area(INV, 1, min_w_pmos * repeater_size,
 						  g_tp.min_w_nmos_ * repeater_size, g_tp.cell_h_def));
+
+      wire_append_value_to_file(output_file, "thiswire_wire_length", wire_length);
+      wire_append_value_to_file(output_file, "thiswire_global.power.readOp.dynamic", global.power.readOp.dynamic);
+      wire_append_value_to_file(output_file, "thiswire_global.power.readOp.leakage", global.power.readOp.leakage);
+      wire_append_value_to_file(output_file, "thiswire_global.power.readOp.gate_leakage", global.power.readOp.gate_leakage);
+      wire_append_value_to_file(output_file, "thiswire_power.readOp.dynamic", power.readOp.dynamic);
+      wire_append_value_to_file(output_file, "wthiswire_power.readOp.leakage", power.readOp.leakage);
+      wire_append_value_to_file(output_file, "thiswire_power.readOp.gate_leakage", power.readOp.gate_leakage);
 	  }
 	  else if (wt == Global_5) {
 		  delay = global_5.delay * wire_length;
