@@ -99,6 +99,7 @@ class Wire(Component):
         self.wire_spacing *= (self.s_scale * 1e-6 / 2)
 
         if self.wt != 'Low_swing':
+            self.wt = 'Global'
             if self.wt == 'Global':
                 self.delay = Wire.global_.delay * self.wire_length
                 self.power.readOp.dynamic = Wire.global_.power.readOp.dynamic * self.wire_length
