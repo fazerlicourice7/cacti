@@ -869,55 +869,124 @@ class Mat(Component):
         return outrisetime
 
     def compute_subarray_out_drv(self, inrisetime):
+        import os
+        # Define the output directory
+        output_dir = os.path.join(os.path.dirname(__file__), "debug_sympy_expressions")
+        os.makedirs(output_dir, exist_ok=True)
+
+        expressions = {
+            # Individual components for leakage power
+            "compute_subarray_out_drv_INRISETIME": inrisetime,
+        }
+        # Write the values of each expression to a separate file
+        for expr_name, value in expressions.items():
+            file_path = os.path.join(output_dir, f"{expr_name}.txt")
+            
+            # Write the value of the expression to the file
+            with open(file_path, "a") as file:
+                file.write(str(value))
+
         p_to_n_sz_r = pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram)
 
         # Delay of signal through pass-transistor of first level of sense-amp mux to input of inverter-buffer.
         rd = tr_R_on(self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
-        C_ld = self.dp.Ndsam_lev_1 * drain_C_(self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
-               gate_C(self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
+        C_ld = self.dp.Ndsam_lev_1 * drain_C_(
+            self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
+            self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing / (self.RWP + self.ERP + self.SCHP),
+            self.is_dram
+        ) + gate_C(
+            self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += 0  # For now, let leakage of the pass transistor be 0
+
+        #############
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos
+        ) * self.g_tp.peri_global.Vdd
 
         # Delay of signal through inverter-buffer to second level of sense-amp mux.
         rd = tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, self.is_dram)
-        C_ld = drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               drain_C_(self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               gate_C(self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram)
+        C_ld = (
+            drain_C_(
+                self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + drain_C_(
+                self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + gate_C(
+                self.g_tp, self.g_tp.min_w_nmos_ + p_to_n_sz_r * self.g_tp.min_w_nmos_, 0.0, self.is_dram
+            )
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv, self.is_dram) * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv) * self.g_tp.peri_global.Vdd
-
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv, self.is_dram
+        ) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
+        ) * self.g_tp.peri_global.Vdd
         # Inverter driving drain of pass transistor of second level of sense-amp mux.
         rd = tr_R_on(self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, self.is_dram)
-        C_ld = drain_C_(self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               drain_C_(self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram) + \
-               drain_C_(self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP), self.is_dram)
+        C_ld = (
+            drain_C_(
+                self.g_ip, self.g_tp, self.g_tp.min_w_nmos_, NCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + drain_C_(
+                self.g_ip, self.g_tp, p_to_n_sz_r * self.g_tp.min_w_nmos_, PCH, 1, 1, self.g_tp.cell_h_def, self.is_dram
+            ) + drain_C_(
+                self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
+                self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP),
+                self.is_dram
+            )
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv) * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv) * self.g_tp.peri_global.Vdd
-
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += cmos_Isub_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
+        ) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.min_w_nmos_, p_to_n_sz_r * self.g_tp.min_w_nmos_, 1, inv
+        ) * self.g_tp.peri_global.Vdd
         # Delay of signal through pass-transistor to input of subarray output driver.
         rd = tr_R_on(self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, self.is_dram)
-        C_ld = self.dp.Ndsam_lev_2 * drain_C_(self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0, self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP), self.is_dram) + \
-               gate_C(self.g_tp, self.subarray_out_wire.repeater_size * (self.subarray_out_wire.wire_length / self.subarray_out_wire.repeater_spacing) * self.g_tp.min_w_nmos_ * (1 + p_to_n_sz_r), 0.0, self.is_dram)
+        C_ld = self.dp.Ndsam_lev_2 * drain_C_(
+            self.g_ip, self.g_tp, self.g_tp.w_nmos_sa_mux, NCH, 1, 0,
+            self.cam_cell.w if self.camFlag else self.cell.w * self.deg_bl_muxing * self.dp.Ndsam_lev_1 / (self.RWP + self.ERP + self.SCHP),
+            self.is_dram
+        ) + gate_C(
+            self.g_tp,
+            self.subarray_out_wire.repeater_size
+            * (self.subarray_out_wire.wire_length / self.subarray_out_wire.repeater_spacing)
+            * self.g_tp.min_w_nmos_
+            * (1 + p_to_n_sz_r),
+            0.0,
+            self.is_dram
+        )
         tf = rd * C_ld
         this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay_subarray_out_drv += this_delay
         inrisetime = this_delay / (1.0 - 0.5)
-        self.power_subarray_out_drv.readOp.dynamic += C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
-        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos) * self.g_tp.peri_global.Vdd
+        self.power_subarray_out_drv.readOp.dynamic += (
+            C_ld * 0.5 * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd
+        )
+        self.power_subarray_out_drv.readOp.leakage += 0  # For now, let leakage of the pass transistor be 0
+        self.power_subarray_out_drv.readOp.gate_leakage += cmos_Ig_leakage(
+            self.g_tp, self.g_tp.w_nmos_sa_mux, 0, 1, nmos
+        ) * self.g_tp.peri_global.Vdd
 
         return inrisetime
 

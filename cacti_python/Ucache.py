@@ -1465,6 +1465,7 @@ def solve_single(g_ip: InputParameter):
     is_tag = False
     g_tp.init(g_ip, g_ip.F_sz_um, is_tag)
 
+    wr = g_ip.data_wire_type
     data_arr = calculate_all_results_single(
         g_ip,
         g_tp,

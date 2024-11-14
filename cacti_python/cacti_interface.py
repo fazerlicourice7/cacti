@@ -245,54 +245,27 @@ class uca_org_t:
         data_arr = self.data_array2
         tag_arr = self.tag_array2
         if self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc:
-            print(f"always should be FA")
             self.access_time = data_arr.access_time
-            if(self.g_ip.pure_ram):
-                if (self.g_ip.is_main_mem):
-                    self.access_time *= 10e6 / 2 
-                else:
-                    self.access_time *= 10e6 / 4 
-            else:
-                self.access_time *= 2
+        # Both tag and data lookup happen in parallel without waiting for the way-select signal
+        elif self.g_ip.fast_access:
+            self.access_time = symbolic_convex_max(tag_arr.access_time, data_arr.access_time)
+        # Tag is accessed first, followed by data array access if there's a hit
+        elif self.g_ip.is_seq_acc:
+            self.access_time = tag_arr.access_time + data_arr.access_time
+        # Normal access: tag array and data array access happen in parallel but wait for the way-select signal
         else:
-            if self.g_ip.fast_access:
-                self.access_time = symbolic_convex_max(tag_arr.access_time, data_arr.access_time)
-            elif self.g_ip.is_seq_acc:
-                self.access_time = tag_arr.access_time + data_arr.access_time
-            else:
-                self.access_time = symbolic_convex_max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
-                                    data_arr.delay_before_subarray_output_driver) + data_arr.delay_from_subarray_output_driver_to_output
-                
-            if (self.g_ip.is_main_mem):
-                self.access_time *= 10e6 / 2 
-            else:
-                self.access_time *= 10e6 / 4 
+            self.access_time = (symbolic_convex_max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
+                                data_arr.delay_before_subarray_output_driver) + \
+                            data_arr.delay_from_subarray_output_driver_to_output) / 2
 
     def find_energy(self):
         if not (self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc):
+            # Combine the power of data_array2 and tag_array2
             self.power = self.data_array2.power + self.tag_array2.power
-            # self.power.readOp.dynamic *= 3e-1
-            # self.power.writeOp.dynamic *= 3e-1
-            # self.power.readOp.leakage *= 1e-3
         else:
+            # Use only the power of data_array2
             self.power = self.data_array2.power
-            if self.g_ip.pure_ram:
-                self.power.readOp.dynamic *= 5e-4
-                self.power.writeOp.dynamic *= 5e-4
-                self.power.readOp.leakage *= 5
-            elif self.g_ip.fully_assoc:
-                self.power.readOp.dynamic *= 15e-5
-                self.power.writeOp.dynamic *= 15e-5
-                self.power.readOp.leakage *= 5e-3
 
-            if self.g_ip.is_main_mem:
-                self.power.readOp.dynamic *= 3
-                self.power.writeOp.dynamic *= 3
-                self.power.readOp.leakage /= 2
-
-        self.power.readOp.dynamic *= 1e9
-        self.power.writeOp.dynamic *= 1e9
-        self.power.readOp.leakage *= 1e3
 
     def find_area(self):
         if self.g_ip.pure_ram or self.g_ip.pure_cam or self.g_ip.fully_assoc:

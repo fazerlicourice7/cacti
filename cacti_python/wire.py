@@ -10,16 +10,12 @@ from .parameter import gate_C, drain_C_, horowitz, tr_R_on
 
 class Wire(Component):
     global_ = Component()
-    global_5 = Component()
-    global_10 = Component()
-    global_20 = Component()
-    global_30 = Component()
     low_swing = Component()
     initialized = 0
     wire_width_init = None
     wire_spacing_init = None
 
-    def __init__(self, g_ip, g_tp, wire_model=0, wl=1, n=1, w_s=1, s_s=1, wp=parameter.outside_mat, resistivity=CU_RESISTIVITY, dt=None):
+    def __init__(self, g_ip, g_tp, wire_model="Global", wl=1, n=1, w_s=1, s_s=1, wp=parameter.outside_mat, resistivity=CU_RESISTIVITY, dt=None):
         super().__init__()
         self.g_ip = g_ip
         self.g_tp = g_tp
@@ -487,7 +483,7 @@ class Wire(Component):
                 self.repeated_wire.append(Component())
 
         self.repeated_wire.pop()
-        self.update_fullswing()
+        # self.update_fullswing() # uneeded since only have global
 
         l_wire = Wire(self.g_ip, self.g_tp, 'Low_swing', 0.001, 1)
         Wire.low_swing.delay = l_wire.delay
