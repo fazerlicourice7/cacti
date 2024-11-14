@@ -401,6 +401,10 @@ class Wire(Component):
         self.repeater_spacing = sp.sqrt(2 * out_res * (out_cap + input_cap) / ((wr / len_) * (wc / len_)))
         self.repeater_size = repeater_scaling
 
+        # since don't search over wires
+        self.repeater_size = self.g_ip.repeater_size    # si
+        self.repeater_spacing = self.g_ip.repeater_spacing * (1e-6)  # sp CHECK
+
         switching = (
             (repeater_scaling * (input_cap + out_cap) +
             self.repeater_spacing * (wc / len_)) *
@@ -460,12 +464,9 @@ class Wire(Component):
     def init_wire(self):
         self.wire_length = 1
         self.delay_optimal_wire()
-        # sp = self.repeater_spacing * 1e6  # in microns
-        sp = int(self.g_ip.repeater_spacing)  # CHANGE: ARRAY LOGIC
 
-        # si = self.repeater_size
+        sp = int(self.g_ip.repeater_spacing)  # CHANGE: ARRAY LOGIC
         si = int(self.g_ip.repeater_size) # CHANGE: ARRAY LOGIC
-        # si = 85.6553
 
         # CHANGE: ARRAY LOGIC - cannot index with symbolic expression, so we have to use value
         self.repeated_wire.append(Component())
@@ -487,9 +488,6 @@ class Wire(Component):
 
         self.repeated_wire.pop()
         self.update_fullswing()
-
-        Wire.global_.area.h = si
-        Wire.global_.area.w = sp * 1e-6  # m
 
         l_wire = Wire(self.g_ip, self.g_tp, 'Low_swing', 0.001, 1)
         Wire.low_swing.delay = l_wire.delay
@@ -555,35 +553,35 @@ class Wire(Component):
         wr = self.wire_res(len_)
         wc = self.wire_cap(len_)
 
-        self.repeater_spacing = space
-        self.repeater_size = size
+        repeater_spacing = space
+        repeater_size = size
 
-        switching = (self.repeater_size * (input_cap + out_cap) +
-                     self.repeater_spacing * (wc / len_)) * self.deviceType.Vdd * self.deviceType.Vdd
+        switching = (repeater_size * (input_cap + out_cap) +
+                     repeater_spacing * (wc / len_)) * self.deviceType.Vdd * self.deviceType.Vdd
 
         tc = out_res * (input_cap + out_cap) + \
-             out_res * wc / len_ * self.repeater_spacing / self.repeater_size + \
-             wr / len_ * self.repeater_spacing * out_cap * self.repeater_size + \
-             0.5 * (wr / len_) * (wc / len_) * self.repeater_spacing * self.repeater_spacing
+             out_res * wc / len_ * repeater_spacing / repeater_size + \
+             wr / len_ * repeater_spacing * out_cap * repeater_size + \
+             0.5 * (wr / len_) * (wc / len_) * repeater_spacing * repeater_spacing
 
-        delay = 0.693 * tc * len_ / self.repeater_spacing
+        delay = 0.693 * tc * len_ / repeater_spacing
 
         Ishort_ckt = 65e-6
         short_ckt = self.deviceType.Vdd * self.g_tp.min_w_nmos_ * Ishort_ckt * 1.0986 * \
-                    self.repeater_size * tc
+                    repeater_size * tc
 
-        ptemp.readOp.dynamic = (len_ / self.repeater_spacing) * (switching + short_ckt)
-        ptemp.readOp.leakage = (len_ / self.repeater_spacing) * \
+        ptemp.readOp.dynamic = (len_ / repeater_spacing) * (switching + short_ckt)
+        ptemp.readOp.leakage = (len_ / repeater_spacing) * \
                                self.deviceType.Vdd * \
-                               parameter.cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_ * self.repeater_size,
-                                                      beta * self.g_tp.min_w_nmos_ * self.repeater_size, 1, inv)
+                               parameter.cmos_Isub_leakage(self.g_tp, self.g_tp.min_w_nmos_ * repeater_size,
+                                                      beta * self.g_tp.min_w_nmos_ * repeater_size, 1, inv)
 
         ptemp.readOp.gate_leakage = (
-            (len_ / self.repeater_spacing)
+            (len_ / repeater_spacing)
             * self.deviceType.Vdd
             * parameter.cmos_Ig_leakage(self.g_tp, 
-                self.g_tp.min_w_nmos_ * self.repeater_size,
-                beta * self.g_tp.min_w_nmos_ * self.repeater_size,
+                self.g_tp.min_w_nmos_ * repeater_size,
+                beta * self.g_tp.min_w_nmos_ * repeater_size,
                 1,
                 inv,
             )
