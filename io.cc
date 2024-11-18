@@ -2602,7 +2602,7 @@ void output_data_csv(const uca_org_t & fin_res, string fn)
 
       // MODIFIED to output wire repeater metrics
       file << "Repeater spacing, ";
-      file << "Repeater size ";
+      file << "Repeater size, ";
 
       file << "Tag wire type, ";
       file << "Data wire type ";

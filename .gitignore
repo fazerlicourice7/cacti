@@ -16,3 +16,5 @@ symbolic_expressions/**
 cfg/*
 base_cache.cfg
 mem_cache.cfg
+
+cacti_python/debug_sympy_expressions */
