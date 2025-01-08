@@ -1487,7 +1487,6 @@ def solve_single(g_ip: InputParameter):
     )
 
     if pure_ram or pure_cam or g_ip.fully_assoc:
-        print(f"Should always be FA 2")
         curr_org = sol
         curr_org.tag_array2 = None
         curr_org.data_array2 = data_arr
