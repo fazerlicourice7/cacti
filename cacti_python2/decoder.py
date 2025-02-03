@@ -5,15 +5,20 @@ import sympy as sp
 
 from .area import Area
 from .cacti_interface import PowerDef
-from .component import Component
+from .component import (
+    Component, logical_effort, compute_gate_area
+)
+
 from .const import *
 from . import parameter
 from .powergating import SleepTx
 
-# Optional: if you have enumerations for gate types, define or import them:
-# NAND, INV, ...
-NAND = "nand"
-INV  = "inv"
+from .basic_circuit import (
+    is_pow2, _log2, is_equal,
+    wire_resistance, wire_capacitance, tsv_resistance, tsv_capacitance, tsv_area,
+    pmos_to_nmos_sz_ratio, gate_C, gate_C_pass, tr_R_on, drain_C_, cmos_Ig_leakage,
+    horowitz, cmos_Isub_leakage, simplified_nmos_Isat
+)
 
 # For piecewise or max approximations:
 def symbolic_convex_max(a, b):
@@ -47,12 +52,7 @@ class Decoder(Component):
                  is_dram_,
                  is_wl_tr_,
                  cell_):
-        """
-        The constructor matches: 
-           Decoder(int _num_dec_signals, bool flag_way_select, double _C_ld_dec_out,
-                   double _R_wire_dec_out, bool fully_assoc_, bool is_dram_, 
-                   bool is_wl_tr_, const Area & cell_).
-        """
+
         super().__init__()
         self.g_ip = g_ip
         self.g_tp = g_tp
@@ -76,12 +76,10 @@ class Decoder(Component):
         self.cell      = cell_
         self.nodes_DSTN = 1   # from the original code
 
-        # arrays for storing gate widths
         self.w_dec_n = [0.0]*MAX_NUMBER_GATES_STAGE
         self.w_dec_p = [0.0]*MAX_NUMBER_GATES_STAGE
 
-        # logic from the C++ constructor
-        num_addr_bits_dec = parameter._log2(num_dec_signals)
+        num_addr_bits_dec = _log2(num_dec_signals)
 
         # Decide if we have a decoder
         if not is_symbolic(num_addr_bits_dec):
@@ -123,7 +121,7 @@ class Decoder(Component):
         """
         Equivalent to the C++ Decoder::compute_widths().
         """
-        p_to_n_sz_ratio = parameter.pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram, self.is_wl_tr)
+        p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram, self.is_wl_tr)
         gnand2 = (2.0 + p_to_n_sz_ratio)/(1.0 + p_to_n_sz_ratio)
         gnand3 = (3.0 + p_to_n_sz_ratio)/(1.0 + p_to_n_sz_ratio)
 
@@ -137,12 +135,12 @@ class Decoder(Component):
                 self.w_dec_p[0] = p_to_n_sz_ratio * self.g_tp.min_w_nmos_
                 base_g = gnand3
 
-            c_first = parameter.gate_C(self.g_tp, self.w_dec_n[0], 0, self.is_dram, False, self.is_wl_tr) + \
-                      parameter.gate_C(self.g_tp, self.w_dec_p[0], 0, self.is_dram, False, self.is_wl_tr)
+            c_first = gate_C(self.g_tp, self.w_dec_n[0], 0, self.is_dram, False, self.is_wl_tr) + \
+                      gate_C(self.g_tp, self.w_dec_p[0], 0, self.is_dram, False, self.is_wl_tr)
             F = base_g * self.C_ld_dec_out / c_first
 
             # call logical_effort to find number of gates
-            self.num_gates = parameter.logical_effort(
+            self.num_gates = logical_effort(
                 self.g_tp,
                 self.num_gates_min,
                 base_g,
@@ -162,54 +160,58 @@ class Decoder(Component):
         Also sets leakage/gate_leakage from cmos_Isub_leakage/cmos_Ig_leakage.
         """
         cumulative_area = 0.0
-        cumulative_subth_leak = 0.0
-        cumulative_gate_leak = 0.0
+        cumulative_curr = 0.0
+        cumulative_curr_Ig = 0.0
 
         if self.exist:
             # first gate
             if self.num_in_signals == 2:
                 # NAND2
-                cumulative_area = parameter.compute_gate_area(self.g_tp, NAND, 2,
+                cumulative_area = compute_gate_area(self.g_tp, NAND, 2,
                                                               self.w_dec_p[0], self.w_dec_n[0],
                                                               self.area.h)
-                cumulative_subth_leak = parameter.cmos_Isub_leakage(self.g_tp,
+                cumulative_curr = cmos_Isub_leakage(self.g_tp,
                                                 self.w_dec_n[0], self.w_dec_p[0],
                                                 2, NAND, self.is_dram)
-                cumulative_gate_leak = parameter.cmos_Ig_leakage(self.g_tp,
+                cumulative_curr_Ig = cmos_Ig_leakage(self.g_tp,
                                                 self.w_dec_n[0], self.w_dec_p[0],
                                                 2, NAND, self.is_dram)
             elif self.num_in_signals == 3:
                 # NAND3
-                cumulative_area = parameter.compute_gate_area(self.g_tp, NAND, 3,
+                cumulative_area = compute_gate_area(self.g_tp, NAND, 3,
                                                               self.w_dec_p[0], self.w_dec_n[0],
                                                               self.area.h)
-                cumulative_subth_leak = parameter.cmos_Isub_leakage(self.g_tp,
+                cumulative_curr = cmos_Isub_leakage(self.g_tp,
                                                 self.w_dec_n[0], self.w_dec_p[0],
                                                 3, NAND, self.is_dram)
-                cumulative_gate_leak = parameter.cmos_Ig_leakage(self.g_tp,
+                cumulative_curr_Ig = cmos_Ig_leakage(self.g_tp,
                                                 self.w_dec_n[0], self.w_dec_p[0],
                                                 3, NAND, self.is_dram)
 
             # subsequent gates are inverters
+            # CHECK Affected by NUM GATE COMPONENT
             for i in range(1, self.num_gates):
-                cumulative_area += parameter.compute_gate_area(self.g_tp, INV, 1,
+                cumulative_area += compute_gate_area(self.g_tp, INV, 1,
                                                                self.w_dec_p[i], self.w_dec_n[i],
                                                                self.area.h)
-                cumulative_subth_leak += parameter.cmos_Isub_leakage(self.g_tp,
+                cumulative_curr += cmos_Isub_leakage(self.g_tp,
                                                     self.w_dec_n[i], self.w_dec_p[i],
                                                     1, INV, self.is_dram)
-                cumulative_gate_leak += parameter.cmos_Ig_leakage(self.g_tp,
+                # CHECK - C says = not +=
+                cumulative_curr_Ig = cmos_Ig_leakage(self.g_tp,
                                                     self.w_dec_n[i], self.w_dec_p[i],
                                                     1, INV, self.is_dram)
 
-            self.power.readOp.leakage      = cumulative_subth_leak * self.g_tp.peri_global.Vdd
-            self.power.readOp.gate_leakage = cumulative_gate_leak  * self.g_tp.peri_global.Vdd
+            self.power.readOp.leakage      = cumulative_curr * self.g_tp.peri_global.Vdd
+            self.power.readOp.gate_leakage = cumulative_curr_Ig * self.g_tp.peri_global.Vdd
 
+            # CHECK WHY SELF.H CHECK?   
             # final area dimension
-            if self.area.h > 0:
-                self.area.w = cumulative_area / self.area.h
-            else:
-                self.area.w = 0
+            # if self.area.h > 0:
+            #     self.area.w = cumulative_area / self.area.h
+            # else:
+            #     self.area.w = 0
+            self.area.w = cumulative_area / self.area.h
 
     def compute_power_gating(self):
         """
@@ -218,16 +220,17 @@ class Decoder(Component):
         """
         # the code does for (int i=1; i<=num_gates; i++), in Python we do:
         for i in range(1, self.num_gates+1):
-            # #PATH_APPROX we assume i in range(1, self.num_gates) is enough
-            if i < len(self.w_dec_n):
-                self.total_driver_nwidth += self.w_dec_n[i]
-                self.total_driver_pwidth += self.w_dec_p[i]
+            # PATH_APPROX we assume i in range(1, self.num_gates) is enough
+            # CHECK why have this bounds check?
+            # if i < len(self.w_dec_n):
+            self.total_driver_nwidth += self.w_dec_n[i]
+            self.total_driver_pwidth += self.w_dec_p[i]
 
         # compute the single sleep tx
         is_footer     = False
-        Isat_subarray = parameter.simplified_nmos_Isat(self.g_tp, self.total_driver_nwidth)
+        Isat_subarray = simplified_nmos_Isat(self.g_tp, self.total_driver_nwidth)
         detalV        = self.g_tp.peri_global.Vdd - self.g_tp.peri_global.Vcc_min
-        c_wakeup      = parameter.drain_C_(self.g_ip, self.g_tp,
+        c_wakeup      = drain_C_(self.g_ip, self.g_tp,
                                            self.total_driver_pwidth,
                                            PCH,
                                            1,1,
@@ -244,6 +247,7 @@ class Decoder(Component):
                 self.area
             )
 
+    # CHECK Could be source of ERROR
     def compute_delays(self, inrisetime):
         """
         Implementation of Decoder::compute_delays(double inrisetime).
@@ -265,58 +269,59 @@ class Decoder(Component):
             Vpp = Vdd
 
         # first gate
-        rd = parameter.tr_R_on(self.g_tp, self.w_dec_n[0], NCH, self.num_in_signals,
+        rd = tr_R_on(self.g_tp, self.w_dec_n[0], NCH, self.num_in_signals,
                                self.is_dram, False, self.is_wl_tr)
-        c_load = parameter.gate_C(self.g_tp,
+        c_load = gate_C(self.g_tp,
                                   (self.w_dec_n[1] + self.w_dec_p[1]) if self.num_gates > 1 else 0.0,
                                   0.0, self.is_dram, False, self.is_wl_tr)
-        c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp, self.w_dec_p[0], PCH,
+        c_intrinsic = drain_C_(self.g_ip, self.g_tp, self.w_dec_p[0], PCH,
                                          1,1, self.area.h,
                                          self.is_dram, False, self.is_wl_tr) * self.num_in_signals \
-                      + parameter.drain_C_(self.g_ip, self.g_tp, self.w_dec_n[0], NCH,
+                      + drain_C_(self.g_ip, self.g_tp, self.w_dec_n[0], NCH,
                                            self.num_in_signals,1, self.area.h,
                                            self.is_dram, False, self.is_wl_tr)
 
         tf = rd*(c_intrinsic + c_load)
-        this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
+        this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
         self.delay += this_delay
         inrisetime  = this_delay/(1.0 - 0.5)
         self.power.readOp.dynamic += (c_load + c_intrinsic)*(Vdd*Vdd)
 
         # middle stages
         for i in range(1, self.num_gates - 1):
-            rd = parameter.tr_R_on(self.g_tp, self.w_dec_n[i], NCH,
+            rd = tr_R_on(self.g_tp, self.w_dec_n[i], NCH,
                                    1, self.is_dram, False, self.is_wl_tr)
-            c_load = parameter.gate_C(self.g_tp,
+            c_load = gate_C(self.g_tp,
                                       self.w_dec_n[i+1] + self.w_dec_p[i+1]
                                       if (i+1)<self.num_gates else 0.0,
                                       0.0, self.is_dram, False, self.is_wl_tr)
-            c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp,
+            c_intrinsic = drain_C_(self.g_ip, self.g_tp,
                                              self.w_dec_p[i], PCH,1,1,self.area.h,
                                              self.is_dram,False,self.is_wl_tr) \
-                          + parameter.drain_C_(self.g_ip, self.g_tp,
+                          + drain_C_(self.g_ip, self.g_tp,
                                                self.w_dec_n[i], NCH,1,1,
                                                self.area.h,self.is_dram,False,self.is_wl_tr)
             tf = rd*(c_intrinsic + c_load)
-            this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
+            this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
             self.delay += this_delay
             inrisetime = this_delay/(1.0 - 0.5)
             self.power.readOp.dynamic += (c_intrinsic + c_load)*(Vdd*Vdd)
 
         # final stage
+        # Check added boundary condition here:, reliant on COMPONENT logical effort
         if self.num_gates > 0:
             i       = self.num_gates - 1
             c_load  = self.C_ld_dec_out
-            rd = parameter.tr_R_on(self.g_tp, self.w_dec_n[i], NCH,
+            rd = tr_R_on(self.g_tp, self.w_dec_n[i], NCH,
                                    1, self.is_dram, False, self.is_wl_tr)
-            c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp,
+            c_intrinsic = drain_C_(self.g_ip, self.g_tp,
                                              self.w_dec_p[i], PCH,1,1,self.area.h,
                                              self.is_dram,False,self.is_wl_tr) \
-                          + parameter.drain_C_(self.g_ip, self.g_tp,
+                          + drain_C_(self.g_ip, self.g_tp,
                                                self.w_dec_n[i], NCH,1,1,self.area.h,
                                                self.is_dram,False,self.is_wl_tr)
             tf = rd*(c_intrinsic + c_load) + self.R_wire_dec_out*c_load*0.5
-            this_delay = parameter.horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
+            this_delay = horowitz(self.g_ip, inrisetime, tf, 0.5, 0.5, RISE)
             self.delay += this_delay
             ret_val = this_delay/(1.0 - 0.5)
 
@@ -333,34 +338,35 @@ class Decoder(Component):
         """
         if not self.exist:
             return
-        subth_leak = 0.0
-        gate_leak  = 0.0
+        cumulative_curr = 0.0
+        cumulative_curr_Ig  = 0.0
 
         if self.num_in_signals == 2:
-            subth_leak += parameter.cmos_Isub_leakage(self.g_tp,
+            cumulative_curr += cmos_Isub_leakage(self.g_tp,
                                                       self.w_dec_n[0], self.w_dec_p[0],
                                                       2, NAND, self.is_dram)
-            gate_leak  += parameter.cmos_Ig_leakage(self.g_tp,
+            cumulative_curr_Ig  += cmos_Ig_leakage(self.g_tp,
                                                     self.w_dec_n[0], self.w_dec_p[0],
                                                     2, NAND, self.is_dram)
         elif self.num_in_signals == 3:
-            subth_leak += parameter.cmos_Isub_leakage(self.g_tp,
+            cumulative_curr += cmos_Isub_leakage(self.g_tp,
                                                       self.w_dec_n[0], self.w_dec_p[0],
                                                       3, NAND, self.is_dram)
-            gate_leak  += parameter.cmos_Ig_leakage(self.g_tp,
+            cumulative_curr_Ig  += cmos_Ig_leakage(self.g_tp,
                                                     self.w_dec_n[0], self.w_dec_p[0],
                                                     3, NAND, self.is_dram)
 
         for i in range(1, self.num_gates):
-            subth_leak += parameter.cmos_Isub_leakage(self.g_tp,
+            cumulative_curr += cmos_Isub_leakage(self.g_tp,
                                                       self.w_dec_n[i], self.w_dec_p[i],
                                                       1, INV, self.is_dram)
-            gate_leak  += parameter.cmos_Ig_leakage(self.g_tp,
+            # CHECK C has = and not +=
+            cumulative_curr_Ig = cmos_Ig_leakage(self.g_tp,
                                                     self.w_dec_n[i], self.w_dec_p[i],
                                                     1, INV, self.is_dram)
 
-        self.power.readOp.leakage      = subth_leak*self.g_tp.peri_global.Vdd
-        self.power.readOp.gate_leakage = gate_leak *self.g_tp.peri_global.Vdd
+        self.power.readOp.leakage      = cumulative_curr*self.g_tp.peri_global.Vdd
+        self.power.readOp.gate_leakage = cumulative_curr_Ig *self.g_tp.peri_global.Vdd
 
 
 ###############################################################################
@@ -432,7 +438,7 @@ class PredecBlk(Component):
         self.area = Area()
 
         # replicate the constructor logic
-        num_addr_bits_dec         = parameter._log2(num_dec_signals)
+        num_addr_bits_dec         = _log2(num_dec_signals)
         blk1_num_input_addr_bits  = (num_addr_bits_dec + 1)//2
         blk2_num_input_addr_bits  = num_addr_bits_dec - blk1_num_input_addr_bits
 
@@ -458,7 +464,7 @@ class PredecBlk(Component):
                     self.number_input_addr_bits = blk1_num_input_addr_bits
                     branch_effort_predec_out    = (1 << blk2_num_input_addr_bits)
                     c_ld_dec_gate = (num_dec_per_predec *
-                                     parameter.gate_C(self.g_tp,
+                                     gate_C(self.g_tp,
                                                       dec.w_dec_n[0] + dec.w_dec_p[0],
                                                       0,
                                                       self.is_dram_,
@@ -480,7 +486,7 @@ class PredecBlk(Component):
                     self.number_input_addr_bits = blk2_num_input_addr_bits
                     branch_effort_predec_out = (1 << blk1_num_input_addr_bits)
                     c_ld_dec_gate = (num_dec_per_predec *
-                                     parameter.gate_C(self.g_tp,
+                                     gate_C(self.g_tp,
                                                       dec.w_dec_n[0] + dec.w_dec_p[0],
                                                       0,
                                                       self.is_dram_,
@@ -511,7 +517,7 @@ class PredecBlk(Component):
         if not self.exist:
             return
 
-        p_to_n_sz_ratio = parameter.pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram_)
+        p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram_)
         gnand2 = (2 + p_to_n_sz_ratio) / (1 + p_to_n_sz_ratio)
         gnand3 = (3 + p_to_n_sz_ratio) / (1 + p_to_n_sz_ratio)
 
@@ -571,12 +577,12 @@ class PredecBlk(Component):
             self.w_L2_p[0] = p_to_n_sz_ratio * self.g_tp.min_w_nmos_
 
             c_input_stage = (
-                parameter.gate_C(self.g_tp, self.w_L2_n[0], 0, self.is_dram_)
-                + parameter.gate_C(self.g_tp, self.w_L2_p[0], 0, self.is_dram_)
+                gate_C(self.g_tp, self.w_L2_n[0], 0, self.is_dram_)
+                + gate_C(self.g_tp, self.w_L2_p[0], 0, self.is_dram_)
             )
             F_L2 = (self.C_ld_predec_blk_out / c_input_stage) * base_g
 
-            self.number_gates_L2 = parameter.logical_effort(
+            self.number_gates_L2 = logical_effort(
                 self.g_tp,
                 self.min_number_gates_L2,
                 base_g,
@@ -593,19 +599,19 @@ class PredecBlk(Component):
             # L1: NAND2 path (if needed)
             if self.flag_two_unique_paths or (self.number_inputs_L1_gate == 2):
                 c_load_nand2_path = self.branch_effort_nand2_gate_output * (
-                    parameter.gate_C(self.g_tp, self.w_L2_n[0], 0, self.is_dram_)
-                    + parameter.gate_C(self.g_tp, self.w_L2_p[0], 0, self.is_dram_)
+                    gate_C(self.g_tp, self.w_L2_n[0], 0, self.is_dram_)
+                    + gate_C(self.g_tp, self.w_L2_p[0], 0, self.is_dram_)
                 )
                 self.w_L1_nand2_n[0] = 2.0 * self.g_tp.min_w_nmos_
                 self.w_L1_nand2_p[0] = p_to_n_sz_ratio * self.g_tp.min_w_nmos_
 
                 c_first = (
-                    parameter.gate_C(self.g_tp, self.w_L1_nand2_n[0], 0, self.is_dram_)
-                    + parameter.gate_C(self.g_tp, self.w_L1_nand2_p[0], 0, self.is_dram_)
+                    gate_C(self.g_tp, self.w_L1_nand2_n[0], 0, self.is_dram_)
+                    + gate_C(self.g_tp, self.w_L1_nand2_p[0], 0, self.is_dram_)
                 )
                 F_n2 = gnand2 * c_load_nand2_path / c_first
 
-                self.number_gates_L1_nand2_path = parameter.logical_effort(
+                self.number_gates_L1_nand2_path = logical_effort(
                     self.g_tp,
                     self.min_number_gates_L1,
                     gnand2,
@@ -622,19 +628,19 @@ class PredecBlk(Component):
             # L1: NAND3 path (if needed)
             if self.flag_two_unique_paths or (self.number_inputs_L1_gate == 3):
                 c_load_nand3_path = self.branch_effort_nand3_gate_output * (
-                    parameter.gate_C(self.g_tp, self.w_L2_n[0], 0, self.is_dram_)
-                    + parameter.gate_C(self.g_tp, self.w_L2_p[0], 0, self.is_dram_)
+                    gate_C(self.g_tp, self.w_L2_n[0], 0, self.is_dram_)
+                    + gate_C(self.g_tp, self.w_L2_p[0], 0, self.is_dram_)
                 )
                 self.w_L1_nand3_n[0] = 3.0 * self.g_tp.min_w_nmos_
                 self.w_L1_nand3_p[0] = p_to_n_sz_ratio * self.g_tp.min_w_nmos_
 
                 c_first3 = (
-                    parameter.gate_C(self.g_tp, self.w_L1_nand3_n[0], 0, self.is_dram_)
-                    + parameter.gate_C(self.g_tp, self.w_L1_nand3_p[0], 0, self.is_dram_)
+                    gate_C(self.g_tp, self.w_L1_nand3_n[0], 0, self.is_dram_)
+                    + gate_C(self.g_tp, self.w_L1_nand3_p[0], 0, self.is_dram_)
                 )
                 F_n3 = gnand3 * c_load_nand3_path / c_first3
 
-                self.number_gates_L1_nand3_path = parameter.logical_effort(
+                self.number_gates_L1_nand3_path = logical_effort(
                     self.g_tp,
                     self.min_number_gates_L1,
                     gnand3,
@@ -655,12 +661,12 @@ class PredecBlk(Component):
                 self.w_L1_nand2_p[0] = p_to_n_sz_ratio * self.g_tp.min_w_nmos_
 
                 c_first = (
-                    parameter.gate_C(self.g_tp, self.w_L1_nand2_n[0], 0, self.is_dram_)
-                    + parameter.gate_C(self.g_tp, self.w_L1_nand2_p[0], 0, self.is_dram_)
+                    gate_C(self.g_tp, self.w_L1_nand2_n[0], 0, self.is_dram_)
+                    + gate_C(self.g_tp, self.w_L1_nand2_p[0], 0, self.is_dram_)
                 )
                 F_single = gnand2 * (self.C_ld_predec_blk_out / c_first)
 
-                self.number_gates_L1_nand2_path = parameter.logical_effort(
+                self.number_gates_L1_nand2_path = logical_effort(
                     self.g_tp,
                     self.min_number_gates_L1,
                     gnand2,
@@ -678,12 +684,12 @@ class PredecBlk(Component):
                 self.w_L1_nand3_p[0] = p_to_n_sz_ratio * self.g_tp.min_w_nmos_
 
                 c_first = (
-                    parameter.gate_C(self.g_tp, self.w_L1_nand3_n[0], 0, self.is_dram_)
-                    + parameter.gate_C(self.g_tp, self.w_L1_nand3_p[0], 0, self.is_dram_)
+                    gate_C(self.g_tp, self.w_L1_nand3_n[0], 0, self.is_dram_)
+                    + gate_C(self.g_tp, self.w_L1_nand3_p[0], 0, self.is_dram_)
                 )
                 F_single = gnand3 * (self.C_ld_predec_blk_out / c_first)
 
-                self.number_gates_L1_nand3_path = parameter.logical_effort(
+                self.number_gates_L1_nand3_path = logical_effort(
                     self.g_tp,
                     self.min_number_gates_L1,
                     gnand3,
@@ -712,13 +718,13 @@ class PredecBlk(Component):
         num_L2       = 0
 
         # base area/leak of the first gate in each path (NAND2, NAND3)
-        tot_area_L1_nand2 = parameter.compute_gate_area(
+        tot_area_L1_nand2 = compute_gate_area(
             self.g_tp, NAND, 2,
             self.w_L1_nand2_p[0],
             self.w_L1_nand2_n[0],
             self.g_tp.cell_h_def
         )
-        leak_L1_nand2 = parameter.cmos_Isub_leakage(
+        leak_L1_nand2 = cmos_Isub_leakage(
             self.g_tp,
             self.w_L1_nand2_n[0],
             self.w_L1_nand2_p[0],
@@ -726,7 +732,7 @@ class PredecBlk(Component):
             NAND,
             self.is_dram_
         )
-        gate_leak_L1_nand2 = parameter.cmos_Ig_leakage(
+        gate_leak_L1_nand2 = cmos_Ig_leakage(
             self.g_tp,
             self.w_L1_nand2_n[0],
             self.w_L1_nand2_p[0],
@@ -741,13 +747,13 @@ class PredecBlk(Component):
 
         # if the L1 gate is indeed NAND3, we compute those
         if self.number_inputs_L1_gate == 3:
-            tot_area_L1_nand3 = parameter.compute_gate_area(
+            tot_area_L1_nand3 = compute_gate_area(
                 self.g_tp, NAND, 3,
                 self.w_L1_nand3_p[0],
                 self.w_L1_nand3_n[0],
                 self.g_tp.cell_h_def
             )
-            leak_L1_nand3 = parameter.cmos_Isub_leakage(
+            leak_L1_nand3 = cmos_Isub_leakage(
                 self.g_tp,
                 self.w_L1_nand3_n[0],
                 self.w_L1_nand3_p[0],
@@ -755,7 +761,7 @@ class PredecBlk(Component):
                 NAND,
                 self.is_dram_
             )
-            gate_leak_L1_nand3 = parameter.cmos_Ig_leakage(
+            gate_leak_L1_nand3 = cmos_Ig_leakage(
                 self.g_tp,
                 self.w_L1_nand3_n[0],
                 self.w_L1_nand3_p[0],
@@ -816,13 +822,13 @@ class PredecBlk(Component):
 
         # for each additional gate in the L1_nand2 path
         for i in range(1, self.number_gates_L1_nand2_path):
-            tot_area_L1_nand2 += parameter.compute_gate_area(
+            tot_area_L1_nand2 += compute_gate_area(
                 self.g_tp, INV, 1,
                 self.w_L1_nand2_p[i],
                 self.w_L1_nand2_n[i],
                 self.g_tp.cell_h_def
             )
-            leak_L1_nand2 += parameter.cmos_Isub_leakage(
+            leak_L1_nand2 += cmos_Isub_leakage(
                 self.g_tp,
                 self.w_L1_nand2_n[i],
                 self.w_L1_nand2_p[i],
@@ -830,7 +836,7 @@ class PredecBlk(Component):
                 NAND,
                 self.is_dram_
             )
-            gate_leak_L1_nand2 += parameter.cmos_Ig_leakage(
+            gate_leak_L1_nand2 += cmos_Ig_leakage(
                 self.g_tp,
                 self.w_L1_nand2_n[i],
                 self.w_L1_nand2_p[i],
@@ -845,13 +851,13 @@ class PredecBlk(Component):
 
         # for each additional gate in the L1_nand3 path
         for i in range(1, self.number_gates_L1_nand3_path):
-            tot_area_L1_nand3 += parameter.compute_gate_area(
+            tot_area_L1_nand3 += compute_gate_area(
                 self.g_tp, INV, 1,
                 self.w_L1_nand3_p[i],
                 self.w_L1_nand3_n[i],
                 self.g_tp.cell_h_def
             )
-            leak_L1_nand3 += parameter.cmos_Isub_leakage(
+            leak_L1_nand3 += cmos_Isub_leakage(
                 self.g_tp,
                 self.w_L1_nand3_n[i],
                 self.w_L1_nand3_p[i],
@@ -859,7 +865,7 @@ class PredecBlk(Component):
                 NAND,
                 self.is_dram_
             )
-            gate_leak_L1_nand3 += parameter.cmos_Ig_leakage(
+            gate_leak_L1_nand3 += cmos_Ig_leakage(
                 self.g_tp,
                 self.w_L1_nand3_n[i],
                 self.w_L1_nand3_p[i],
@@ -881,19 +887,19 @@ class PredecBlk(Component):
 
         if self.flag_L2_gate == 2:
             # NAND2
-            base_area_L2 = parameter.compute_gate_area(
+            base_area_L2 = compute_gate_area(
                 self.g_tp, NAND, 2,
                 self.w_L2_p[0], self.w_L2_n[0],
                 self.g_tp.cell_h_def
             )
-            base_leak_L2 = parameter.cmos_Isub_leakage(
+            base_leak_L2 = cmos_Isub_leakage(
                 self.g_tp,
                 self.w_L2_n[0], self.w_L2_p[0],
                 2,
                 NAND,
                 self.is_dram_
             )
-            base_gate_L2 = parameter.cmos_Ig_leakage(
+            base_gate_L2 = cmos_Ig_leakage(
                 self.g_tp,
                 self.w_L2_n[0], self.w_L2_p[0],
                 2,
@@ -902,19 +908,19 @@ class PredecBlk(Component):
             )
         elif self.flag_L2_gate == 3:
             # NAND3
-            base_area_L2 = parameter.compute_gate_area(
+            base_area_L2 = compute_gate_area(
                 self.g_tp, NAND, 3,
                 self.w_L2_p[0], self.w_L2_n[0],
                 self.g_tp.cell_h_def
             )
-            base_leak_L2 = parameter.cmos_Isub_leakage(
+            base_leak_L2 = cmos_Isub_leakage(
                 self.g_tp,
                 self.w_L2_n[0], self.w_L2_p[0],
                 3,
                 NAND,
                 self.is_dram_
             )
-            base_gate_L2 = parameter.cmos_Ig_leakage(
+            base_gate_L2 = cmos_Ig_leakage(
                 self.g_tp,
                 self.w_L2_n[0], self.w_L2_p[0],
                 3,
@@ -933,19 +939,19 @@ class PredecBlk(Component):
         gate_sum_L2 = base_gate_L2
 
         for i in range(1, self.number_gates_L2):
-            area_sum_L2 += parameter.compute_gate_area(
+            area_sum_L2 += compute_gate_area(
                 self.g_tp, INV, 1,
                 self.w_L2_p[i], self.w_L2_n[i],
                 self.g_tp.cell_h_def
             )
-            leak_sum_L2 += parameter.cmos_Isub_leakage(
+            leak_sum_L2 += cmos_Isub_leakage(
                 self.g_tp,
                 self.w_L2_n[i], self.w_L2_p[i],
                 1,  # 1 for inverter
                 INV,
                 self.is_dram_
             )
-            gate_sum_L2 += parameter.cmos_Ig_leakage(
+            gate_sum_L2 += cmos_Ig_leakage(
                 self.g_tp,
                 self.w_L2_n[i], self.w_L2_p[i],
                 1,
@@ -1000,25 +1006,25 @@ class PredecBlk(Component):
         # For NAND2 path
         if (self.flag_two_unique_paths) or (self.number_inputs_L1_gate == 2):
             # first gate
-            rd = parameter.tr_R_on(self.g_tp, self.w_L1_nand2_n[0], NCH, 2, self.is_dram_)
+            rd = tr_R_on(self.g_tp, self.w_L1_nand2_n[0], NCH, 2, self.is_dram_)
             c_load = 0.0
             if self.number_gates_L1_nand2_path > 1:
-                c_load = parameter.gate_C(
+                c_load = gate_C(
                     self.g_tp,
                     (self.w_L1_nand2_n[1] + self.w_L1_nand2_p[1]),
                     0.0,
                     self.is_dram_
                 )
             c_intrinsic = (
-                2.0 * parameter.drain_C_(self.g_ip, self.g_tp,
+                2.0 * drain_C_(self.g_ip, self.g_tp,
                                          self.w_L1_nand2_p[0], PCH, 1, 1,
                                          self.g_tp.cell_h_def)
-                + parameter.drain_C_(self.g_ip, self.g_tp,
+                + drain_C_(self.g_ip, self.g_tp,
                                      self.w_L1_nand2_n[0], NCH, 2, 1,
                                      self.g_tp.cell_h_def)
             )
             tf = rd * (c_intrinsic + c_load)
-            this_delay = parameter.horowitz(
+            this_delay = horowitz(
                 self.g_ip,
                 inrisetime_nand2_path,
                 tf,
@@ -1032,25 +1038,25 @@ class PredecBlk(Component):
 
             # mid stages
             for i in range(1, self.number_gates_L1_nand2_path - 1):
-                rd = parameter.tr_R_on(self.g_tp, self.w_L1_nand2_n[i], NCH, 1, self.is_dram_)
+                rd = tr_R_on(self.g_tp, self.w_L1_nand2_n[i], NCH, 1, self.is_dram_)
                 nxt = 0.0
                 if (i+1) < self.number_gates_L1_nand2_path:
-                    nxt = parameter.gate_C(
+                    nxt = gate_C(
                         self.g_tp,
                         (self.w_L1_nand2_n[i+1] + self.w_L1_nand2_p[i+1]),
                         0.0,
                         self.is_dram_
                     )
                 c_intrinsic = (
-                    parameter.drain_C_(self.g_ip, self.g_tp,
+                    drain_C_(self.g_ip, self.g_tp,
                                        self.w_L1_nand2_p[i], PCH, 1, 1,
                                        self.g_tp.cell_h_def)
-                    + parameter.drain_C_(self.g_ip, self.g_tp,
+                    + drain_C_(self.g_ip, self.g_tp,
                                          self.w_L1_nand2_n[i], NCH, 1, 1,
                                          self.g_tp.cell_h_def)
                 )
                 tf = rd*(c_intrinsic + nxt)
-                this_delay = parameter.horowitz(
+                this_delay = horowitz(
                     self.g_ip,
                     inrisetime_nand2_path,
                     tf,
@@ -1065,16 +1071,16 @@ class PredecBlk(Component):
             # final stage in L1
             i = self.number_gates_L1_nand2_path - 1
             if i >= 0:
-                rd = parameter.tr_R_on(self.g_tp, self.w_L1_nand2_n[i], NCH, 1, self.is_dram_)
+                rd = tr_R_on(self.g_tp, self.w_L1_nand2_n[i], NCH, 1, self.is_dram_)
                 if self.flag_L2_gate:
                     c_load = self.branch_effort_nand2_gate_output*(
-                        parameter.gate_C(
+                        gate_C(
                             self.g_tp,
                             self.w_L2_n[0],
                             0.0,
                             self.is_dram_
                         )
-                        + parameter.gate_C(
+                        + gate_C(
                             self.g_tp,
                             self.w_L2_p[0],
                             0.0,
@@ -1085,10 +1091,10 @@ class PredecBlk(Component):
                     c_load = self.C_ld_predec_blk_out
 
                 c_intrinsic = (
-                    parameter.drain_C_(self.g_ip, self.g_tp,
+                    drain_C_(self.g_ip, self.g_tp,
                                        self.w_L1_nand2_p[i], PCH, 1, 1,
                                        self.g_tp.cell_h_def)
-                    + parameter.drain_C_(self.g_ip, self.g_tp,
+                    + drain_C_(self.g_ip, self.g_tp,
                                          self.w_L1_nand2_n[i], NCH, 1, 1,
                                          self.g_tp.cell_h_def)
                 )
@@ -1098,7 +1104,7 @@ class PredecBlk(Component):
                 if not self.flag_L2_gate:
                     tf += self.R_wire_predec_blk_out * c_load*0.5
 
-                this_delay = parameter.horowitz(
+                this_delay = horowitz(
                     self.g_ip,
                     inrisetime_nand2_path,
                     tf,
@@ -1207,7 +1213,7 @@ class PredecBlkDrv(Component):
             # Check signals in dec
             if self.dec.num_in_signals == 2:
                 # NAND2
-                self.c_load_nand2_path_out = parameter.gate_C(
+                self.c_load_nand2_path_out = gate_C(
                     self.g_tp,
                     (self.dec.w_dec_n[0] + self.dec.w_dec_p[0]),
                     0.0,
@@ -1216,7 +1222,7 @@ class PredecBlkDrv(Component):
                 self.num_buffers_driving_2_nand2_load = self.number_input_addr_bits
             elif self.dec.num_in_signals == 3:
                 # NAND3
-                self.c_load_nand3_path_out = parameter.gate_C(
+                self.c_load_nand3_path_out = gate_C(
                     self.g_tp,
                     (self.dec.w_dec_n[0] + self.dec.w_dec_p[0]),
                     0.0,
@@ -1240,16 +1246,16 @@ class PredecBlkDrv(Component):
         if not self.flag_driver_exists:
             return
 
-        p_to_n_sz_ratio = parameter.pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram_)
+        p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram_)
 
         # from the C++: double C_nand2_gate_blk = ...
-        C_nand2_gate_blk = parameter.gate_C(
+        C_nand2_gate_blk = gate_C(
             self.g_tp,
             (self.blk.w_L1_nand2_n[0] + self.blk.w_L1_nand2_p[0]),
             0.0,
             self.is_dram_
         )
-        C_nand3_gate_blk = parameter.gate_C(
+        C_nand3_gate_blk = gate_C(
             self.g_tp,
             (self.blk.w_L1_nand3_n[0] + self.blk.w_L1_nand3_p[0]),
             0.0,
@@ -1318,7 +1324,7 @@ class PredecBlkDrv(Component):
             self.width_nand2_path_p[0] = p_to_n_sz_ratio * self.width_nand2_path_n[0]
 
             # compute the total fan-out
-            c_first = parameter.gate_C(
+            c_first = gate_C(
                 self.g_tp,
                 (self.width_nand2_path_n[0] + self.width_nand2_path_p[0]),
                 0.0,
@@ -1326,7 +1332,7 @@ class PredecBlkDrv(Component):
             )
             F_n2 = (c_load_nand2_total / c_first)
 
-            self.number_gates_nand2_path = parameter.logical_effort(
+            self.number_gates_nand2_path = logical_effort(
                 self.g_tp,
                 self.min_number_gates,
                 1,  # "g" factor is 1 if we treat this as an inverter chain
@@ -1348,7 +1354,7 @@ class PredecBlkDrv(Component):
             self.width_nand3_path_n[0] = self.g_tp.min_w_nmos_
             self.width_nand3_path_p[0] = p_to_n_sz_ratio * self.width_nand3_path_n[0]
 
-            c_first = parameter.gate_C(
+            c_first = gate_C(
                 self.g_tp,
                 (self.width_nand3_path_n[0] + self.width_nand3_path_p[0]),
                 0.0,
@@ -1356,7 +1362,7 @@ class PredecBlkDrv(Component):
             )
             F_n3 = (c_load_nand3_total / c_first)
 
-            self.number_gates_nand3_path = parameter.logical_effort(
+            self.number_gates_nand3_path = logical_effort(
                 self.g_tp,
                 self.min_number_gates,
                 1,
@@ -1387,7 +1393,7 @@ class PredecBlkDrv(Component):
         # for all gates in the nand2 path
         for i in range(self.number_gates_nand2_path):
             # area
-            area_nand2_path += parameter.compute_gate_area(
+            area_nand2_path += compute_gate_area(
                 self.g_tp,
                 INV,  # treat each stage as an inverter
                 1,
@@ -1396,7 +1402,7 @@ class PredecBlkDrv(Component):
                 self.g_tp.cell_h_def
             )
             # subthreshold
-            leak_nand2_path += parameter.cmos_Isub_leakage(
+            leak_nand2_path += cmos_Isub_leakage(
                 self.g_tp,
                 self.width_nand2_path_n[i],
                 self.width_nand2_path_p[i],
@@ -1405,7 +1411,7 @@ class PredecBlkDrv(Component):
                 self.is_dram_
             )
             # gate leakage
-            gate_leak_nand2_path += parameter.cmos_Ig_leakage(
+            gate_leak_nand2_path += cmos_Ig_leakage(
                 self.g_tp,
                 self.width_nand2_path_n[i],
                 self.width_nand2_path_p[i],
@@ -1425,7 +1431,7 @@ class PredecBlkDrv(Component):
 
         # for all gates in the nand3 path
         for i in range(self.number_gates_nand3_path):
-            area_nand3_path += parameter.compute_gate_area(
+            area_nand3_path += compute_gate_area(
                 self.g_tp,
                 INV,
                 1,
@@ -1433,7 +1439,7 @@ class PredecBlkDrv(Component):
                 self.width_nand3_path_n[i],
                 self.g_tp.cell_h_def
             )
-            leak_nand3_path += parameter.cmos_Isub_leakage(
+            leak_nand3_path += cmos_Isub_leakage(
                 self.g_tp,
                 self.width_nand3_path_n[i],
                 self.width_nand3_path_p[i],
@@ -1441,7 +1447,7 @@ class PredecBlkDrv(Component):
                 INV,
                 self.is_dram_
             )
-            gate_leak_nand3_path += parameter.cmos_Ig_leakage(
+            gate_leak_nand3_path += cmos_Ig_leakage(
                 self.g_tp,
                 self.width_nand3_path_n[i],
                 self.width_nand3_path_p[i],
@@ -1486,24 +1492,24 @@ class PredecBlkDrv(Component):
         # For NAND2 path
         tmp_in_n2 = inrisetime_nand2_path
         for i in range(self.number_gates_nand2_path - 1):
-            rd = parameter.tr_R_on(self.g_tp, self.width_nand2_path_n[i], NCH, 1, self.is_dram_)
-            c_gate_load = parameter.gate_C(
+            rd = tr_R_on(self.g_tp, self.width_nand2_path_n[i], NCH, 1, self.is_dram_)
+            c_gate_load = gate_C(
                 self.g_tp,
                 (self.width_nand2_path_n[i+1] + self.width_nand2_path_p[i+1]),
                 0.0,
                 self.is_dram_
             )
-            c_intrinsic = parameter.drain_C_(
+            c_intrinsic = drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand2_path_p[i],
                 PCH, 1, 1, self.g_tp.cell_h_def
-            ) + parameter.drain_C_(
+            ) + drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand2_path_n[i],
                 NCH, 1, 1, self.g_tp.cell_h_def
             )
             tf = rd * (c_intrinsic + c_gate_load)
-            this_delay = parameter.horowitz(
+            this_delay = horowitz(
                 self.g_ip,
                 tmp_in_n2,
                 tf,
@@ -1519,12 +1525,12 @@ class PredecBlkDrv(Component):
         # final stage for NAND2
         if self.number_gates_nand2_path > 0:
             i = self.number_gates_nand2_path - 1
-            rd = parameter.tr_R_on(self.g_tp, self.width_nand2_path_n[i], NCH, 1, self.is_dram_)
-            c_intrinsic = parameter.drain_C_(
+            rd = tr_R_on(self.g_tp, self.width_nand2_path_n[i], NCH, 1, self.is_dram_)
+            c_intrinsic = drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand2_path_p[i],
                 PCH, 1, 1, self.g_tp.cell_h_def
-            ) + parameter.drain_C_(
+            ) + drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand2_path_n[i],
                 NCH, 1, 1, self.g_tp.cell_h_def
@@ -1533,7 +1539,7 @@ class PredecBlkDrv(Component):
             c_load = self.c_load_nand2_path_out
             tf = rd*(c_intrinsic + c_load) + self.r_load_nand2_path_out*(c_load*0.5)
 
-            this_delay = parameter.horowitz(
+            this_delay = horowitz(
                 self.g_ip,
                 tmp_in_n2,
                 tf,
@@ -1548,24 +1554,24 @@ class PredecBlkDrv(Component):
         # For NAND3 path
         tmp_in_n3 = inrisetime_nand3_path
         for i in range(self.number_gates_nand3_path - 1):
-            rd = parameter.tr_R_on(self.g_tp, self.width_nand3_path_n[i], NCH, 1, self.is_dram_)
-            c_gate_load = parameter.gate_C(
+            rd = tr_R_on(self.g_tp, self.width_nand3_path_n[i], NCH, 1, self.is_dram_)
+            c_gate_load = gate_C(
                 self.g_tp,
                 (self.width_nand3_path_n[i+1] + self.width_nand3_path_p[i+1]),
                 0.0,
                 self.is_dram_
             )
-            c_intrinsic = parameter.drain_C_(
+            c_intrinsic = drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand3_path_p[i],
                 PCH, 1, 1, self.g_tp.cell_h_def
-            ) + parameter.drain_C_(
+            ) + drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand3_path_n[i],
                 NCH, 1, 1, self.g_tp.cell_h_def
             )
             tf = rd*(c_intrinsic + c_gate_load)
-            this_delay = parameter.horowitz(
+            this_delay = horowitz(
                 self.g_ip,
                 tmp_in_n3,
                 tf,
@@ -1580,12 +1586,12 @@ class PredecBlkDrv(Component):
         # final stage for NAND3
         if self.number_gates_nand3_path > 0:
             i = self.number_gates_nand3_path - 1
-            rd = parameter.tr_R_on(self.g_tp, self.width_nand3_path_n[i], NCH, 1, self.is_dram_)
-            c_intrinsic = parameter.drain_C_(
+            rd = tr_R_on(self.g_tp, self.width_nand3_path_n[i], NCH, 1, self.is_dram_)
+            c_intrinsic = drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand3_path_p[i],
                 PCH, 1, 1, self.g_tp.cell_h_def
-            ) + parameter.drain_C_(
+            ) + drain_C_(
                 self.g_ip, self.g_tp,
                 self.width_nand3_path_n[i],
                 NCH, 1, 1, self.g_tp.cell_h_def
@@ -1593,7 +1599,7 @@ class PredecBlkDrv(Component):
             c_load = self.c_load_nand3_path_out
             tf = rd*(c_intrinsic + c_load) + self.r_load_nand3_path_out*(c_load*0.5)
 
-            this_delay = parameter.horowitz(
+            this_delay = horowitz(
                 self.g_ip,
                 tmp_in_n3,
                 tf,
@@ -1638,7 +1644,7 @@ class PredecBlkDrv(Component):
 
         # sum up the subthreshold and gate leakage again for each stage
         for i in range(self.number_gates_nand2_path):
-            leak_nand2_path += parameter.cmos_Isub_leakage(
+            leak_nand2_path += cmos_Isub_leakage(
                 self.g_tp,
                 self.width_nand2_path_n[i],
                 self.width_nand2_path_p[i],
@@ -1646,7 +1652,7 @@ class PredecBlkDrv(Component):
                 INV,
                 self.is_dram_
             )
-            gate_leak_nand2_path += parameter.cmos_Ig_leakage(
+            gate_leak_nand2_path += cmos_Ig_leakage(
                 self.g_tp,
                 self.width_nand2_path_n[i],
                 self.width_nand2_path_p[i],
@@ -1662,7 +1668,7 @@ class PredecBlkDrv(Component):
         gate_leak_nand2_path *= nsum
 
         for i in range(self.number_gates_nand3_path):
-            leak_nand3_path += parameter.cmos_Isub_leakage(
+            leak_nand3_path += cmos_Isub_leakage(
                 self.g_tp,
                 self.width_nand3_path_n[i],
                 self.width_nand3_path_p[i],
@@ -1670,7 +1676,7 @@ class PredecBlkDrv(Component):
                 INV,
                 self.is_dram_
             )
-            gate_leak_nand3_path += parameter.cmos_Ig_leakage(
+            gate_leak_nand3_path += cmos_Ig_leakage(
                 self.g_tp,
                 self.width_nand3_path_n[i],
                 self.width_nand3_path_p[i],
@@ -1870,14 +1876,14 @@ class Driver(Component):
         double c_load = c_gate_load + c_wire_load;
         etc ...
         """
-        p_to_n_sz_ratio = parameter.pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram_)
+        p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(self.g_tp, self.is_dram_)
         c_load = self.c_gate_load + self.c_wire_load
 
         self.width_n[0] = self.g_tp.min_w_nmos_
         self.width_p[0] = p_to_n_sz_ratio * self.g_tp.min_w_nmos_
 
-        F = c_load / parameter.gate_C(self.g_tp, (self.width_n[0] + self.width_p[0]), 0, self.is_dram_)
-        self.number_gates = parameter.logical_effort(
+        F = c_load / gate_C(self.g_tp, (self.width_n[0] + self.width_p[0]), 0, self.is_dram_)
+        self.number_gates = logical_effort(
             self.g_tp,
             self.min_number_gates,
             1,
@@ -1900,7 +1906,7 @@ class Driver(Component):
         total_area = 0.0
 
         for i in range(self.number_gates):
-            total_area += parameter.compute_gate_area(self.g_tp, INV, 1,
+            total_area += compute_gate_area(self.g_tp, INV, 1,
                                                       self.width_p[i], self.width_n[i],
                                                       self.area.h)
         if self.area.h > 0:
@@ -1919,9 +1925,9 @@ class Driver(Component):
                 self.total_driver_pwidth += self.width_p[i]
 
         is_footer     = False
-        Isat_subarray = parameter.simplified_nmos_Isat(self.g_tp, self.total_driver_nwidth)
+        Isat_subarray = simplified_nmos_Isat(self.g_tp, self.total_driver_nwidth)
         detalV        = self.g_tp.peri_global.Vdd - self.g_tp.peri_global.Vcc_min
-        c_wakeup      = parameter.drain_C_(self.g_ip, self.g_tp,
+        c_wakeup      = drain_C_(self.g_ip, self.g_tp,
                                            self.total_driver_pwidth,
                                            PCH, 1,1, self.area.h)
 
@@ -1943,42 +1949,42 @@ class Driver(Component):
         new_risetime = inrisetime
 
         for i in range(self.number_gates - 1):
-            rd = parameter.tr_R_on(self.g_tp, self.width_n[i], NCH, 1, self.is_dram_)
-            c_load = parameter.gate_C(self.g_tp, self.width_n[i+1] + self.width_p[i+1], 0.0, self.is_dram_)
-            c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp,
+            rd = tr_R_on(self.g_tp, self.width_n[i], NCH, 1, self.is_dram_)
+            c_load = gate_C(self.g_tp, self.width_n[i+1] + self.width_p[i+1], 0.0, self.is_dram_)
+            c_intrinsic = drain_C_(self.g_ip, self.g_tp,
                                              self.width_p[i], PCH,1,1,self.g_tp.cell_h_def,
                                              self.is_dram_) \
-                          + parameter.drain_C_(self.g_ip, self.g_tp,
+                          + drain_C_(self.g_ip, self.g_tp,
                                                self.width_n[i], NCH,1,1,self.g_tp.cell_h_def,
                                                self.is_dram_)
             tf = rd*(c_intrinsic + c_load)
-            this_d = parameter.horowitz(self.g_ip, new_risetime, tf, 0.5, 0.5, RISE)
+            this_d = horowitz(self.g_ip, new_risetime, tf, 0.5, 0.5, RISE)
             self.delay += this_d
             new_risetime = this_d/(1.0 - 0.5)
             self.power.readOp.dynamic += (c_intrinsic + c_load)*(Vdd*Vdd)
-            self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp,
+            self.power.readOp.leakage += cmos_Isub_leakage(self.g_tp,
                                                                      self.width_n[i], self.width_p[i],
                                                                      1, INV, self.is_dram_)*Vdd
-            self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.g_tp,
+            self.power.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp,
                                                                         self.width_n[i], self.width_p[i],
                                                                         1, INV, self.is_dram_)*Vdd
 
         # final stage
         i = self.number_gates - 1
         c_load = self.c_gate_load + self.c_wire_load
-        rd = parameter.tr_R_on(self.g_tp, self.width_n[i], NCH, 1, self.is_dram_)
-        c_intrinsic = parameter.drain_C_(self.g_ip, self.g_tp, self.width_p[i],
+        rd = tr_R_on(self.g_tp, self.width_n[i], NCH, 1, self.is_dram_)
+        c_intrinsic = drain_C_(self.g_ip, self.g_tp, self.width_p[i],
                                          PCH,1,1,self.g_tp.cell_h_def, self.is_dram_) \
-                      + parameter.drain_C_(self.g_ip, self.g_tp, self.width_n[i],
+                      + drain_C_(self.g_ip, self.g_tp, self.width_n[i],
                                            NCH,1,1,self.g_tp.cell_h_def, self.is_dram_)
         tf = rd*(c_intrinsic + c_load) + self.r_wire_load*(self.c_wire_load*0.5 + self.c_gate_load)
-        this_d = parameter.horowitz(self.g_ip, new_risetime, tf, 0.5, 0.5, RISE)
+        this_d = horowitz(self.g_ip, new_risetime, tf, 0.5, 0.5, RISE)
         self.delay += this_d
         self.power.readOp.dynamic += (c_intrinsic + c_load)*(Vdd*Vdd)
-        self.power.readOp.leakage += parameter.cmos_Isub_leakage(self.g_tp,
+        self.power.readOp.leakage += cmos_Isub_leakage(self.g_tp,
                                                                  self.width_n[i], self.width_p[i],
                                                                  1, INV, self.is_dram_)*Vdd
-        self.power.readOp.gate_leakage += parameter.cmos_Ig_leakage(self.g_tp,
+        self.power.readOp.gate_leakage += cmos_Ig_leakage(self.g_tp,
                                                                     self.width_n[i], self.width_p[i],
                                                                     1, INV, self.is_dram_)*Vdd
         return this_d/(1.0 - 0.5)

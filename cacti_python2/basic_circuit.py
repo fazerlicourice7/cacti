@@ -11,25 +11,8 @@ import sympy
 from math import ceil
 from sympy import Basic
 
-
-# Constants taken from const.h or from the user’s code
-# Adjust these as needed to match your global constants in the Python code
-PMOS = 1
-NMOS = 0
-NCH = 1
-PCH = 0
-RISE = 1
-FALL = 2
+# CONSTANTS
 UNI_LEAK_STACK_FACTOR = 0.43
-Cpolywire = 0.25e-15    # Example: typical default in CACTI for poly wire
-PERMITTIVITY_FREE_SPACE = 8.854187817e-18
-BULK_CU_RESISTIVITY     = 2.20e-8   # ohm-m; typical for copper interconnect
-NUMBER_WIRE_TYPES = 8
-NUMBER_TSV_TYPES = 2
-NUMBER_INTERCONNECT_PROJECTION_TYPES = 2
-
-VBITSENSEMIN = 0.08
-VDD_STORAGE_LOSS_FRACTION_WORST = 0.2   # Factor used for eDRAM refresh model
 
 def is_pow2(val: int) -> bool:
     """Check if val is a power of two."""

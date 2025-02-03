@@ -11,26 +11,15 @@ from .basic_circuit import (pmos_to_nmos_sz_ratio,
 # Possibly from your python "parameter.py" or "component.py"
 # for computing gate area:
 from .component import compute_gate_area
-
-# Example placeholders for your custom "Area" and "powerDef" classes:
 from .area import Area
 from .cacti_interface import powerDef
-
-################################################################################
-# If you have a ratio for linear vs. saturated drive, define it (common in CACTI)
-################################################################################
-Ilinear_to_Isat_ratio = 0.85
+from .const import *
 
 ################################################################################
 # Sleep_tx class in Python
 ################################################################################
 
 class Sleep_tx(Component):
-    """
-    Python version of Sleep_tx from powergating.cc/h.
-    Inherits from 'Component' for consistency with the CACTI code structure.
-    """
-
     def __init__(self,
                  g_ip,
                  g_tp,
@@ -40,7 +29,7 @@ class Sleep_tx(Component):
                  c_circuit_wakeup,      # double _c_circuit_wakeup
                  V_delta,               # double _V_delta
                  num_sleep_tx,          # int     _num_sleep_tx
-                 cell_area):            # const  Area & cell_
+                 cell_area:Area):            # const  Area & cell_
         super().__init__()  # calls Component.__init__()
 
         # Store constructor parameters
@@ -97,10 +86,6 @@ class Sleep_tx(Component):
         self.compute_penalty(g_ip, g_tp)
 
     def compute_penalty(self, g_ip, g_tp):
-        """
-        Equivalent to Sleep_tx::compute_penalty in the C++ code.
-        Returns the wakeup_delay as well.
-        """
         p_to_n = pmos_to_nmos_sz_ratio(g_tp, False, False, True)
         # we define some local references
         if self.is_footer:
@@ -165,7 +150,6 @@ class Sleep_tx(Component):
 
     def leakage_feedback(self, temperature):
         """
-        Placeholder if you need temperature-based feedback 
         (the original code was empty).
         """
         pass

@@ -1,6 +1,8 @@
 import math
 import sympy as sp
 from sympy import Basic
+from .area import Area
+from .cacti_interface import powerDef
 
 # If you have your own definitions, or you can define them here:
 # from .area import Area
@@ -25,34 +27,14 @@ def is_symbolic(var):
     return isinstance(var, Basic)
 
 ##############################################################################
-# Example minimal stubs for needed classes/structs:
-##############################################################################
-
-class Area:
-    """
-    Minimal placeholder for the 'Area' class, as used by CACTI code.
-    """
-    def __init__(self):
-        self.w = 0
-        self.h = 0
-
-    def get_area(self):
-        # If w or h is symbolic, this returns a symbolic expression.
-        return self.w * self.h
-
-# In CACTI, we also have powerDef, but you can create a stub if needed:
-class PowerDef:
-    pass
-
-##############################################################################
 # The main Component class, as in component.h
 ##############################################################################
 
 class Component:
     def __init__(self):
         self.area       = Area()
-        self.power      = PowerDef()
-        self.rt_power   = PowerDef()
+        self.power      = powerDef()
+        self.rt_power   = powerDef()
         self.delay      = 0
         self.cycle_time = 0
 
@@ -61,11 +43,6 @@ class Component:
 ##############################################################################
 
 def compute_diffusion_width(g_ip, g_tp, num_stacked_in, num_folded_tr):
-    """
-    Python equivalent of:
-      double Component::compute_diffusion_width(int num_stacked_in, int num_folded_tr)
-    but with g_ip/g_tp passed in.
-    """
     w_poly = g_ip.F_sz_um
     spacing_poly_to_poly = g_tp.w_poly_contact + 2*g_tp.spacing_poly_to_contact
 
@@ -79,11 +56,13 @@ def compute_diffusion_width(g_ip, g_tp, num_stacked_in, num_folded_tr):
         total_diff_w += ((num_folded_tr - 2)*2*spacing_poly_to_poly
                          + (num_folded_tr - 1)*num_stacked_in*w_poly
                          + (num_folded_tr - 1)*(num_stacked_in - 1)*g_tp.spacing_poly_to_poly)
-    elif is_symbolic(num_folded_tr):
-        # Choose path "most likely" => folded:
-        total_diff_w += ((num_folded_tr - 2)*2*spacing_poly_to_poly
-                         + (num_folded_tr - 1)*num_stacked_in*w_poly
-                         + (num_folded_tr - 1)*(num_stacked_in - 1)*g_tp.spacing_poly_to_poly)
+    
+    # ERROR PATH_APPROX
+    # elif is_symbolic(num_folded_tr):
+    #     # Choose path "most likely" => folded:
+    #     total_diff_w += ((num_folded_tr - 2)*2*spacing_poly_to_poly
+    #                      + (num_folded_tr - 1)*num_stacked_in*w_poly
+    #                      + (num_folded_tr - 1)*(num_stacked_in - 1)*g_tp.spacing_poly_to_poly)
 
     return total_diff_w
 
@@ -94,13 +73,6 @@ def compute_gate_area(g_ip, g_tp,
                       w_pmos,
                       w_nmos,
                       h_gate):
-    """
-    Python equivalent of:
-      double Component::compute_gate_area(
-          int gate_type, int num_inputs,
-          double w_pmos, double w_nmos, double h_gate)
-    but with g_ip/g_tp passed in and symbolic max used.
-    """
     # Return 0 if the widths are non-positive
     if (not is_symbolic(w_pmos) and w_pmos <= 0) or (not is_symbolic(w_nmos) and w_nmos <= 0):
         return 0
@@ -110,7 +82,9 @@ def compute_gate_area(g_ip, g_tp,
 
     # ratio p to n
     if (is_symbolic(w_pmos) or is_symbolic(w_nmos)):
-        ratio_p_to_n = 0.5   # fallback if symbolic
+        ratio_p_to_n = w_pmos / (w_pmos + w_nmos)
+        # CHECK PATH_APPROX
+        # ratio_p_to_n = 0.5   # fallback if symbolic
     else:
         ratio_p_to_n = w_pmos / (w_pmos + w_nmos)
         # if ratio invalid, area=0
@@ -121,15 +95,22 @@ def compute_gate_area(g_ip, g_tp,
     w_folded_pmos = (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)*ratio_p_to_n
     w_folded_nmos = (h_tr_region - g_tp.MIN_GAP_BET_P_AND_N_DIFFS)*(1 - ratio_p_to_n)
 
+    if not is_symbolic(w_folded_pmos):
+        assert(w_folded_pmos > 0)
+
+    # CHECK PATH_APPROX
     # number of folds
-    if not is_symbolic(w_pmos):
-        num_folded_pmos = sp.ceiling(w_pmos / w_folded_pmos)
-    else:
-        num_folded_pmos = 1
-    if not is_symbolic(w_nmos):
-        num_folded_nmos = sp.ceiling(w_nmos / w_folded_nmos)
-    else:
-        num_folded_nmos = 1
+    # if not is_symbolic(w_pmos):
+    #     num_folded_pmos = sp.ceiling(w_pmos / w_folded_pmos)
+    # else:
+    #     num_folded_pmos = 1
+    # if not is_symbolic(w_nmos):
+    #     num_folded_nmos = sp.ceiling(w_nmos / w_folded_nmos)
+    # else:
+    #     num_folded_nmos = 1
+
+    num_folded_pmos = sp.ceiling(w_pmos / w_folded_pmos)
+    num_folded_nmos = sp.ceiling(w_nmos / w_folded_nmos)
 
     # total diffusion widths based on gate_type:
     if gate_type in ["INV", "inv"]:
@@ -147,6 +128,7 @@ def compute_gate_area(g_ip, g_tp,
     # gate width = symbolic_convex_max
     gate.w = symbolic_convex_max(total_ndiff_w, total_pdiff_w)
 
+    # ERROR PATH_APPROX
     # gate height
     # If we have a purely numeric scenario and w_folded_nmos > w_nmos => smaller gate
     # else => h_gate.
@@ -164,11 +146,6 @@ def compute_gate_area(g_ip, g_tp,
 
 
 def compute_tr_width_after_folding(g_ip, g_tp, input_width, threshold_folding_width):
-    """
-    Python equivalent of:
-      double Component::compute_tr_width_after_folding(double input_width, double threshold_folding_width)
-    with g_ip/g_tp passed in, and if piecewise, picks one path.
-    """
     if (not is_symbolic(input_width) and input_width <= 0):
         return 0
 
@@ -182,11 +159,6 @@ def compute_tr_width_after_folding(g_ip, g_tp, input_width, threshold_folding_wi
 
 
 def height_sense_amplifier(g_ip, g_tp, pitch_sense_amp):
-    """
-    Python equivalent of:
-      double Component::height_sense_amplifier(double pitch_sense_amp)
-    with g_ip/g_tp passed in.
-    """
     h_pmos_tr = ( compute_tr_width_after_folding(g_ip, g_tp, g_tp.w_sense_p, pitch_sense_amp)*2
                   + compute_tr_width_after_folding(g_ip, g_tp, g_tp.w_iso, pitch_sense_amp)
                   + 2*g_tp.MIN_GAP_BET_SAME_TYPE_DIFFS )
@@ -222,6 +194,7 @@ def logical_effort(g_tp,
     #  1) compute num_gates = floor(log(F)/log(fopt)).
     # But log(...) is tricky if F can be symbolic => use sp.log
     # We'll pick 4 stages as a "common path," ignoring adjustments.
+    # ERROR MAIN_GATES
     num_gates = 4
 
     # fanout per stage
@@ -247,9 +220,9 @@ def logical_effort(g_tp,
     # final stage nmos width
     # calls gate_C(...) with is_dram_, is_wl_tr_ etc. 
     # you must define or pass in your gate_C function:
-    from .parameter import gate_C, symbolic_convex_max  # or define them similarly
+    from .basic_circuit import gate_C
 
-    wn_i = (1.0/(1.0+p_to_n_sz_ratio)) * C_in / gate_C(g_tp, 1, 0, is_dram_, False, is_wl_tr_)
+    wn_i = (1.0/(1.0+p_to_n_sz_ratio)) * C_in / gate_C(None, g_tp, 1, 0, is_dram_, False, is_wl_tr_)
 
     # use symbolic_convex_max for the clamp with min_w_nmos
     wn_i = symbolic_convex_max(wn_i, g_tp.min_w_nmos_)
