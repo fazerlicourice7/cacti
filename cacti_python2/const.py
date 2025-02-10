@@ -68,6 +68,24 @@ INV                   = 0
 NOR                   = 1
 NAND                  = 2
 
+NMOS                  = 3
+PMOS                  = 4
+
+TRI                   = 5
+TG                    = 6
+
+# CHECK
+inv                   = 0
+nor                   = 1
+nand                  = 2
+
+nmos                  = 3
+pmos                  = 4
+
+tri                   = 5
+tg                    = 6
+
+
 # 8) Various enumerations or numeric definitions
 NUMBER_TECH_FLAVORS                   = 4
 NUMBER_INTERCONNECT_PROJECTION_TYPES  = 2  # 0=aggressive, 1=conservative
@@ -134,6 +152,13 @@ class ram_cell_tech_type_num(IntEnum):
     lp_dram   = 3
     comm_dram = 4
 
+# CHECK CONST
+itrs_hp   = 0
+itrs_lstp = 1
+itrs_lop  = 2
+lp_dram   = 3
+comm_dram = 4
+
 # 15) Arrays pppm
 pppm       = (1.0, 1.0, 1.0, 1.0)
 pppm_lkg   = (0.0, 1.0, 1.0, 0.0)
@@ -143,3 +168,43 @@ pppm_Ig    = (0.0, 0.0, 1.0, 0.0)
 pppm_sc    = (0.0, 0.0, 0.0, 1.0)
 
 Ilinear_to_Isat_ratio = 2.0
+
+# ERROR: Check added here from basic cricuit Wire Placement
+class Wire_placement(IntEnum):
+    outside_mat = 0
+    inside_mat = 1
+    local_wires = 2
+    
+outside_mat = 0
+inside_mat = 1
+local_wires = 2
+
+# htree2:
+class Htree_type(IntEnum):
+    Add_htree       = 0
+    Data_in_htree   = 1
+    Data_out_htree  = 2
+    Search_in_htree = 3
+    Search_out_htree= 4
+
+Add_htree       = 0
+Data_in_htree   = 1
+Data_out_htree  = 2
+Search_in_htree = 3
+Search_out_htree= 4
+
+# memory_bus
+class Memorybus_type(IntEnum):
+    Row_add_path = 0
+    Col_add_path = 1
+    Data_path    = 2
+    # in_network  = 3  # Commented out like in the original C++ code
+    # out_network = 4  # Commented out like in the original C++ code
+
+Row_add_path = 0
+Col_add_path = 1
+Data_path    = 2
+
+# crossbar
+ASPECT_THRESHOLD = .8
+ADJ = 1 # CHECK IF ERROR

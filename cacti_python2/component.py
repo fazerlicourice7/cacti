@@ -3,6 +3,7 @@ import sympy as sp
 from sympy import Basic
 from .area import Area
 from .cacti_interface import powerDef
+from .const import *
 
 # If you have your own definitions, or you can define them here:
 # from .area import Area
@@ -112,14 +113,15 @@ def compute_gate_area(g_ip, g_tp,
     num_folded_pmos = sp.ceiling(w_pmos / w_folded_pmos)
     num_folded_nmos = sp.ceiling(w_nmos / w_folded_nmos)
 
+    # CHECK NAND
     # total diffusion widths based on gate_type:
-    if gate_type in ["INV", "inv"]:
+    if gate_type == INV: # in ["INV", "inv"]:
         total_ndiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_folded_nmos)
         total_pdiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_folded_pmos)
-    elif gate_type in ["NOR", "nor"]:
+    elif gate_type == NOR: # in ["NOR", "nor"]:
         total_ndiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_inputs*num_folded_nmos)
         total_pdiff_w = compute_diffusion_width(g_ip, g_tp, num_inputs, num_folded_pmos)
-    elif gate_type in ["NAND", "nand"]:
+    elif gate_type == NAND: # in ["NAND", "nand"]:
         total_ndiff_w = compute_diffusion_width(g_ip, g_tp, num_inputs, num_folded_nmos)
         total_pdiff_w = compute_diffusion_width(g_ip, g_tp, 1, num_inputs*num_folded_pmos)
     else:

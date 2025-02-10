@@ -10,6 +10,7 @@ import math
 import sympy
 from math import ceil
 from sympy import Basic
+from const import *
 
 # CONSTANTS
 UNI_LEAK_STACK_FACTOR = 0.43
@@ -490,7 +491,8 @@ def cmos_Isub_leakage(g_tp,
     def leak_stack_factor(k: int) -> float:
         return (UNI_LEAK_STACK_FACTOR ** (k - 1))
 
-    if gate_type == "nmos":
+    # CHECK NAND
+    if gate_type == nmos or gate_type == "nmos":
         if fanin == 1:
             Isub = n_leak / num_states
         else:
@@ -504,7 +506,7 @@ def cmos_Isub_leakage(g_tp,
                     Isub += n_leak * leak_stack_factor(off_cnt) * combination_fanin(fanin, off_cnt)
                 Isub /= num_states
 
-    elif gate_type == "pmos":
+    elif gate_type == pmos or gate_type == "pmos":
         if fanin == 1:
             Isub = p_leak / num_states
         else:
@@ -515,10 +517,10 @@ def cmos_Isub_leakage(g_tp,
                     Isub += p_leak * leak_stack_factor(off_cnt) * combination_fanin(fanin, off_cnt)
                 Isub /= num_states
 
-    elif gate_type == "inv":
+    elif gate_type == inv or gate_type == "inv":
         Isub = (n_leak + p_leak) / 2.0
 
-    elif gate_type == "nand":
+    elif gate_type == nand or gate_type == "nand":
         # pull up => pmos in parallel
         Isub += fanin * p_leak
         # pull down => nmos in series
@@ -526,7 +528,7 @@ def cmos_Isub_leakage(g_tp,
             Isub += n_leak * leak_stack_factor(off_cnt) * combination_fanin(fanin, off_cnt)
         Isub /= num_states
 
-    elif gate_type == "nor":
+    elif gate_type == nor or gate_type == "nor":
         # pull up => pmos in series
         for off_cnt in range(1, fanin+1):
             Isub += p_leak * leak_stack_factor(off_cnt) * combination_fanin(fanin, off_cnt)
@@ -534,14 +536,14 @@ def cmos_Isub_leakage(g_tp,
         Isub += fanin * n_leak
         Isub /= num_states
 
-    elif gate_type == "tri":
+    elif gate_type == tri or gate_type == "tri":
         # tri-state
         # approximate
         Isub = (n_leak + p_leak)*0.5
         Isub += n_leak*UNI_LEAK_STACK_FACTOR
         Isub *= 0.5
 
-    elif gate_type == "tg":
+    elif gate_type == tg or gate_type == "tg":
         # pass gate
         Isub = (n_leak + p_leak)*0.5
 
@@ -574,7 +576,7 @@ def cmos_Ig_leakage(g_tp,
     Ig_on  = 0.0
     num_states = float(2**fanin)
 
-    if gate_type == "nmos":
+    if gate_type == nmos or gate_type == "nmos":
         if fanin == 1:
             Ig_on = n_leak / num_states
         else:
@@ -590,7 +592,7 @@ def cmos_Ig_leakage(g_tp,
                     Ig_on += n_leak * combination_fanin(fanin, on_cnt)*on_cnt*0.5
                 Ig_on /= num_states
 
-    elif gate_type == "pmos":
+    elif gate_type == pmos or gate_type == "pmos":
         if fanin == 1:
             Ig_on = p_leak / num_states
         else:
@@ -603,10 +605,10 @@ def cmos_Ig_leakage(g_tp,
                     Ig_on += p_leak * combination_fanin(fanin, on_cnt)*on_cnt*0.5
                 Ig_on /= num_states
 
-    elif gate_type == "inv":
+    elif gate_type == inv or gate_type == "inv":
         Ig_on = (n_leak + p_leak)*0.5
 
-    elif gate_type == "nand":
+    elif gate_type == nand or gate_type == "nand":
         # pull up => pmos are in parallel
         for on_cnt in range(1, fanin+1):
             Ig_on += p_leak * combination_fanin(fanin, on_cnt)*on_cnt
@@ -616,7 +618,7 @@ def cmos_Ig_leakage(g_tp,
             Ig_on += n_leak * combination_fanin(fanin, on_cnt)*on_cnt*0.5
         Ig_on /= num_states
 
-    elif gate_type == "nor":
+    elif gate_type == nor or gate_type == "nor":
         # pull up => pmos in series
         Ig_on += p_leak * fanin
         for on_cnt in range(1, fanin):
@@ -626,12 +628,12 @@ def cmos_Ig_leakage(g_tp,
             Ig_on += n_leak * combination_fanin(fanin, on_cnt)*on_cnt
         Ig_on /= num_states
 
-    elif gate_type == "tri":
+    elif gate_type == tri or gate_type == "tri":
         Ig_on += (2*n_leak + 2*p_leak)*0.5
         Ig_on += (n_leak + p_leak)*0.5
         Ig_on *= 0.5
 
-    elif gate_type == "tg":
+    elif gate_type == tg or gate_type == "tg":
         Ig_on = (n_leak + p_leak)*0.5
 
     return Ig_on
