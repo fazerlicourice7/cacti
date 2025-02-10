@@ -2,6 +2,7 @@
 
 import math
 import sys
+import sympy as sp
 
 # Import your own modules/classes for:
 #   - basic_circuit (drain_C_, gate_C, cmos_Isub_leakage, cmos_Ig_leakage, tr_R_on, horowitz, compute_gate_area)
@@ -21,6 +22,17 @@ from .basic_circuit import (
 )
 from .const import *
 from .wire import Wire
+
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with numeric
+    or symbolic solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
+
+def is_symbolic(x):
+    """Return True if x is a sympy symbolic expression."""
+    return isinstance(x, sp.Basic)
 
 
 class Crossbar(Component):
@@ -226,7 +238,9 @@ class Crossbar(Component):
 
         # 1) Tri-state buffer
         tri_cap = self.output_buffer()
-        assert tri_cap > 0.0, "Crossbar output buffer computed zero or negative tri_cap?"
+
+        if not is_symbolic(tri_cap):
+            assert tri_cap > 0.0, "Crossbar output buffer computed zero or negative tri_cap?"
 
         # 2) area of tri-state logic
         # from crossbar.cc => compute_gate_area calls for INV, NAND(2), NOR(2)
@@ -276,7 +290,7 @@ class Crossbar(Component):
         ntri = int(math.ceil(
             self.g_tp.cell_h_def / self.g_tp.wire_outside_mat.pitch
         ))
-        wire_len = max(
+        wire_len = symbolic_convex_max(
             width_per_tri * ntri * self.n_out,
             self.flit_size * self.g_tp.wire_outside_mat.pitch * self.n_out
         )

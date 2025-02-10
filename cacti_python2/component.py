@@ -172,78 +172,128 @@ def height_sense_amplifier(g_ip, g_tp, pitch_sense_amp):
     return h_pmos_tr + h_nmos_tr + g_tp.MIN_GAP_BET_P_AND_N_DIFFS
 
 
-def logical_effort(g_tp,
-                   num_gates_min,
-                   g,
-                   F,
-                   w_n,   # e.g. a list or array of stage widths for NMOS
-                   w_p,   # e.g. a list or array of stage widths for PMOS
-                   C_load,
-                   p_to_n_sz_ratio,
-                   is_dram_,
-                   is_wl_tr_,
-                   max_w_nmos):
-    """
-    Python version of:
-      int Component::logical_effort(...)
-    that handles the possibility that F is symbolic.
+# def logical_effort(g_tp,
+#                    num_gates_min,
+#                    g,
+#                    F,
+#                    w_n,   # e.g. a list or array of stage widths for NMOS
+#                    w_p,   # e.g. a list or array of stage widths for PMOS
+#                    C_load,
+#                    p_to_n_sz_ratio,
+#                    is_dram_,
+#                    is_wl_tr_,
+#                    max_w_nmos):
+#     """
+#     Python version of:
+#       int Component::logical_effort(...)
+#     that handles the possibility that F is symbolic.
 
-    We pick a single "likely" path: 
-      - We do not do the re-calc if final stage w_n > max_w_nmos, 
-        we just comment it out to remove piecewise branching.
-    """
-    # If F can be symbolic, let's do a safe approach:
-    #  1) compute num_gates = floor(log(F)/log(fopt)).
-    # But log(...) is tricky if F can be symbolic => use sp.log
-    # We'll pick 4 stages as a "common path," ignoring adjustments.
-    # ERROR MAIN_GATES
+#     We pick a single "likely" path: 
+#       - We do not do the re-calc if final stage w_n > max_w_nmos, 
+#         we just comment it out to remove piecewise branching.
+#     """
+#     # If F can be symbolic, let's do a safe approach:
+#     #  1) compute num_gates = floor(log(F)/log(fopt)).
+#     # But log(...) is tricky if F can be symbolic => use sp.log
+#     # We'll pick 4 stages as a "common path," ignoring adjustments.
+#     # ERROR MAIN_GATES
+#     num_gates = 4
+
+#     # fanout per stage
+#     # If F=0 => f->∞? We'll clamp or pick f=1 if F=0:
+#     # We assume F>1 typical scenario. If symbolic, we do sp.Pow(F, 1.0/num_gates).
+#     if is_symbolic(F):
+#         f = sp.Pow(F, 1.0/sp.Integer(num_gates))
+#     else:
+#         if F <= 0:
+#             # fallback
+#             f = 1
+#         else:
+#             f = (F)**(1.0/num_gates)
+
+#     i_final = num_gates - 1
+
+#     # compute final stage input size
+#     # clamp f=1 if symbolic or zero
+#     if (not is_symbolic(f)) and (f == 0):
+#         f = 1
+#     C_in = C_load / f
+
+#     # final stage nmos width
+#     # calls gate_C(...) with is_dram_, is_wl_tr_ etc. 
+#     # you must define or pass in your gate_C function:
+#     from .basic_circuit import gate_C
+
+#     wn_i = (1.0/(1.0+p_to_n_sz_ratio)) * C_in / gate_C(None, g_tp, 1, 0, is_dram_, False, is_wl_tr_)
+
+#     # use symbolic_convex_max for the clamp with min_w_nmos
+#     wn_i = symbolic_convex_max(wn_i, g_tp.min_w_nmos_)
+#     wp_i = p_to_n_sz_ratio*wn_i
+
+#     # store them:
+#     w_n[i_final] = wn_i
+#     w_p[i_final] = wp_i
+
+#     # We omit the piecewise logic for w_n[i] > max_w_nmos; just comment out:
+
+#     # for the earlier stages:
+#     for stage_idx in range(num_gates - 2, 0, -1):
+#         # f might be symbolic, so we do w_n[i+1]/f:
+#         wn_candidate = w_n[stage_idx + 1]/f
+#         # clamp:
+#         wn_candidate = symbolic_convex_max(wn_candidate, g_tp.min_w_nmos_)
+#         w_n[stage_idx] = wn_candidate
+#         w_p[stage_idx] = p_to_n_sz_ratio*wn_candidate
+
+#     # no check for num_gates <= MAX_NUMBER_GATES_STAGE in symbolic code
+#     return num_gates
+
+# ERROR PATH_APPROX
+def logical_effort(g_tp, num_gates_min, g, F, w_n, w_p, C_load, p_to_n_sz_ratio, is_dram_, is_wl_tr_, max_w_nmos):
+    from .basic_circuit import gate_C
+    # num_gates = sp.log(F) / sp.log(fopt)
+    # if(F == 0):
+    #     num_gates = 4
+    # else:
+    #     num_gates = 4
+
     num_gates = 4
-
-    # fanout per stage
-    # If F=0 => f->∞? We'll clamp or pick f=1 if F=0:
-    # We assume F>1 typical scenario. If symbolic, we do sp.Pow(F, 1.0/num_gates).
-    if is_symbolic(F):
-        f = sp.Pow(F, 1.0/sp.Integer(num_gates))
-    else:
-        if F <= 0:
-            # fallback
-            f = 1
-        else:
-            f = (F)**(1.0/num_gates)
-
-    i_final = num_gates - 1
-
-    # compute final stage input size
-    # clamp f=1 if symbolic or zero
-    if (not is_symbolic(f)) and (f == 0):
+    f = sp.Pow(F, 1.0 / num_gates)
+    i = num_gates - 1
+    if (f == 0):
         f = 1
     C_in = C_load / f
 
-    # final stage nmos width
-    # calls gate_C(...) with is_dram_, is_wl_tr_ etc. 
-    # you must define or pass in your gate_C function:
-    from .basic_circuit import gate_C
+    w_n[i] = (1.0 / (1.0 + p_to_n_sz_ratio)) * C_in / gate_C(g_tp, 1, 0, is_dram_, False, is_wl_tr_)
 
-    wn_i = (1.0/(1.0+p_to_n_sz_ratio)) * C_in / gate_C(None, g_tp, 1, 0, is_dram_, False, is_wl_tr_)
+    # CHANGE: Max - can ignore to reduce expression length
+    w_n[i] = symbolic_convex_max(w_n[i], g_tp.min_w_nmos_)
 
-    # use symbolic_convex_max for the clamp with min_w_nmos
-    wn_i = symbolic_convex_max(wn_i, g_tp.min_w_nmos_)
-    wp_i = p_to_n_sz_ratio*wn_i
+    w_p[i] = p_to_n_sz_ratio * w_n[i]
 
-    # store them:
-    w_n[i_final] = wn_i
-    w_p[i_final] = wp_i
+    # CHANGE: ARRAY LOGIC - cannot index with symbolic expressions
+    # #TODO IMPORTANT SINCE RELATIONAL
+    # if w_n[i] > max_w_nmos:
+    #     C_ld = gate_C(g_tp, (1 + p_to_n_sz_ratio) * max_w_nmos, 0, is_dram_, False, is_wl_tr_)
+    #     F = g * C_ld / gate_C(g_tp, w_n[0] + w_p[0], 0, is_dram_, False, is_wl_tr_)
 
-    # We omit the piecewise logic for w_n[i] > max_w_nmos; just comment out:
+    #     num_gates += 2
+    #     f = sp.Pow(F, 1.0 / (num_gates - 1))
+    #     i = num_gates - 1
+    #     w_n[i] = max_w_nmos
+    #     w_p[i] = p_to_n_sz_ratio * w_n[i]
 
-    # for the earlier stages:
-    for stage_idx in range(num_gates - 2, 0, -1):
-        # f might be symbolic, so we do w_n[i+1]/f:
-        wn_candidate = w_n[stage_idx + 1]/f
-        # clamp:
-        wn_candidate = symbolic_convex_max(wn_candidate, g_tp.min_w_nmos_)
-        w_n[stage_idx] = wn_candidate
-        w_p[stage_idx] = p_to_n_sz_ratio*wn_candidate
+    for i in range(num_gates - 2, 0, -1):
+        w_item = w_n[i + 1] / f
+        if w_item == sp.zoo:
+            w_item = 0
 
-    # no check for num_gates <= MAX_NUMBER_GATES_STAGE in symbolic code
+        # CHANGE: Max - can ignore to reduce expression length
+        w_n[i] = symbolic_convex_max(w_item, g_tp.min_w_nmos_)
+        # w_n[i] = w_item
+
+        w_p[i] = p_to_n_sz_ratio * w_n[i]
+
+    assert num_gates <= MAX_NUMBER_GATES_STAGE
     return num_gates
+

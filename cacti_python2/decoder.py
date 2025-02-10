@@ -109,7 +109,7 @@ class Decoder(Component):
         # width will be computed after we sum up gate areas
 
         # only if exist is true do we do the sizing
-        if self.cell.h <= 0 or self.cell.w <= 0:
+        if(not is_symbolic(self.cell.h) and self.cell.h <= 0) or (not is_symbolic(self.cell.w) and self.cell.w <= 0):
             # in C++ it uses assert(cell.h>0 && cell.w>0)
             assert self.cell.h > 0
             assert self.cell.w > 0

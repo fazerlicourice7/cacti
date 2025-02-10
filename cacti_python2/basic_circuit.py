@@ -15,6 +15,13 @@ from const import *
 # CONSTANTS
 UNI_LEAK_STACK_FACTOR = 0.43
 
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with numeric
+    or symbolic solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
+
 def is_pow2(val: int) -> bool:
     """Check if val is a power of two."""
     if val <= 0:
@@ -703,7 +710,7 @@ def wire_resistance(resistivity: float,
     Return wire R per micron (ohms/micron).
     """
     # cross sectional area ~ (wire_thickness - barrier - dishing)*(wire_width - 2*barrier)
-    area = max(1e-15, (wire_thickness - barrier_thickness - dishing_thickness)*
+    area = symbolic_convex_max(1e-15, (wire_thickness - barrier_thickness - dishing_thickness)*
                          (wire_width - 2.0*barrier_thickness))
     return alpha_scatter * resistivity / area
 
@@ -784,7 +791,7 @@ def tsv_capacitance(tsv_len: float,
         lateral_coupling_cap = 0.0
         diagonal_coupling_cap= 0.0
     else:
-        partial_factor = 0.4 * (0.225*math.log( max(1.0, 0.97*tsv_len/tsv_diam ))+0.53)* e_si
+        partial_factor = 0.4 * (0.225*math.log( symbolic_convex_max(1.0, 0.97*tsv_len/tsv_diam ))+0.53)* e_si
         lateral_coupling_cap  = partial_factor/(tsv_pitch - tsv_diam)* math.pi*tsv_diam*tsv_len
         diagonal_coupling_cap = partial_factor/(1.414*tsv_pitch - tsv_diam)* math.pi*tsv_diam*tsv_len
 

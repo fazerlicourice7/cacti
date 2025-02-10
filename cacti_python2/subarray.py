@@ -14,6 +14,13 @@ from .basic_circuit import (
 import math
 import sys
 
+import sympy as sp
+
+def is_symbolic(x):
+    """Return True if x is a sympy symbolic expression."""
+    return isinstance(x, sp.Basic)
+
+
 class Subarray(Component):
     def __init__(self, dp, is_fa_):
         """
@@ -103,8 +110,10 @@ class Subarray(Component):
                            + other_overhead)
 
         # Basic checks:
-        assert self.area.h > 0, "area.h must be > 0"
-        assert self.area.w > 0, "area.w must be > 0"
+        if not is_symbolic(self.area.h):
+            assert self.area.h > 0, "area.h must be > 0"
+        if not is_symbolic(self.area.w):
+            assert self.area.w > 0, "area.w must be > 0"
 
         # Finally, call compute_C to compute bitline/wordline caps
         self.compute_C()

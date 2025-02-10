@@ -43,6 +43,19 @@ from .basic_circuit import (
     horowitz, cmos_Isub_leakage, simplified_nmos_Isat
 )
 
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with numeric
+    or symbolic solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
+
+import sympy as sp
+
+def is_symbolic(x):
+    """Return True if x is a sympy symbolic expression."""
+    return isinstance(x, sp.Basic)
+
 
 class Mat(Component):
     def __init__(self, dp):
@@ -132,8 +145,10 @@ class Mat(Component):
 
         # Now the code does: assert(num_subarrays_per_mat <= 4)
         #                    assert(num_subarrays_per_row <= 2)
-        assert self.num_subarrays_per_mat <= 4
-        assert self.num_subarrays_per_row <= 2
+        if not is_symbolic(self.num_subarrays_per_mat):
+            assert self.num_subarrays_per_mat <= 4
+        if not is_symbolic(self.num_subarrays_per_row):
+            assert self.num_subarrays_per_row <= 2
 
         # is_fa = (dp.fully_assoc) => already set
         # camFlag = (is_fa or pure_cam) => set as well.
@@ -505,8 +520,10 @@ class Mat(Component):
             pass
 
         # final asserts:
-        assert self.area.h > 0
-        assert self.area.w > 0
+        if not is_symbolic(self.area.h):
+            assert self.area.h > 0
+        if not is_symbolic(self.area.w):
+            assert self.area.w > 0
 
         # That concludes the partial constructor translation.
         # We'll add more methods (compute_delays, compute_power_energy, etc.) in the future as needed.
@@ -699,7 +716,7 @@ class Mat(Component):
             self.compute_comparator_delay(0.0)
 
         if self.row_dec.exist is False:
-            self.delay_wl_reset = max(self.r_predec.blk1.delay,
+            self.delay_wl_reset = symbolic_convex_max(self.r_predec.blk1.delay,
                                       self.r_predec.blk2.delay)
 
         return outrisetime
@@ -1057,7 +1074,7 @@ class Mat(Component):
         self.delay_hit_miss = horowitz(0.0, tf, 0.5, 0.5, FALL)
 
         if self.is_fa:
-            self.delay_matchchline += max(self.ml_to_ram_wl_drv.delay, self.delay_hit_miss)
+            self.delay_matchchline += symbolic_convex_max(self.ml_to_ram_wl_drv.delay, self.delay_hit_miss)
 
         dynSearchEng += ((c_intrinsic + Cwire + c_gate_load)
                          * self.g_tp.peri_global.Vdd * self.g_tp.peri_global.Vdd)

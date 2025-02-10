@@ -13,6 +13,13 @@ from math import sqrt
 
 # Define Python enumerations or use simple constants for Wire_type, etc.
 
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with numeric
+    or symbolic solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
+
 class Wire_type:
     Global_ = 0
     Global_5 = 1
@@ -434,9 +441,9 @@ class results_mem_array:
         self.precharge_energy = 0.0
 
 
-class mem_array:
+class MemArray:
     """
-    Python version of the C++ mem_array class.
+    Python version of the C++ MemArray class.
     Contains data about a subarray, mats, delays, energies, etc.
     """
     __slots__ = (
@@ -636,7 +643,7 @@ class mem_array:
     @staticmethod
     def lt(m1, m2):
         """
-        Equivalent to the static bool mem_array::lt(...) in the C++ code.
+        Equivalent to the static bool MemArray::lt(...) in the C++ code.
         Compare for a custom ordering. 
         """
         if m1.Nspd < m2.Nspd: return True
@@ -658,7 +665,7 @@ class uca_org_t:
     """
     Python version of the C++ uca_org_t class.
     """
-    def __init__(self):
+    def __init__(self, g_ip, g_tp):
         self.tag_array2 = None
         self.data_array2 = None
         self.access_time = 0.0
@@ -675,10 +682,23 @@ class uca_org_t:
         self.tag_array = results_mem_array()
         self.data_array= results_mem_array()
 
+        self.g_ip = g_ip
+        self.g_tp = g_tp
+
+    def symbolic_convex_max(self, a, b):
+        """
+        An approximation to the max function that plays well with numeric
+        or symbolic solvers.
+        """
+        return 0.5 * (a + b + abs(a - b))
+
     def find_delay(self):
         """
         Python version of uca_org_t::find_delay()
         """
+        g_ip = self.g_ip
+        g_tp = self.g_tp
+
         data_arr = self.data_array2
         tag_arr  = self.tag_array2
         # Replace usage of "g_ip->..."
@@ -688,28 +708,32 @@ class uca_org_t:
         if g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc:
             self.access_time = data_arr.access_time
         elif g_ip.fast_access == True:
-            self.access_time = max(tag_arr.access_time, data_arr.access_time)
+            self.access_time = self.symbolic_convex_max(tag_arr.access_time, data_arr.access_time)
         elif g_ip.is_seq_acc == True:
             self.access_time = tag_arr.access_time + data_arr.access_time
         else:
-            self.access_time = max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
+            self.access_time = self.symbolic_convex_max(tag_arr.access_time + data_arr.delay_senseamp_mux_decoder,
                                    data_arr.delay_before_subarray_output_driver) + \
                                data_arr.delay_from_subarray_output_driver_to_output
 
     def find_energy(self):
-        from .parameter import g_ip
+        g_ip = self.g_ip
+        g_tp = self.g_tp
+
         if not(g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc):
             self.power = self.data_array2.power + self.tag_array2.power
         else:
             self.power = self.data_array2.power
 
     def find_area(self):
-        from .parameter import g_ip
+        g_ip = self.g_ip
+        g_tp = self.g_tp
+
         if (g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc):
             self.cache_ht  = self.data_array2.height
             self.cache_len = self.data_array2.width
         else:
-            self.cache_ht  = max(self.tag_array2.height, self.data_array2.height)
+            self.cache_ht  = symbolic_convex_max(self.tag_array2.height, self.data_array2.height)
             self.cache_len = self.tag_array2.width + self.data_array2.width
         self.area = self.cache_ht * self.cache_len
 
@@ -717,7 +741,9 @@ class uca_org_t:
         """
         For McPAT only to adjust routing overhead
         """
-        from .parameter import g_ip
+        g_ip = self.g_ip
+        g_tp = self.g_tp
+
         if (g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc):
             # Example from cacti code
             if (self.data_array2.area_efficiency/100.0 < 0.2):
@@ -727,12 +753,27 @@ class uca_org_t:
         self.area = self.cache_ht * self.cache_len
 
     def find_cyc(self):
-        from .parameter import g_ip
+        g_ip = self.g_ip
+        g_tp = self.g_tp
+
         if (g_ip.pure_ram or g_ip.pure_cam or g_ip.fully_assoc):
             self.cycle_time = self.data_array2.cycle_time
         else:
-            self.cycle_time = max(self.tag_array2.cycle_time,
+            self.cycle_time = symbolic_convex_max(self.tag_array2.cycle_time,
                                   self.data_array2.cycle_time)
+            
+    def find_IO(self):
+        from .extio import Extio
+        from .extio_technology import IOTechParam
+
+        iot = IOTechParam(self.g_ip, self.g_ip.io_type, self.g_ip.num_mem_dq, self.g_ip.mem_data_width, self.g_ip.num_dq, self.g_ip.dram_dimm, 1, self.g_ip.bus_freq)
+        testextio = Extio(self.g_ip, iot)
+
+        self.io_area = testextio.extio_area()
+        self.io_timing_margin = testextio.extio_eye()
+        self.io_dynamic_power = testextio.extio_power_dynamic()
+        self.io_phy_power = testextio.extio_power_phy()
+        self.io_termination_power = testextio.extio_power_term()
 
     def cleanup(self):
         # In C++ we do: delete data_array2, tag_array2

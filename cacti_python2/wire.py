@@ -40,6 +40,13 @@ def symbolic_convex_max(a, b):
     """
     return 0.5 * (a + b + abs(a - b))
 
+import sympy as sp
+
+def is_symbolic(x):
+    """Return True if x is a sympy symbolic expression."""
+    return isinstance(x, sp.Basic)
+
+
 class Wire(Component):
     """
     Python translation of the C++ Wire class, which inherits from Component.
@@ -135,10 +142,14 @@ class Wire(Component):
             self.wire_spacing *= 1e6
 
             # Check the code's original asserts:
-            assert self.wire_length > 0
-            assert self.power.readOp.dynamic > 0
-            assert self.power.readOp.leakage > 0
-            assert self.power.readOp.gate_leakage > 0
+            if not is_symbolic(self.wire_length):
+                assert self.wire_length > 0
+            if not is_symbolic(self.power.readOp.dynamic):
+                assert self.power.readOp.dynamic > 0
+            if not is_symbolic(self.power.readOp.leakage):
+                assert self.power.readOp.leakage > 0
+            if not is_symbolic(self.power.readOp.gate_leakage):
+                assert self.power.readOp.gate_leakage > 0
 
         else:
             # The alternate constructor: Wire(double w_s, double s_s, enum Wire_placement wp, double res, DeviceType *dt)
@@ -168,9 +179,12 @@ class Wire(Component):
             Wire.wire_spacing_init = self.wire_spacing
 
             # Check the code's original asserts:
-            assert self.power.readOp.dynamic > 0
-            assert self.power.readOp.leakage > 0
-            assert self.power.readOp.gate_leakage > 0
+            if not is_symbolic(self.power.readOp.dynamic):
+                assert self.power.readOp.dynamic > 0
+            if not is_symbolic(self.power.readOp.leakage):
+                assert self.power.readOp.leakage > 0
+            if not is_symbolic(self.power.readOp.gate_leakage):
+                assert self.power.readOp.gate_leakage > 0
 
     def set_in_rise_time(self, rt: float):
         """Equivalent to the C++ set_in_rise_time function."""

@@ -32,6 +32,12 @@ from .wire import Wire
 from .cacti_interface import powerDef
 from .component import Component
 
+import sympy as sp
+
+def is_symbolic(x):
+    """Return True if x is a sympy symbolic expression."""
+    return isinstance(x, sp.Basic)
+
 
 # Example enumerations - define or import as needed
 # (You can change them if you already have them in a separate file)
@@ -166,9 +172,12 @@ class Htree2:  # or class Htree2(Component) if your code expects that
         self.power.readOp.dynamic *= self.init_wire_bw
 
         # Basic sanity checks
-        assert self.power.readOp.dynamic  >= 0
-        assert self.power.readOp.leakage  >= 0
-        assert self.power.readOp.gate_leakage >= 0
+        if not is_symbolic(self.power.readOp.dynamic):
+            assert self.power.readOp.dynamic >= 0
+        if not is_symbolic(self.power.readOp.leakage):
+            assert self.power.readOp.leakage >= 0
+        if not is_symbolic(self.power.readOp.gate_leakage):
+            assert self.power.readOp.gate_leakage >= 0
 
     def set_in_rise_time(self, rt: float):
         """

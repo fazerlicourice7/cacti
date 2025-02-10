@@ -14,6 +14,13 @@ from .basic_circuit import (
     horowitz, cmos_Isub_leakage, simplified_nmos_Isat
 )
 
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with numeric
+    or symbolic solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
+
 class Memorybus(Component):
     """
     Python version of the C++ Memorybus class, adapted from memory_bus.h and memory_bus.cc.
@@ -322,7 +329,7 @@ class Memorybus(Component):
                 R_wire_dec_out= 0
 
             # bank_bus
-            bank_bus_length = float(num_banks_ver_dir)*0.5*max(self.length_bank, self.height_bank)
+            bank_bus_length = float(num_banks_ver_dir)*0.5*symbolic_convex_max(self.length_bank, self.height_bank)
             self.bank_bus = Wire(g_ip, g_tp, wire_model=self.wt, wire_length=bank_bus_length)
 
         elif self.membus_type == Memorybus_type.Col_add_path:
@@ -362,7 +369,7 @@ class Memorybus(Component):
                 C_ld_dec_out = gate_C(g_tp.min_w_nmos_+self.min_w_pmos,0)
                 R_wire_dec_out= 0
 
-            bank_bus_length = float(num_banks_ver_dir)*0.5* max(self.length_bank, self.height_bank)
+            bank_bus_length = float(num_banks_ver_dir)*0.5* symbolic_convex_max(self.length_bank, self.height_bank)
             self.bank_bus   = Wire(g_ip, g_tp, wire_model=self.wt, wire_length=bank_bus_length)
 
         elif self.membus_type == Memorybus_type.Data_path:
@@ -441,7 +448,7 @@ class Memorybus(Component):
                 print("local_data_drv delay:", self.local_data_drv.delay*1e9, "ns")
 
             # final bank_bus
-            bank_bus_length = float(num_banks_ver_dir)*0.5* max(self.length_bank, self.height_bank)
+            bank_bus_length = float(num_banks_ver_dir)*0.5* symbolic_convex_max(self.length_bank, self.height_bank)
             self.bank_bus = Wire(g_ip, g_tp,
                                  wire_model=self.wt,
                                  wire_length=bank_bus_length)
@@ -478,7 +485,7 @@ class Memorybus(Component):
                 print("memorybus.cc: cell.h=", self.cell.h)
 
             # The decoder
-            signals_for_decoder = max(self.num_dec_signals, 16)
+            signals_for_decoder = symbolic_convex_max(self.num_dec_signals, 16)
             self.add_dec = Decoder(
                 signals_for_decoder,
                 flag_way_select=False,

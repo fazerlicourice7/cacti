@@ -10,7 +10,20 @@ from cacti_interface import powerDef
 from bank import Bank
 from htree2 import Htree2
 from memorybus import Memorybus, Memorybus_type
-from tsv import TSV, TSV_type     # If you have these in your Python environment
+from TSV import TSV, TSV_type     # If you have these in your Python environment
+
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with numeric
+    or symbolic solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
+
+import sympy as sp
+
+def is_symbolic(x):
+    """Return True if x is a sympy symbolic expression."""
+    return isinstance(x, sp.Basic)
 
 
 class UCA(Component):
@@ -573,13 +586,13 @@ class UCA(Component):
                               + self.bank.mat.delay_bitline
                               + self.bank.mat.delay_sa)
 
-          self.delay_before_subarray_output_driver = max(
-              max(max_delay_before_row_decoder + delay_inside_mat,  # row_path
+          self.delay_before_subarray_output_driver = symbolic_convex_max(
+              symbolic_convex_max(max_delay_before_row_decoder + delay_inside_mat,  # row_path
                   delay_array_to_mat
                   + self.bank.mat.b_mux_predec.delay
                   + self.bank.mat.bit_mux_dec.delay
                   + self.bank.mat.delay_sa),  # col_path
-              max(self.delay_array_to_sa_mux_lev_1_decoder,  # sa_mux_lev_1_path
+              symbolic_convex_max(self.delay_array_to_sa_mux_lev_1_decoder,  # sa_mux_lev_1_path
                   self.delay_array_to_sa_mux_lev_2_decoder)  # sa_mux_lev_2_path
           )
 
@@ -605,7 +618,7 @@ class UCA(Component):
           # If main memory => add t_rcd + CAS
           if self.dp.is_main_mem:
               t_rcd = max_delay_before_row_decoder + delay_inside_mat
-              cas_latency = max(self.delay_array_to_sa_mux_lev_1_decoder,
+              cas_latency = symbolic_convex_max(self.delay_array_to_sa_mux_lev_1_decoder,
                                 self.delay_array_to_sa_mux_lev_2_decoder) + self.delay_from_subarray_out_drv_to_out
               self.access_time = t_rcd + cas_latency
 
@@ -616,10 +629,10 @@ class UCA(Component):
                       + self.bank.mat.delay_bl_restore)
               if self.dp.is_dram:
                   temp += self.bank.mat.delay_writeback
-              temp = max(temp, self.bank.mat.r_predec.delay)
-              temp = max(temp, self.bank.mat.b_mux_predec.delay)
-              temp = max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
-              temp = max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+              temp = symbolic_convex_max(temp, self.bank.mat.r_predec.delay)
+              temp = symbolic_convex_max(temp, self.bank.mat.b_mux_predec.delay)
+              temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
+              temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
           else:
               # fully-associative
               ram_delay_inside_mat = (self.bank.mat.delay_bitline
@@ -630,19 +643,19 @@ class UCA(Component):
                       + self.bank.mat.delay_bl_restore
                       + self.bank.mat.delay_hit_miss_reset
                       + self.bank.mat.delay_wl_reset)
-              temp = max(temp, self.bank.mat.b_mux_predec.delay)
-              temp = max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
-              temp = max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
+              temp = symbolic_convex_max(temp, self.bank.mat.b_mux_predec.delay)
+              temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_1_predec.delay)
+              temp = symbolic_convex_max(temp, self.bank.mat.sa_mux_lev_2_predec.delay)
 
           # If repeaters_in_htree == false => limit cycle_time by link delays
           if not g_ip.rpters_in_htree:
-              temp = max(temp, self.bank.htree_in_add.max_unpipelined_link_delay)
+              temp = symbolic_convex_max(temp, self.bank.htree_in_add.max_unpipelined_link_delay)
           self.cycle_time = temp
 
           # request network + reply network => for multi-subbank
           delay_req_network = max_delay_before_row_decoder
           delay_rep_network = self.delay_from_subarray_out_drv_to_out
-          self.multisubbank_interleave_cycle_time = max(delay_req_network, delay_rep_network)
+          self.multisubbank_interleave_cycle_time = symbolic_convex_max(delay_req_network, delay_rep_network)
 
           if self.dp.is_main_mem:
               self.multisubbank_interleave_cycle_time = self.htree_in_add.delay
@@ -660,376 +673,379 @@ class UCA(Component):
 
 
     def compute_power_energy(self):
-      """
-      Python translation of UCA::compute_power_energy(), matching the final part
-      of uca.cc you provided.
+        """
+        Python translation of UCA::compute_power_energy(), matching the final part
+        of uca.cc you provided.
 
-      The method updates 'self.power' using:
+        The method updates 'self.power' using:
         - bank.compute_power_energy()
         - If 3D memory: the RAS/CAS/data memorybuses
         - else the standard flow for read/write energies
-      """
-      # 1) First do bank-level power
-      self.bank.compute_power_energy()
+        """
+        # 1) First do bank-level power
+        self.bank.compute_power_energy()
 
-      # 2) By default, total UCA power is the bank's power
-      self.power = self.bank.power
+        # 2) By default, total UCA power is the bank's power
+        self.power = self.bank.power
 
-      # 3) If 3D memory => do CACTI3DD logic
-      if g_ip.is_3d_mem:
-          # a small constant datapath energy that depends on F_sz_nm
-          datapath_energy = 0.505e-9 * g_ip.F_sz_nm / 55.0
+        # 3) If 3D memory => do CACTI3DD logic
+        if g_ip.is_3d_mem:
+            # a small constant datapath energy that depends on F_sz_nm
+            datapath_energy = 0.505e-9 * g_ip.F_sz_nm / 55.0
 
-          # Activate energy: row bus + bank mat 
-          self.activate_energy = (
-              self.membus_RAS.power.readOp.dynamic
-              + (
-                  self.bank.mat.power_bitline.readOp.dynamic
-                  + self.bank.mat.power_sa.readOp.dynamic
-              )
-              * self.dp.Ndwl
-          )
+            # Activate energy: row bus + bank mat 
+            self.activate_energy = (
+                self.membus_RAS.power.readOp.dynamic
+                + (
+                    self.bank.mat.power_bitline.readOp.dynamic
+                    + self.bank.mat.power_sa.readOp.dynamic
+                )
+                * self.dp.Ndwl
+            )
 
-          # Read energy: col bus + subarray out + data bus + external datapath
-          self.read_energy = (
-              self.membus_CAS.power.readOp.dynamic
-              + self.bank.mat.power_subarray_out_drv.readOp.dynamic
-              + self.membus_data.power.readOp.dynamic
-              + datapath_energy
-          )
+            # Read energy: col bus + subarray out + data bus + external datapath
+            self.read_energy = (
+                self.membus_CAS.power.readOp.dynamic
+                + self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                + self.membus_data.power.readOp.dynamic
+                + datapath_energy
+            )
 
-          # Write energy: col bus + subarray out + data bus + sense amps scaled + datapath
-          self.write_energy = (
-              self.membus_CAS.power.readOp.dynamic
-              + self.bank.mat.power_subarray_out_drv.readOp.dynamic
-              + self.membus_data.power.readOp.dynamic
-              + (
-                  self.bank.mat.power_sa.readOp.dynamic
-                  * g_ip.burst_depth
-                  * g_ip.io_width
-                  / g_ip.page_sz_bits
-              )
-              + datapath_energy
-          )
+            # Write energy: col bus + subarray out + data bus + sense amps scaled + datapath
+            self.write_energy = (
+                self.membus_CAS.power.readOp.dynamic
+                + self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                + self.membus_data.power.readOp.dynamic
+                + (
+                    self.bank.mat.power_sa.readOp.dynamic
+                    * g_ip.burst_depth
+                    * g_ip.io_width
+                    / g_ip.page_sz_bits
+                )
+                + datapath_energy
+            )
 
-          # Precharge energy: bitline + precharge eq driver
-          self.precharge_energy = (
-              self.bank.mat.power_bitline.readOp.dynamic
-              + self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
-          ) * self.dp.Ndwl
+            # Precharge energy: bitline + precharge eq driver
+            self.precharge_energy = (
+                self.bank.mat.power_bitline.readOp.dynamic
+                + self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
+            ) * self.dp.Ndwl
 
-          # Activate power => activate_energy / t_RC
-          self.activate_power = self.activate_energy / self.t_RC
+            # Activate power => activate_energy / t_RC
+            self.activate_power = self.activate_energy / self.t_RC
 
-          # a local "col_cycle_act_row" from the snippet
-          # col_cycle_act_row = (1e-6 / (double)g_ip->sys_freq_MHz)/2 * g_ip->burst_depth
-          col_cycle_act_row = (1e-6 / float(g_ip.sys_freq_MHz)) / 2.0 * g_ip.burst_depth
+            # a local "col_cycle_act_row" from the snippet
+            # col_cycle_act_row = (1e-6 / (double)g_ip->sys_freq_MHz)/2 * g_ip->burst_depth
+            col_cycle_act_row = (1e-6 / float(g_ip.sys_freq_MHz)) / 2.0 * g_ip.burst_depth
 
-          # read_power: 0.25 * read_energy / col_cycle_act_row
-          self.read_power = 0.25 * self.read_energy / col_cycle_act_row
+            # read_power: 0.25 * read_energy / col_cycle_act_row
+            self.read_power = 0.25 * self.read_energy / col_cycle_act_row
 
-          # write_power: 0.15 * write_energy / col_cycle_act_row
-          self.write_power = 0.15 * self.write_energy / col_cycle_act_row
+            # write_power: 0.15 * write_energy / col_cycle_act_row
+            self.write_power = 0.15 * self.write_energy / col_cycle_act_row
 
-          if g_ip.print_detail_debug:
-              print("Row Address Delay components:")
-              print("Row Address Delay components:")
-              print("Network power terms:")
-              print(f"uca.cc: membus_RAS->power.readOp.dynamic    = {self.membus_RAS.power.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_CAS->power.readOp.dynamic    = {self.membus_CAS.power.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_data->power.readOp.dynamic   = {self.membus_data.power.readOp.dynamic * 1e9} nJ")
+            if g_ip.print_detail_debug:
+                print("Row Address Delay components:")
+                print("Row Address Delay components:")
+                print("Network power terms:")
+                print(f"uca.cc: membus_RAS->power.readOp.dynamic    = {self.membus_RAS.power.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_CAS->power.readOp.dynamic    = {self.membus_CAS.power.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_data->power.readOp.dynamic   = {self.membus_data.power.readOp.dynamic * 1e9} nJ")
 
-              print("Row Address Power components:")
-              print(f"uca.cc: membus_RAS->power_bus.readOp.dynamic          = {self.membus_RAS.power_bus.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_RAS->power_add_predecoder.readOp.dynamic= {self.membus_RAS.power_add_predecoder.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_RAS->power_add_decoders.readOp.dynamic  = {self.membus_RAS.power_add_decoders.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_RAS->power_lwl_drv.readOp.dynamic       = {self.membus_RAS.power_lwl_drv.readOp.dynamic * 1e9} nJ")
+                print("Row Address Power components:")
+                print(f"uca.cc: membus_RAS->power_bus.readOp.dynamic          = {self.membus_RAS.power_bus.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_RAS->power_add_predecoder.readOp.dynamic= {self.membus_RAS.power_add_predecoder.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_RAS->power_add_decoders.readOp.dynamic  = {self.membus_RAS.power_add_decoders.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_RAS->power_lwl_drv.readOp.dynamic       = {self.membus_RAS.power_lwl_drv.readOp.dynamic * 1e9} nJ")
 
-              print("Bank Power components:")
-              print(f"uca.cc: bank.mat.power_bitline = {self.bank.mat.power_bitline.readOp.dynamic * self.dp.Ndwl * 1e9} nJ")
-              print(f"uca.cc: bank.mat.power_sa      = {self.bank.mat.power_sa.readOp.dynamic * self.dp.Ndwl * 1e9} nJ")
+                print("Bank Power components:")
+                print(f"uca.cc: bank.mat.power_bitline = {self.bank.mat.power_bitline.readOp.dynamic * self.dp.Ndwl * 1e9} nJ")
+                print(f"uca.cc: bank.mat.power_sa      = {self.bank.mat.power_sa.readOp.dynamic * self.dp.Ndwl * 1e9} nJ")
 
-              print("Column Address Power components:")
-              print(f"uca.cc: membus_CAS->power_bus.readOp.dynamic           = {self.membus_CAS.power_bus.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_CAS->power_add_predecoder.readOp.dynamic = {self.membus_CAS.power_add_predecoder.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_CAS->power_add_decoders.readOp.dynamic   = {self.membus_CAS.power_add_decoders.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_CAS->power.readOp.dynamic               = {self.membus_CAS.power.readOp.dynamic * 1e9} nJ")
+                print("Column Address Power components:")
+                print(f"uca.cc: membus_CAS->power_bus.readOp.dynamic           = {self.membus_CAS.power_bus.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_CAS->power_add_predecoder.readOp.dynamic = {self.membus_CAS.power_add_predecoder.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_CAS->power_add_decoders.readOp.dynamic   = {self.membus_CAS.power_add_decoders.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_CAS->power.readOp.dynamic               = {self.membus_CAS.power.readOp.dynamic * 1e9} nJ")
 
-              print("Data Path Power components:")
-              print(f"uca.cc: bank.mat.power_subarray_out_drv.readOp.dynamic = {self.bank.mat.power_subarray_out_drv.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: membus_data->power.readOp.dynamic             = {self.membus_data.power.readOp.dynamic * 1e9} nJ")
-              print(f"uca.cc: bank.mat.power_sa                             = {(self.bank.mat.power_sa.readOp.dynamic * g_ip.burst_depth * g_ip.io_width / g_ip.page_sz_bits) * 1e9} nJ")
+                print("Data Path Power components:")
+                print(f"uca.cc: bank.mat.power_subarray_out_drv.readOp.dynamic = {self.bank.mat.power_subarray_out_drv.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: membus_data->power.readOp.dynamic             = {self.membus_data.power.readOp.dynamic * 1e9} nJ")
+                print(f"uca.cc: bank.mat.power_sa                             = {(self.bank.mat.power_sa.readOp.dynamic * g_ip.burst_depth * g_ip.io_width / g_ip.page_sz_bits) * 1e9} nJ")
 
-              print("General Power components:")
-              print(f"uca.cc: activate_energy   = {self.activate_energy * 1e9} nJ")
-              print(f"uca.cc: read_energy       = {self.read_energy * 1e9} nJ")
-              print(f"uca.cc: write_energy      = {self.write_energy * 1e9} nJ")
-              print(f"uca.cc: precharge_energy  = {self.precharge_energy * 1e9} nJ")
-              print(f"uca.cc: activate_power    = {self.activate_power * 1e3} mW")
-              print(f"uca.cc: read_power        = {self.read_power * 1e3} mW")
-              print(f"uca.cc: write_power       = {self.write_power * 1e3} mW")
+                print("General Power components:")
+                print(f"uca.cc: activate_energy   = {self.activate_energy * 1e9} nJ")
+                print(f"uca.cc: read_energy       = {self.read_energy * 1e9} nJ")
+                print(f"uca.cc: write_energy      = {self.write_energy * 1e9} nJ")
+                print(f"uca.cc: precharge_energy  = {self.precharge_energy * 1e9} nJ")
+                print(f"uca.cc: activate_power    = {self.activate_power * 1e3} mW")
+                print(f"uca.cc: read_power        = {self.read_power * 1e3} mW")
+                print(f"uca.cc: write_power       = {self.write_power * 1e3} mW")
 
-      else:
-          # Non-3D Memory flow
-          # Summation for htrees
-          self.power_routing_to_bank.readOp.dynamic  = (self.htree_in_add.power.readOp.dynamic
+        else:
+            # Non-3D Memory flow
+            # Summation for htrees
+            self.power_routing_to_bank.readOp.dynamic  = (self.htree_in_add.power.readOp.dynamic
                                                         + self.htree_out_data.power.readOp.dynamic)
-          self.power_routing_to_bank.writeOp.dynamic = (self.htree_in_add.power.readOp.dynamic
+            self.power_routing_to_bank.writeOp.dynamic = (self.htree_in_add.power.readOp.dynamic
                                                         + self.htree_in_data.power.readOp.dynamic)
-          if self.dp.fully_assoc or self.dp.pure_cam:
-              self.power_routing_to_bank.searchOp.dynamic = (
-                  self.htree_in_search.power.searchOp.dynamic
-                  + self.htree_out_search.power.searchOp.dynamic
-              )
+            if self.dp.fully_assoc or self.dp.pure_cam:
+                self.power_routing_to_bank.searchOp.dynamic = (
+                    self.htree_in_search.power.searchOp.dynamic
+                    + self.htree_out_search.power.searchOp.dynamic
+                )
 
-          self.power_routing_to_bank.readOp.leakage += (
-              self.htree_in_add.power.readOp.leakage
-              + self.htree_in_data.power.readOp.leakage
-              + self.htree_out_data.power.readOp.leakage
-          )
-          self.power_routing_to_bank.readOp.gate_leakage += (
-              self.htree_in_add.power.readOp.gate_leakage
-              + self.htree_in_data.power.readOp.gate_leakage
-              + self.htree_out_data.power.readOp.gate_leakage
-          )
-          if self.dp.fully_assoc or self.dp.pure_cam:
-              self.power_routing_to_bank.readOp.leakage += (
-                  self.htree_in_search.power.readOp.leakage
-                  + self.htree_out_search.power.readOp.leakage
-              )
-              self.power_routing_to_bank.readOp.gate_leakage += (
-                  self.htree_in_search.power.readOp.gate_leakage
-                  + self.htree_out_search.power.readOp.gate_leakage
-              )
+            self.power_routing_to_bank.readOp.leakage += (
+                self.htree_in_add.power.readOp.leakage
+                + self.htree_in_data.power.readOp.leakage
+                + self.htree_out_data.power.readOp.leakage
+            )
+            self.power_routing_to_bank.readOp.gate_leakage += (
+                self.htree_in_add.power.readOp.gate_leakage
+                + self.htree_in_data.power.readOp.gate_leakage
+                + self.htree_out_data.power.readOp.gate_leakage
+            )
+            if self.dp.fully_assoc or self.dp.pure_cam:
+                self.power_routing_to_bank.readOp.leakage += (
+                    self.htree_in_search.power.readOp.leakage
+                    + self.htree_out_search.power.readOp.leakage
+                )
+                self.power_routing_to_bank.readOp.gate_leakage += (
+                    self.htree_in_search.power.readOp.gate_leakage
+                    + self.htree_out_search.power.readOp.gate_leakage
+                )
 
-          self.power.searchOp.dynamic += self.power_routing_to_bank.searchOp.dynamic
-          self.power.readOp.dynamic   += self.power_routing_to_bank.readOp.dynamic
-          self.power.readOp.leakage   += self.power_routing_to_bank.readOp.leakage
-          self.power.readOp.gate_leakage += self.power_routing_to_bank.readOp.gate_leakage
+            self.power.searchOp.dynamic += self.power_routing_to_bank.searchOp.dynamic
+            self.power.readOp.dynamic   += self.power_routing_to_bank.readOp.dynamic
+            self.power.readOp.leakage   += self.power_routing_to_bank.readOp.leakage
+            self.power.readOp.gate_leakage += self.power_routing_to_bank.readOp.gate_leakage
 
-          # total write dynamic
-          self.power.writeOp.dynamic = (
-              self.power.readOp.dynamic
-              - self.bank.mat.power_bitline.readOp.dynamic * self.dp.num_act_mats_hor_dir
-              + self.bank.mat.power_bitline.writeOp.dynamic * self.dp.num_act_mats_hor_dir
-              - self.power_routing_to_bank.readOp.dynamic
-              + self.power_routing_to_bank.writeOp.dynamic
-              + self.bank.htree_in_data.power.readOp.dynamic
-              - self.bank.htree_out_data.power.readOp.dynamic
-          )
+            # total write dynamic
+            self.power.writeOp.dynamic = (
+                self.power.readOp.dynamic
+                - self.bank.mat.power_bitline.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                + self.bank.mat.power_bitline.writeOp.dynamic * self.dp.num_act_mats_hor_dir
+                - self.power_routing_to_bank.readOp.dynamic
+                + self.power_routing_to_bank.writeOp.dynamic
+                + self.bank.htree_in_data.power.readOp.dynamic
+                - self.bank.htree_out_data.power.readOp.dynamic
+            )
 
-          if not self.dp.is_dram:
-              self.power.writeOp.dynamic -= (self.bank.mat.power_sa.readOp.dynamic
+            if not self.dp.is_dram:
+                self.power.writeOp.dynamic -= (self.bank.mat.power_sa.readOp.dynamic
                                             * self.dp.num_act_mats_hor_dir)
 
-          self.dyn_read_energy_from_closed_page = self.power.readOp.dynamic
+            self.dyn_read_energy_from_closed_page = self.power.readOp.dynamic
 
-          self.dyn_read_energy_from_open_page = (
-              self.power.readOp.dynamic
-              - (
-                  self.bank.mat.r_predec.power.readOp.dynamic
-                  + self.bank.mat.power_row_decoders.readOp.dynamic
-                  + self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
-                  + self.bank.mat.power_sa.readOp.dynamic
-                  + self.bank.mat.power_bitline.readOp.dynamic
-              )
-              * self.dp.num_act_mats_hor_dir
-          )
+            self.dyn_read_energy_from_open_page = (
+                self.power.readOp.dynamic
+                - (
+                    self.bank.mat.r_predec.power.readOp.dynamic
+                    + self.bank.mat.power_row_decoders.readOp.dynamic
+                    + self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
+                    + self.bank.mat.power_sa.readOp.dynamic
+                    + self.bank.mat.power_bitline.readOp.dynamic
+                )
+                * self.dp.num_act_mats_hor_dir
+            )
 
-          # for multiple-burst reads
-          burst_words = max((g_ip.burst_len / g_ip.int_prefetch_w), 1)
-          self.dyn_read_energy_remaining_words_in_burst = (
-              (burst_words - 1)
-              * (
-                  (
-                      self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic
-                      + self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic
-                      + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic
-                      + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic
-                      + self.bank.mat.power_subarray_out_drv.readOp.dynamic
-                  )
-                  * self.dp.num_act_mats_hor_dir
-                  + self.bank.htree_out_data.power.readOp.dynamic
-                  + self.power_routing_to_bank.readOp.dynamic
-              )
-          )
-          self.dyn_read_energy_from_closed_page += self.dyn_read_energy_remaining_words_in_burst
-          self.dyn_read_energy_from_open_page   += self.dyn_read_energy_remaining_words_in_burst
+            # for multiple-burst reads
+            burst_words = symbolic_convex_max((g_ip.burst_len / g_ip.int_prefetch_w), 1)
+            self.dyn_read_energy_remaining_words_in_burst = (
+                (burst_words - 1)
+                * (
+                    (
+                        self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic
+                        + self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic
+                        + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic
+                        + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic
+                        + self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                    )
+                    * self.dp.num_act_mats_hor_dir
+                    + self.bank.htree_out_data.power.readOp.dynamic
+                    + self.power_routing_to_bank.readOp.dynamic
+                )
+            )
+            self.dyn_read_energy_from_closed_page += self.dyn_read_energy_remaining_words_in_burst
+            self.dyn_read_energy_from_open_page   += self.dyn_read_energy_remaining_words_in_burst
 
-          # Summaries
-          self.activate_energy = (
-              self.htree_in_add.power.readOp.dynamic
-              + self.bank.htree_in_add.power_bit.readOp.dynamic
+            # Summaries
+            self.activate_energy = (
+                self.htree_in_add.power.readOp.dynamic
+                + self.bank.htree_in_add.power_bit.readOp.dynamic
                 * self.bank.num_addr_b_routed_to_mat_for_act
-              + (
-                  self.bank.mat.r_predec.power.readOp.dynamic
-                  + self.bank.mat.power_row_decoders.readOp.dynamic
-                  + self.bank.mat.power_sa.readOp.dynamic
-              )
-              * self.dp.num_act_mats_hor_dir
-          )
-          self.read_energy = (
-              self.htree_in_add.power.readOp.dynamic
-              + self.bank.htree_in_add.power_bit.readOp.dynamic
+                + (
+                    self.bank.mat.r_predec.power.readOp.dynamic
+                    + self.bank.mat.power_row_decoders.readOp.dynamic
+                    + self.bank.mat.power_sa.readOp.dynamic
+                )
+                * self.dp.num_act_mats_hor_dir
+            )
+            self.read_energy = (
+                self.htree_in_add.power.readOp.dynamic
+                + self.bank.htree_in_add.power_bit.readOp.dynamic
                 * self.bank.num_addr_b_routed_to_mat_for_rd_or_wr
-              + (
-                  self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic
-                  + self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic
-                  + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic
-                  + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic
-                  + self.bank.mat.power_subarray_out_drv.readOp.dynamic
-              )
-              * self.dp.num_act_mats_hor_dir
-              + self.bank.htree_out_data.power.readOp.dynamic
-              + self.htree_in_data.power.readOp.dynamic
-          ) * g_ip.burst_len
-          self.write_energy = (
-              self.htree_in_add.power.readOp.dynamic
-              + self.bank.htree_in_add.power_bit.readOp.dynamic
+                + (
+                    self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic
+                    + self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic
+                    + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic
+                    + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic
+                    + self.bank.mat.power_subarray_out_drv.readOp.dynamic
+                )
+                * self.dp.num_act_mats_hor_dir
+                + self.bank.htree_out_data.power.readOp.dynamic
+                + self.htree_in_data.power.readOp.dynamic
+            ) * g_ip.burst_len
+            self.write_energy = (
+                self.htree_in_add.power.readOp.dynamic
+                + self.bank.htree_in_add.power_bit.readOp.dynamic
                 * self.bank.num_addr_b_routed_to_mat_for_rd_or_wr
-              + self.htree_in_data.power.readOp.dynamic
-              + self.bank.htree_in_data.power.readOp.dynamic
-              + (
-                  self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic
-                  + self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic
-                  + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic
-                  + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic
-              )
-              * self.dp.num_act_mats_hor_dir
-          ) * g_ip.burst_len
-          self.precharge_energy = (
-              self.bank.mat.power_bitline.readOp.dynamic
-              + self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
-          ) * self.dp.num_act_mats_hor_dir
+                + self.htree_in_data.power.readOp.dynamic
+                + self.bank.htree_in_data.power.readOp.dynamic
+                + (
+                    self.bank.mat.sa_mux_lev_1_predec.power.readOp.dynamic
+                    + self.bank.mat.sa_mux_lev_2_predec.power.readOp.dynamic
+                    + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.dynamic
+                    + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.dynamic
+                )
+                * self.dp.num_act_mats_hor_dir
+            ) * g_ip.burst_len
+            self.precharge_energy = (
+                self.bank.mat.power_bitline.readOp.dynamic
+                + self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
+            ) * self.dp.num_act_mats_hor_dir
 
-      # 4) Common logic for leak powers
-      self.leak_power_subbank_closed_page = (
-          self.bank.mat.r_predec.power.readOp.leakage
-          + self.bank.mat.b_mux_predec.power.readOp.leakage
-          + self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage
-          + self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage
-          + self.bank.mat.power_row_decoders.readOp.leakage
-          + self.bank.mat.power_bit_mux_decoders.readOp.leakage
-          + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage
-          + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage
-          + self.bank.mat.leak_power_sense_amps_closed_page_state
-      ) * self.dp.num_act_mats_hor_dir
-      self.leak_power_subbank_closed_page += (
-          self.bank.mat.r_predec.power.readOp.gate_leakage
-          + self.bank.mat.b_mux_predec.power.readOp.gate_leakage
-          + self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage
-          + self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage
-          + self.bank.mat.power_row_decoders.readOp.gate_leakage
-          + self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage
-          + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage
-          + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
-      ) * self.dp.num_act_mats_hor_dir
+        # 4) Common logic for leak powers
+        self.leak_power_subbank_closed_page = (
+            self.bank.mat.r_predec.power.readOp.leakage
+            + self.bank.mat.b_mux_predec.power.readOp.leakage
+            + self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage
+            + self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage
+            + self.bank.mat.power_row_decoders.readOp.leakage
+            + self.bank.mat.power_bit_mux_decoders.readOp.leakage
+            + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage
+            + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage
+            + self.bank.mat.leak_power_sense_amps_closed_page_state
+        ) * self.dp.num_act_mats_hor_dir
+        self.leak_power_subbank_closed_page += (
+            self.bank.mat.r_predec.power.readOp.gate_leakage
+            + self.bank.mat.b_mux_predec.power.readOp.gate_leakage
+            + self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage
+            + self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage
+            + self.bank.mat.power_row_decoders.readOp.gate_leakage
+            + self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage
+            + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage
+            + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
+        ) * self.dp.num_act_mats_hor_dir
 
-      self.leak_power_subbank_open_page = (
-          self.bank.mat.r_predec.power.readOp.leakage
-          + self.bank.mat.b_mux_predec.power.readOp.leakage
-          + self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage
-          + self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage
-          + self.bank.mat.power_row_decoders.readOp.leakage
-          + self.bank.mat.power_bit_mux_decoders.readOp.leakage
-          + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage
-          + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage
-          + self.bank.mat.leak_power_sense_amps_open_page_state
-      ) * self.dp.num_act_mats_hor_dir
-      self.leak_power_subbank_open_page += (
-          self.bank.mat.r_predec.power.readOp.gate_leakage
-          + self.bank.mat.b_mux_predec.power.readOp.gate_leakage
-          + self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage
-          + self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage
-          + self.bank.mat.power_row_decoders.readOp.gate_leakage
-          + self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage
-          + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage
-          + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
-      ) * self.dp.num_act_mats_hor_dir
+        self.leak_power_subbank_open_page = (
+            self.bank.mat.r_predec.power.readOp.leakage
+            + self.bank.mat.b_mux_predec.power.readOp.leakage
+            + self.bank.mat.sa_mux_lev_1_predec.power.readOp.leakage
+            + self.bank.mat.sa_mux_lev_2_predec.power.readOp.leakage
+            + self.bank.mat.power_row_decoders.readOp.leakage
+            + self.bank.mat.power_bit_mux_decoders.readOp.leakage
+            + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.leakage
+            + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.leakage
+            + self.bank.mat.leak_power_sense_amps_open_page_state
+        ) * self.dp.num_act_mats_hor_dir
+        self.leak_power_subbank_open_page += (
+            self.bank.mat.r_predec.power.readOp.gate_leakage
+            + self.bank.mat.b_mux_predec.power.readOp.gate_leakage
+            + self.bank.mat.sa_mux_lev_1_predec.power.readOp.gate_leakage
+            + self.bank.mat.sa_mux_lev_2_predec.power.readOp.gate_leakage
+            + self.bank.mat.power_row_decoders.readOp.gate_leakage
+            + self.bank.mat.power_bit_mux_decoders.readOp.gate_leakage
+            + self.bank.mat.power_sa_mux_lev_1_decoders.readOp.gate_leakage
+            + self.bank.mat.power_sa_mux_lev_2_decoders.readOp.gate_leakage
+        ) * self.dp.num_act_mats_hor_dir
 
-      self.leak_power_request_and_reply_networks = (
-          self.power_routing_to_bank.readOp.leakage
-          + self.bank.htree_in_add.power.readOp.leakage
-          + self.bank.htree_in_data.power.readOp.leakage
-          + self.bank.htree_out_data.power.readOp.leakage
-      )
-      self.leak_power_request_and_reply_networks += (
-          self.power_routing_to_bank.readOp.gate_leakage
-          + self.bank.htree_in_add.power.readOp.gate_leakage
-          + self.bank.htree_in_data.power.readOp.gate_leakage
-          + self.bank.htree_out_data.power.readOp.gate_leakage
-      )
-      if self.dp.fully_assoc or self.dp.pure_cam:
-          self.leak_power_request_and_reply_networks += (
-              self.htree_in_search.power.readOp.leakage
-              + self.htree_out_search.power.readOp.leakage
-              + self.htree_in_search.power.readOp.gate_leakage
-              + self.htree_out_search.power.readOp.gate_leakage
-          )
+        self.leak_power_request_and_reply_networks = (
+            self.power_routing_to_bank.readOp.leakage
+            + self.bank.htree_in_add.power.readOp.leakage
+            + self.bank.htree_in_data.power.readOp.leakage
+            + self.bank.htree_out_data.power.readOp.leakage
+        )
+        self.leak_power_request_and_reply_networks += (
+            self.power_routing_to_bank.readOp.gate_leakage
+            + self.bank.htree_in_add.power.readOp.gate_leakage
+            + self.bank.htree_in_data.power.readOp.gate_leakage
+            + self.bank.htree_out_data.power.readOp.gate_leakage
+        )
+        if self.dp.fully_assoc or self.dp.pure_cam:
+            self.leak_power_request_and_reply_networks += (
+                self.htree_in_search.power.readOp.leakage
+                + self.htree_out_search.power.readOp.leakage
+                + self.htree_in_search.power.readOp.gate_leakage
+                + self.htree_out_search.power.readOp.gate_leakage
+            )
 
-      # if DRAM => add refresh power
-      if self.dp.is_dram:
-          # add row predec & dec plus bitline read energy, sense amps, etc.
-          self.refresh_power = (
-              (self.bank.mat.r_predec.power.readOp.dynamic * self.dp.num_act_mats_hor_dir
-              + self.bank.mat.row_dec.power.readOp.dynamic)
-              * self.dp.num_r_subarray * self.dp.num_subarrays
-          )
-          self.refresh_power += (
-              self.bank.mat.per_bitline_read_energy
-              * self.dp.num_c_subarray
-              * self.dp.num_r_subarray
-              * self.dp.num_subarrays
-          )
-          self.refresh_power += (
-              self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
-              * self.dp.num_act_mats_hor_dir
-          )
-          self.refresh_power += (
-              self.bank.mat.power_sa.readOp.dynamic
-              * self.dp.num_act_mats_hor_dir
-          )
-          self.refresh_power /= self.dp.dram_refresh_period
+        # if DRAM => add refresh power
+        if self.dp.is_dram:
+            # add row predec & dec plus bitline read energy, sense amps, etc.
+            self.refresh_power = (
+                (self.bank.mat.r_predec.power.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                + self.bank.mat.row_dec.power.readOp.dynamic)
+                * self.dp.num_r_subarray * self.dp.num_subarrays
+            )
+            self.refresh_power += (
+                self.bank.mat.per_bitline_read_energy
+                * self.dp.num_c_subarray
+                * self.dp.num_r_subarray
+                * self.dp.num_subarrays
+            )
+            self.refresh_power += (
+                self.bank.mat.power_bl_precharge_eq_drv.readOp.dynamic
+                * self.dp.num_act_mats_hor_dir
+            )
+            self.refresh_power += (
+                self.bank.mat.power_sa.readOp.dynamic
+                * self.dp.num_act_mats_hor_dir
+            )
+            self.refresh_power /= self.dp.dram_refresh_period
 
-      # If not tag => finalize power
-      if not self.dp.is_tag:
-          self.power.readOp.dynamic = self.dyn_read_energy_from_closed_page
-          # writeOp.dynamic is derived from read dynamic minus certain terms plus bitline changes
-          self.power.writeOp.dynamic = (
-              self.dyn_read_energy_from_closed_page
-              - self.dyn_read_energy_remaining_words_in_burst
-              - (self.bank.mat.power_bitline.readOp.dynamic * self.dp.num_act_mats_hor_dir)
-              + (self.bank.mat.power_bitline.writeOp.dynamic * self.dp.num_act_mats_hor_dir)
-              + (
-                  self.power_routing_to_bank.writeOp.dynamic
-                  - self.power_routing_to_bank.readOp.dynamic
-                  - self.bank.htree_out_data.power.readOp.dynamic
-                  + self.bank.htree_in_data.power.readOp.dynamic
-              )
-              * (max((g_ip.burst_len / g_ip.int_prefetch_w), 1) - 1)
-          )
+        # If not tag => finalize power
+        if not self.dp.is_tag:
+            self.power.readOp.dynamic = self.dyn_read_energy_from_closed_page
+            # writeOp.dynamic is derived from read dynamic minus certain terms plus bitline changes
+            self.power.writeOp.dynamic = (
+                self.dyn_read_energy_from_closed_page
+                - self.dyn_read_energy_remaining_words_in_burst
+                - (self.bank.mat.power_bitline.readOp.dynamic * self.dp.num_act_mats_hor_dir)
+                + (self.bank.mat.power_bitline.writeOp.dynamic * self.dp.num_act_mats_hor_dir)
+                + (
+                    self.power_routing_to_bank.writeOp.dynamic
+                    - self.power_routing_to_bank.readOp.dynamic
+                    - self.bank.htree_out_data.power.readOp.dynamic
+                    + self.bank.htree_in_data.power.readOp.dynamic
+                )
+                * (symbolic_convex_max((g_ip.burst_len / g_ip.int_prefetch_w), 1) - 1)
+            )
 
-          if not self.dp.is_dram:
-              self.power.writeOp.dynamic -= (
-                  self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
-              )
+            if not self.dp.is_dram:
+                self.power.writeOp.dynamic -= (
+                    self.bank.mat.power_sa.readOp.dynamic * self.dp.num_act_mats_hor_dir
+                )
 
-      # if DRAM, add refresh power to total leakage
-      if self.dp.is_dram:
-          self.power.readOp.leakage += self.refresh_power
+        # if DRAM, add refresh power to total leakage
+        if self.dp.is_dram:
+            self.power.readOp.leakage += self.refresh_power
 
-      # if 3D => override the final read/write dynamic and readOp.leakage
-      # this ensures no asserts from 0 or negative values
-      if g_ip.is_3d_mem:
-          self.power.readOp.dynamic  = self.read_energy
-          self.power.writeOp.dynamic = self.write_energy
-          self.power.readOp.leakage  = (
-              self.membus_RAS.power.readOp.leakage
-              + self.membus_CAS.power.readOp.leakage
-              + self.membus_data.power.readOp.leakage
-          )
+        # if 3D => override the final read/write dynamic and readOp.leakage
+        # this ensures no asserts from 0 or negative values
+        if g_ip.is_3d_mem:
+            self.power.readOp.dynamic  = self.read_energy
+            self.power.writeOp.dynamic = self.write_energy
+            self.power.readOp.leakage  = (
+                self.membus_RAS.power.readOp.leakage
+                + self.membus_CAS.power.readOp.leakage
+                + self.membus_data.power.readOp.leakage
+            )
 
-      # final checks
-      assert self.power.readOp.dynamic > 0,   "UCA read dynamic must be > 0"
-      assert self.power.writeOp.dynamic > 0,  "UCA write dynamic must be > 0"
-      assert self.power.readOp.leakage > 0,   "UCA read leakage must be > 0"
+        # final checks
+        if not is_symbolic(self.power.readOp.dynamic):
+            assert self.power.readOp.dynamic > 0,   "UCA read dynamic must be > 0"
+        if not is_symbolic(self.power.writeOp.dynamic):
+            assert self.power.writeOp.dynamic > 0,  "UCA write dynamic must be > 0"
+        if not is_symbolic(self.power.readOp.leakage):
+            assert self.power.readOp.leakage > 0,   "UCA read leakage must be > 0"

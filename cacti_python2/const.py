@@ -41,10 +41,12 @@ BIGNUM                = 1e30
 INF                   = 9999999
 
 def MAX(a, b):
-    return a if a > b else b
+    # return a if a > b else b
+    return 0.5 * (a + b + abs(a - b))
 
 def MIN(a, b):
-    return a if a < b else b
+    # return a if a < b else b
+    return 0.5 * (a + b - abs(a - b))
 
 # 4) Constants used in the Horowitz model / logic
 RISE                  = 1

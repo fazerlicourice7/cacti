@@ -32,6 +32,13 @@ from .basic_circuit import (
     horowitz, cmos_Isub_leakage, simplified_nmos_Isat
 )
 
+def symbolic_convex_max(a, b):
+    """
+    An approximation to the max function that plays well with numeric
+    or symbolic solvers.
+    """
+    return 0.5 * (a + b + abs(a - b))
+
 def contains_any_symbol(expr):
     # Extract all the symbols from the dictionary
     symbols = sympy_var.values()
@@ -2379,8 +2386,8 @@ class DynamicParameter:
             C_bl = self.num_r_subarray * (Cbitrow_drain_cap + c_b_metal)
             self.dram_refresh_period = 0
 
-        self.num_mats_h_dir = max(self.Ndwl // 2, 1)
-        self.num_mats_v_dir = max(self.Ndbl // 2, 1)
+        self.num_mats_h_dir = symbolic_convex_max(self.Ndwl // 2, 1)
+        self.num_mats_v_dir = symbolic_convex_max(self.Ndbl // 2, 1)
 
         self.num_mats = self.num_mats_h_dir * self.num_mats_v_dir
         self.num_do_b_mat = symbolic_convex_max((self.num_subarrays / self.num_mats) * self.num_c_subarray / (self.deg_bl_muxing * self.Ndsam_lev_1 * self.Ndsam_lev_2), 1)
@@ -2507,7 +2514,7 @@ class DynamicParameter:
 
         c_b_metal = self.cell.h * wire_local.C_per_um
         c_b_metal = self.cam_cell.h * wire_local.C_per_um
-        self.V_b_sense = max(0.05 * self.g_tp.sram_cell.Vdd, VBITSENSEMIN)
+        self.V_b_sense = symbolic_convex_max(0.05 * self.g_tp.sram_cell.Vdd, VBITSENSEMIN)
         self.deg_bl_muxing = 1
 
         Cbitrow_drain_cap = drain_C_(self.g_ip, self.g_tp, self.g_tp.cam.cell_a_w, NCH, 1, 0, self.cam_cell.w, False, True) / 2.0

@@ -21,6 +21,10 @@ We replicate logic so it is functionally the same as C++ version.
 import math
 import sys
 
+from .component import Component
+from .cacti_interface import MemArray, powerDef, powerComponents, uca_org_t
+from .area import Area
+
 # Some constants from the snippet:
 MIN_BANKSIZE = 65536
 FIXED_OVERHEAD = 55e-12  # clock skew and jitter in s
@@ -77,77 +81,6 @@ class min_values_t:
         if current_area < self.min_area:
             self.min_area = current_area
 
-class Area:
-    """
-    Stub for 'Component::area'. We assume it has .h and .w for height and width,
-    plus a get_area() method returning h*w.
-    """
-    def __init__(self):
-        self.h = 0.0
-        self.w = 0.0
-    def get_area(self):
-        return self.h * self.w
-
-class powerComponents:
-    """
-    Minimal placeholder for power components. 
-    """
-    def __init__(self):
-        self.dynamic = 0.0
-        self.leakage = 0.0
-
-class powerDef:
-    """
-    Minimal placeholder for readOp, writeOp, etc.
-    """
-    def __init__(self):
-        self.readOp = powerComponents()
-        self.writeOp = powerComponents()
-        self.searchOp = powerComponents()
-
-class Component:
-    """
-    C++ snippet has "class Component" with 
-      - power (type powerDef),
-      - area (with .h, .w),
-      - delay, cycle_time, etc.
-    We'll replicate.
-    """
-    def __init__(self):
-        self.power = powerDef()
-        self.area = Area()
-        self.delay = 0.0
-        self.cycle_time = 0.0
-
-class mem_array:
-    """
-    Minimal placeholder for the snippet usage 'mem_array tag, data'.
-    """
-    def __init__(self):
-        pass
-
-class uca_org_t:
-    """
-    Minimal placeholder. snippet references:
-      ures.tag_array2 = &tag;
-      ures.data_array2 = &data;
-      ures.cache_ht;
-      ures.cache_len;
-      ures.access_time;
-      ures.power, ...
-    We'll keep those fields in Python style.
-    """
-    def __init__(self):
-        self.tag_array2 = None
-        self.data_array2 = None
-        self.cache_ht = 0.0
-        self.cache_len = 0.0
-        self.access_time = 0.0
-        self.power = powerDef()
-        self.cycle_time = 0.0
-        self.valid = False
-
-
 def solve(fin_res):
     """
     Stub for 'solve' or 'update' that the snippet references. 
@@ -165,54 +98,9 @@ def solve(fin_res):
     fin_res.valid = True
 
 
-class Router(Component):
-    """
-    Stub class for 'Router' references in the snippet. The snippet does:
-      router_s[0] = new Router(64.0, 8, 4, &(g_tp.peri_global));
-      ...
-    We'll store those as fields:
-       flit_size, etc.
-    We'll have a print_router() method.
-    """
-    def __init__(self, flit_size, inputs, outputs, dt):
-        super().__init__()
-        self.flit_size = flit_size
-        self.inputs = inputs
-        self.outputs = outputs
-        self.deviceType = dt
+from .router import Router
 
-        # Some placeholders for cycle_time, power:
-        self.cycle_time = 1e-9
-        # let's say:
-        self.power.readOp.dynamic = 0.01
-        self.power.readOp.leakage = 0.0001
-        self.delay = 1e-10  # used in snippet
-
-    def print_router(self):
-        print(f"Router: flit_size={self.flit_size}, cyc_time={self.cycle_time}, power_dyn={self.power.readOp.dynamic}, leak={self.power.readOp.leakage}")
-
-
-class Wire(Component):
-    """
-    Stub for 'Wire' as used in snippet. We store wire_width, wire_spacing, delay, power.
-    In the snippet:
-      wire_vertical[wr] = new Wire((enum Wire_type) wr, vlength);
-    We'll define a constructor that sets .delay, .wire_width, .wire_spacing, etc.
-    """
-    def __init__(self, wire_type=0, length=0.0):
-        super().__init__()
-        self.wt = wire_type
-        self.length = length
-        self.wire_width = 1e-6
-        self.wire_spacing = 1e-6
-        # Some default values for demonstration:
-        self.delay = 5e-10
-        self.power.readOp.dynamic = 0.001
-        self.power.readOp.leakage = 0.00001
-
-    def print_wire(self):
-        print(f"Wire: type={self.wt}, length={self.length}, delay={self.delay}, p_dyn={self.power.readOp.dynamic}, p_leak={self.power.readOp.leakage}")
-
+from .wire import Wire
 
 class nuca_org_t:
     """
@@ -365,8 +253,8 @@ class Nuca(Component):
         bank_count = 0
         ures = uca_org_t()
         opt_n = None
-        tag = mem_array()
-        data = mem_array()
+        tag = MemArray()
+        data = MemArray()
         nuca_list = []
         router_s = []
 
