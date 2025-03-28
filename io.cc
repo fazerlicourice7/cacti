@@ -2602,7 +2602,10 @@ void output_data_csv(const uca_org_t & fin_res, string fn)
 
       // MODIFIED to output wire repeater metrics
       file << "Repeater spacing, ";
-      file << "Repeater size ";
+      file << "Repeater size, ";
+
+      file << "Tag wire type, ";
+      file << "Data wire type ";
       // MODIFIED end
 
 //      file << "Resistance per unit micron (ohm-micron), ";
@@ -2728,7 +2731,16 @@ void output_data_csv(const uca_org_t & fin_res, string fn)
 
     // MODIFIED to output wire repeater metrics
     file << g_ip->repeater_spacing << ", ";
-    file << g_ip->repeater_size;
+    file << g_ip->repeater_size << ", ";
+    if (!(g_ip->fully_assoc || g_ip->pure_cam || g_ip->pure_ram))
+    {
+    file << fin_res.tag_array2->wt << ", ";
+    }
+    else
+    {
+    file << "NO_TAG" << ", ";
+    }
+    file << fin_res.data_array2->wt;
     // MODIFIED end
 
 //    file << g_tp.wire_inside_mat.R_per_um << ", ";
