@@ -9,7 +9,7 @@ from .const import *
 from .area import Area
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from hw_symbols import symbol_table as sympy_var
+from global_symbol_table import global_symbol_table as sympy_var
 from src import CACTI_DIR
 
 WIRE_TYPE_MAP = {

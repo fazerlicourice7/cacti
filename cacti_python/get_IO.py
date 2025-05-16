@@ -1,6 +1,5 @@
 import numpy as np
 import sys
-from hw_symbols import symbol_table as IO_tech_dict
 
 # Constants
 INF = float('inf')

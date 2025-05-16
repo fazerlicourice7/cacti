@@ -6,7 +6,6 @@ import time
 from .const import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from hw_symbols import *
 
 def scan_dat(tech_dict, dat_file, tech_flavor, cell_type, temperature):
     

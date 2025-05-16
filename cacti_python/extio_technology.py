@@ -1,5 +1,5 @@
 import sys
-from hw_symbols import symbol_table as sympy_var
+from global_symbol_table import global_symbol_table as sympy_var
 
 # Constants
 INF = float('inf')
